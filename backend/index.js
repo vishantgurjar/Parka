@@ -34,7 +34,8 @@ mongoose.connect(process.env.mongo_url)
     .catch(err => console.error('Could not connect to MongoDB:', err));
 
 app.get("/", (req, res) => {
-    res.send("Hello World! Parke City Backend is running");
+    const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+    res.send(`Hello World! Parke City Backend is running. Database: ${dbStatus}`);
 });
 
 app.get("/api/status", (req, res) => {
