@@ -15,83 +15,83 @@ app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.mongo_url)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Could not connect to MongoDB:', err));
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Could not connect to MongoDB:', err));
 
 // Routes
-app.get("/home", (req, res) => {
+app.get("/", (req, res) => {
     res.send("Hello World! Parke City Backend is running");
 });
 
 // Register Endpoint
 app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { email, password, name, phone, ...extendedData } = req.body;
+    try {
+        const { email, password, name, phone, ...extendedData } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Create user
+        const newUser = new User({
+            email,
+            password: hashedPassword,
+            name,
+            phone,
+            ...extendedData
+        });
+
+        await newUser.save();
+
+        // Generate token
+        const token = jwt.sign({ userId: newUser._id, email: newUser.email, name: newUser.name }, JWT_SECRET, { expiresIn: '7d' });
+
+        // Scrub password from response
+        const userResponse = newUser.toObject();
+        delete userResponse.password;
+
+        res.status(201).json({ token, user: userResponse, message: 'Registration successful' });
+    } catch (error) {
+        console.error('Registration Error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const newUser = new User({
-      email,
-      password: hashedPassword,
-      name,
-      phone,
-      ...extendedData
-    });
-
-    await newUser.save();
-
-    // Generate token
-    const token = jwt.sign({ userId: newUser._id, email: newUser.email, name: newUser.name }, JWT_SECRET, { expiresIn: '7d' });
-
-    // Scrub password from response
-    const userResponse = newUser.toObject();
-    delete userResponse.password;
-
-    res.status(201).json({ token, user: userResponse, message: 'Registration successful' });
-  } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
 });
 
 // Login Endpoint
 app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    // Find User
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+        // Find User
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        // Validate Password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        // Generate token
+        const token = jwt.sign({ userId: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+
+        // Scrub password from response
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.json({ token, user: userResponse, message: 'Login successful' });
+    } catch (error) {
+        console.error('Login Error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    // Validate Password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    // Generate token
-    const token = jwt.sign({ userId: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-
-    // Scrub password from response
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    res.json({ token, user: userResponse, message: 'Login successful' });
-  } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
 });
 
 const PORT = process.env.PORT || 3000;
