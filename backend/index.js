@@ -17,21 +17,34 @@ if (!JWT_SECRET) {
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection Check Middleware
-const checkDbConnection = (req, res, next) => {
-    if (mongoose.connection.readyState !== 1) {
-        return res.status(503).json({ 
-            message: 'Database connection is not established.', 
-            error: 'The server is currently unable to reach MongoDB. Please check your environment variables.' 
-        });
+// MongoDB Connection logic for Serverless
+const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) return;
+
+    try {
+        await mongoose.connect(process.env.mongo_url);
+        console.log('Connected to MongoDB');
+    } catch (err) {
+        console.error('Could not connect to MongoDB:', err.message);
+        throw err;
     }
-    next();
 };
 
-// Connect to MongoDB
-mongoose.connect(process.env.mongo_url)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('Could not connect to MongoDB:', err));
+// Connect immediately on startup (for local/persistent servers)
+connectDB();
+
+// MongoDB Connection Check Middleware
+const checkDbConnection = async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        return res.status(503).json({ 
+            message: 'Database connection failed.', 
+            error: error.message 
+        });
+    }
+};
 
 app.get("/", (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
