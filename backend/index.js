@@ -18,9 +18,17 @@ mongoose.connect(process.env.mongo_url)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Could not connect to MongoDB:', err));
 
-// Routes
 app.get("/", (req, res) => {
     res.send("Hello World! Parke City Backend is running");
+});
+
+app.get("/api/status", (req, res) => {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+    res.json({
+        server: 'Online',
+        database: dbStatus,
+        mongodbState: mongoose.connection.readyState
+    });
 });
 
 // Register Endpoint
@@ -59,7 +67,7 @@ app.post('/api/auth/register', async (req, res) => {
         res.status(201).json({ token, user: userResponse, message: 'Registration successful' });
     } catch (error) {
         console.error('Registration Error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
@@ -90,7 +98,7 @@ app.post('/api/auth/login', async (req, res) => {
         res.json({ token, user: userResponse, message: 'Login successful' });
     } catch (error) {
         console.error('Login Error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
