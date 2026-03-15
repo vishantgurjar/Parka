@@ -40,10 +40,16 @@ app.get("/", (req, res) => {
 
 app.get("/api/status", (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+    const envDetected = !!process.env.mongo_url;
+    // Masked URL for safety
+    const maskedUrl = envDetected ? process.env.mongo_url.substring(0, 15) + "..." : "NOT DEFINED";
+    
     res.json({
         server: 'Online',
         database: dbStatus,
-        mongodbState: mongoose.connection.readyState
+        mongodbState: mongoose.connection.readyState,
+        envVarPresent: envDetected,
+        urlPreview: maskedUrl
     });
 });
 
