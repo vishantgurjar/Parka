@@ -7,11 +7,26 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_parke_city_key_123';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    console.warn('WARNING: JWT_SECRET is not defined. Authentication will fail.');
+}
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// MongoDB Connection Check Middleware
+const checkDbConnection = (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        return res.status(503).json({ 
+            message: 'Database connection is not established.', 
+            error: 'The server is currently unable to reach MongoDB. Please check your environment variables.' 
+        });
+    }
+    next();
+};
 
 // Connect to MongoDB
 mongoose.connect(process.env.mongo_url)
@@ -32,7 +47,7 @@ app.get("/api/status", (req, res) => {
 });
 
 // Register Endpoint
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', checkDbConnection, async (req, res) => {
     try {
         const { email, password, name, phone, ...extendedData } = req.body;
 
@@ -72,7 +87,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login Endpoint
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', checkDbConnection, async (req, res) => {
     try {
         const { email, password } = req.body;
 
