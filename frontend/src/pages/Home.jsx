@@ -1,21 +1,47 @@
 import { Wrench, PhoneCall, CheckCircle, Smartphone, Printer, Send, ShieldCheck, MapPin, AlertTriangle, Download } from 'lucide-react';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
+import EmergencyCard from '../components/EmergencyCard';
+import CustomerCard from '../components/CustomerCard';
+import { toPng } from 'html-to-image';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
   const [qrUrl, setQrUrl] = useState('');
+  const [activeTab, setActiveTab] = useState('emergency'); // 'emergency' or 'customer'
+  const cardRef = useRef(null);
+  const customerRef = useRef(null);
 
   useEffect(() => {
     if (user) {
       // VCard format to instantly load contact info and dialer when scanned
       const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.name}\nTEL:${user.phone || ''}\nEND:VCARD`;
       const base = 'https://api.qrserver.com/v1/create-qr-code/';
-      setQrUrl(`${base}?size=250x250&data=${encodeURIComponent(vcard)}&color=0d9488&bgcolor=ffffff`);
+      // Use the teal color from the design
+      setQrUrl(`${base}?size=300x300&data=${encodeURIComponent(vcard)}&color=0d9488&bgcolor=ffffff`);
     } else {
       setQrUrl('');
     }
   }, [user]);
+
+  const handleDownload = async (type) => {
+    const ref = type === 'emergency' ? cardRef : customerRef;
+    if (ref.current === null) return;
+    
+    try {
+      const dataUrl = await toPng(ref.current, { cacheBust: true });
+      const link = document.createElement('a');
+      link.download = `ParkeCity-${type === 'emergency' ? 'Emergency' : 'Customer'}-Card-${user.name}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('oops, something went wrong!', err);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const handleContact = (e) => {
     e.preventDefault();
@@ -185,29 +211,40 @@ export default function Home({ onOpenPayment }) {
       {user && (
         <section id="qr" className="qr-section">
           <div className="container">
-            <div className="section-header">
-              <h2 className="section-title">Your Vehicle QR Code</h2>
-              <p className="section-desc">Print this QR code and place it on your dashboard. Anyone can scan it to call you if your vehicle needs to be moved.</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <button 
+                onClick={() => setActiveTab('emergency')} 
+                className={activeTab === 'emergency' ? 'btn-gradient' : 'btn-secondary'}
+                style={{ borderRadius: '12px', padding: '10px 24px', border: 'none' }}
+              >
+                Emergency Card
+              </button>
+              <button 
+                onClick={() => setActiveTab('customer')} 
+                className={activeTab === 'customer' ? 'btn-gradient' : 'btn-secondary'}
+                style={{ borderRadius: '12px', padding: '10px 24px', border: 'none' }}
+              >
+                Customer Card
+              </button>
             </div>
-            <div className="qr-card">
-              <div className="qr-icon-wrap">
-                <Smartphone size={28} />
-              </div>
-              <h3>{user.name}'s Vehicle</h3>
-              <p className="qr-subtitle">Scan to Contact Owner</p>
-              <div className="qr-tags">
-                <span className="qr-tag tag-primary">📍 Parking Assistance</span>
-              </div>
-              <div className="qr-image-wrap">
-                {qrUrl && <img src={qrUrl} alt="Vehicle QR Code" width="192" height="192" />}
-              </div>
-              <p className="qr-scan-text">Scan with any phone camera to call {user.phone}</p>
-              <div className="qr-actions">
-                <a href={qrUrl} download="Vehicle-QR.png" target="_blank" rel="noreferrer" className="btn-outline-primary" style={{textDecoration: 'none'}}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+              {activeTab === 'emergency' ? (
+                <div style={{ transform: 'scale(1.1)', margin: '1rem 0' }}>
+                  <EmergencyCard ref={cardRef} user={user} qrUrl={qrUrl} />
+                </div>
+              ) : (
+                <div style={{ transform: 'scale(1)', margin: '1rem 0' }}>
+                  <CustomerCard ref={customerRef} user={user} qrUrl={qrUrl} />
+                </div>
+              )}
+              
+              <div className="qr-actions" style={{ maxWidth: '450px', width: '100%' }}>
+                <button onClick={() => handleDownload(activeTab)} className="btn-outline-primary" style={{ border: 'none', cursor: 'pointer' }}>
                   <Download size={16} />
-                  Download QR
-                </a>
-                <button className="btn-secondary" onClick={() => window.print()}>
+                  Download {activeTab === 'emergency' ? 'Emergency Card' : 'Customer Card'}
+                </button>
+                <button className="btn-secondary" onClick={handlePrint}>
                   <Printer size={16} />
                   Print for Car
                 </button>

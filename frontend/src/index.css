@@ -342,6 +342,360 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     font-weight: 600; transition: opacity 0.2s;
 }
 .btn-sos:hover { opacity: 0.9; }
+
+/* ========== EMERGENCY CARD ========== */
+.emergency-card-container {
+    padding: 10px;
+    background: transparent;
+    display: inline-block;
+}
+
+.emergency-card {
+    width: 360px;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    border: 3px solid #0d9488;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+}
+
+.emergency-card-header {
+    background: linear-gradient(135deg, #0d9488, #0891b2);
+    padding: 20px 15px;
+    text-align: center;
+    color: white;
+}
+
+.card-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.logo-box {
+    background: white;
+    color: #0d9488;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 0;
+}
+
+.card-logo .logo-text {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.card-subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.95;
+    letter-spacing: 0.5px;
+}
+
+.card-body {
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-qr-wrapper {
+    border: 3px solid #0d9488;
+    border-radius: 15px;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: white;
+}
+
+.card-qr-img {
+    display: block;
+    width: 180px;
+    height: 180px;
+}
+
+.scan-for-help {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.scan-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0d9488;
+    letter-spacing: 1px;
+}
+
+.card-badges {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.card-badge {
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.road-assist {
+    background: #e6f7f6;
+    color: #0d9488;
+}
+
+.engine-repair {
+    background: #fdf2f2;
+    color: #ef4444;
+}
+
+.card-divider {
+    border-top: 1px dashed #ccc;
+    margin: 0 15px 10px;
+}
+
+.card-footer-info {
+    text-align: center;
+    padding: 0 15px 15px;
+}
+
+.helpline {
+    font-size: 12px;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.helpline strong {
+    color: #000;
+}
+
+.instruction {
+    font-size: 10px;
+    color: #666;
+    font-weight: 500;
+}
+
+.emergency-banner {
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    color: white;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .emergency-card-container, .emergency-card-container * {
+        visibility: visible;
+    }
+    .emergency-card-container {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* ========== CUSTOMER CARD ========== */
+.customer-card-container {
+    padding: 10px;
+    background: transparent;
+    display: inline-block;
+}
+
+.customer-card {
+    width: 480px;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+}
+
+.card-top-header {
+    background: #0f172a;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.p-icon {
+    background: var(--gradient-primary);
+    color: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 16px;
+}
+
+.brand-name {
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+}
+
+.verification-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(13, 148, 136, 0.15);
+    color: #2dd4bf;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid rgba(13, 148, 136, 0.3);
+}
+
+.card-main-content {
+    padding: 24px;
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.user-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.row-icon {
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.row-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.row-data .label {
+    font-size: 9px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+.row-data .value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.qr-section-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.qr-container-box {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #f1f5f9;
+}
+
+.customer-qr {
+    width: 100px;
+    height: 100px;
+    display: block;
+}
+
+.qr-caption {
+    font-size: 9px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+.customer-card-footer {
+    height: 32px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.footer-glow {
+    position: absolute;
+    width: 60%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(13, 148, 136, 0.05), transparent);
+}
+
+.secure-text {
+    font-size: 8px;
+    font-weight: 700;
+    color: #cbd5e1;
+    letter-spacing: 2px;
+    z-index: 1;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .emergency-card-container, .customer-card-container {
+        visibility: visible !important;
+    }
+    .emergency-card-container, .customer-card-container {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
 /* ========== CONTACT ========== */
 .contact { padding: 6rem 0; }
 .contact-form { max-width: 512px; margin: 0 auto; }
