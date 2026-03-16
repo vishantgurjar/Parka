@@ -683,17 +683,39 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 }
 
 @media print {
-    body * {
-        visibility: hidden;
+    body {
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
-    .emergency-card-container, .customer-card-container {
+    
+    body * {
+        visibility: hidden !important;
+    }
+    
+    .emergency-card-container, 
+    .customer-card-container, 
+    .emergency-card-container *, 
+    .customer-card-container * {
         visibility: visible !important;
     }
-    .emergency-card-container, .customer-card-container {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+    
+    .emergency-card-container, 
+    .customer-card-container {
+        position: fixed !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Remove headers, footers and any browser injected elements if possible */
+    @page {
+        margin: 0;
+        size: auto;
     }
 }
 /* ========== CONTACT ========== */
