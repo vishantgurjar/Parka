@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import PaymentModal from './components/PaymentModal';
@@ -67,9 +67,9 @@ function App() {
           <Header />
           <main>
             <Routes>
-              <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
+              <Route path="/" element={user ? <Home onOpenPayment={handleOpenPayment} /> : <Navigate to="/login" />} />
               <Route path="/register" element={<ExtendedRegistration />} />
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
             </Routes>
           </main>
           <Footer />
