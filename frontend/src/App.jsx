@@ -64,15 +64,26 @@ function App() {
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       <AuthContext.Provider value={{ user, login, logout }}>
         <Router>
-          <Header />
-          <main>
+          {!user ? (
             <Routes>
-              <Route path="/" element={user ? <Home onOpenPayment={handleOpenPayment} /> : <Navigate to="/login" />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<ExtendedRegistration />} />
-              <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
+              <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
-          </main>
-          <Footer />
+          ) : (
+            <>
+              <Header />
+              <main>
+                <Routes>
+                  <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
+                  <Route path="/register" element={<ExtendedRegistration />} />
+                  <Route path="/login" element={<Navigate to="/" />} />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+              </main>
+              <Footer />
+            </>
+          )}
 
           {/* Modals */}
           {paymentPlan && <PaymentModal plan={paymentPlan} onClose={() => setPaymentPlan(null)} />}
