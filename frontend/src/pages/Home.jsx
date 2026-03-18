@@ -39,9 +39,6 @@ export default function Home({ onOpenPayment }) {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
 
   const handleContact = (e) => {
     e.preventDefault();
@@ -244,10 +241,10 @@ export default function Home({ onOpenPayment }) {
                   <Download size={16} />
                   Download {activeTab === 'emergency' ? 'Emergency Card' : 'Customer Card'}
                 </button>
-                <button className="btn-secondary" onClick={handlePrint}>
-                  <Printer size={16} />
-                  Print for Car
-                </button>
+                <a href="tel:7895039922" className="btn-secondary" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <PhoneCall size={16} />
+                  Direct Call
+                </a>
               </div>
             </div>
             <div className="sos-section">
