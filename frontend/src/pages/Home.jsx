@@ -56,13 +56,13 @@ export default function Home({ onOpenPayment }) {
         <div className="container hero-content">
           <div className="hero-badge">
             <ShieldCheck size={16} />
-            Smart Parking Solutions
+            Smart Vehicle Protection
           </div>
           <h1 className="hero-title">
-            Smart Parking for <span className="text-gradient">Modern Cities</span>
+            Smart Solutions for <span className="text-gradient">Every Vehicle</span>
           </h1>
           <p className="hero-desc">
-            Find, reserve, and access parking spots instantly with our revolutionary QR-based smart parking system. No more circling around looking for parking!
+            Secure your vehicle with our advanced QR-based Emergency Cards. Get 24/7 roadside assistance, smarter parking, and instant contact access, all in one scan.
           </p>
           <div className="hero-stats">
             <div className="stat">
