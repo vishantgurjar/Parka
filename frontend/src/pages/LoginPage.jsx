@@ -36,8 +36,6 @@ export default function LoginPage() {
     }
   };
 
-  };
-
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <div className="glass-card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem', margin: '1rem' }}>
@@ -61,21 +59,6 @@ export default function LoginPage() {
              <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '1rem', color: 'var(--muted)' }}>
                Don't have an account? <button type="button" onClick={() => setMode('register')} style={{ color: 'var(--primary)', background:'none', border:'none', fontWeight: 'bold', cursor: 'pointer' }}>Register here</button>
              </p>
-             <div className="divider" style={{ margin: '1.5rem 0' }}><span>or</span></div>
-             
-             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-               <GoogleLogin
-                 onSuccess={handleGoogleSuccess}
-                 onError={() => {
-                   console.log('Login Failed');
-                   alert('Google Login Failed');
-                 }}
-                 useOneTap
-                 theme="filled_blue"
-                 shape="pill"
-               />
-             </div>
-
              <div className="divider" style={{ margin: '1.5rem 0' }}><span>or</span></div>
              <p style={{ textAlign: 'center', fontSize: '1rem', color: 'var(--muted)' }}>
                <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Go to Extended Registration Portal</Link>
