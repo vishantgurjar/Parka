@@ -5,6 +5,9 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -134,6 +137,49 @@ app.post('/api/auth/login', checkDbConnection, async (req, res) => {
     } catch (error) {
         console.error('Login Error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Google Auth Endpoint
+app.post('/api/auth/google', checkDbConnection, async (req, res) => {
+    try {
+        const { credential } = req.body;
+        
+        if (!process.env.GOOGLE_CLIENT_ID) {
+            return res.status(500).json({ message: 'Google Client ID not configured on server' });
+        }
+
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        
+        const payload = ticket.getPayload();
+        const { email, name, picture, sub: googleId } = payload;
+
+        // Find or Create User
+        let user = await User.findOne({ email });
+        
+        if (!user) {
+            // Create new user without password
+            user = new User({
+                email,
+                name,
+                // We can also store googleId if we want to track it
+            });
+            await user.save();
+        }
+
+        // Generate token
+        const token = jwt.sign({ userId: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+
+        const userResponse = user.toObject();
+        if (userResponse.password) delete userResponse.password;
+
+        res.json({ token, user: userResponse, message: 'Google Login successful' });
+    } catch (error) {
+        console.error('Google Auth Error:', error);
+        res.status(401).json({ message: 'Invalid Google token', error: error.message });
     }
 });
 

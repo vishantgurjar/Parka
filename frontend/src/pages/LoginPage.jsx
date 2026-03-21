@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { Car } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate, Link } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
@@ -36,6 +37,29 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        login(data.user, data.token);
+        alert(`Welcome, ${data.user.name}!`);
+        navigate('/');
+      } else {
+        alert(data.message || 'Google login failed.');
+      }
+    } catch (err) {
+      console.error('Google login error:', err);
+      alert('Network error during Google login.');
+    }
+  };
+
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <div className="glass-card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem', margin: '1rem' }}>
@@ -59,6 +83,21 @@ export default function LoginPage() {
              <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '1rem', color: 'var(--muted)' }}>
                Don't have an account? <button type="button" onClick={() => setMode('register')} style={{ color: 'var(--primary)', background:'none', border:'none', fontWeight: 'bold', cursor: 'pointer' }}>Register here</button>
              </p>
+             <div className="divider" style={{ margin: '1.5rem 0' }}><span>or</span></div>
+             
+             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+               <GoogleLogin
+                 onSuccess={handleGoogleSuccess}
+                 onError={() => {
+                   console.log('Login Failed');
+                   alert('Google Login Failed');
+                 }}
+                 useOneTap
+                 theme="filled_blue"
+                 shape="pill"
+               />
+             </div>
+
              <div className="divider" style={{ margin: '1.5rem 0' }}><span>or</span></div>
              <p style={{ textAlign: 'center', fontSize: '1rem', color: 'var(--muted)' }}>
                <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Go to Extended Registration Portal</Link>
