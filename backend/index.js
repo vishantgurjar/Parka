@@ -224,6 +224,19 @@ app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
   }
 });
 
+// @route   GET /api/mechanics
+// @desc    Get all registered mechanics
+// @access  Public
+app.get('/api/mechanics', checkDbConnection, async (req, res) => {
+  try {
+    const mechanics = await Mechanic.find({ isAvailable: true }).select('-password');
+    res.json(mechanics);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server Error fetching mechanics' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

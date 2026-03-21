@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
 import LoginPage from './pages/LoginPage';
 import MechanicRegistration from './pages/MechanicRegistration';
+import MechanicList from './pages/MechanicList';
 
 // Contexts
 export const ThemeContext = createContext();
@@ -70,6 +71,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<ExtendedRegistration />} />
               <Route path="/mechanic-register" element={<MechanicRegistration />} />
+              <Route path="/mechanics" element={<MechanicList />} />
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
           ) : (
@@ -80,6 +82,7 @@ function App() {
                   <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
                   <Route path="/mechanic-register" element={<MechanicRegistration />} />
+                  <Route path="/mechanics" element={<MechanicList />} />
                   <Route path="/login" element={<Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
