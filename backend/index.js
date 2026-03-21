@@ -5,6 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const Mechanic = require('./models/Mechanic');
 const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -181,6 +182,46 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
         console.error('Google Auth Error:', error);
         res.status(401).json({ message: 'Invalid Google token', error: error.message });
     }
+});
+
+// --- NEW MECHANIC ROUTES ---
+
+// @route   POST /api/mechanics/register
+// @desc    Register a new mechanic
+// @access  Public
+app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
+  try {
+    const { name, shopName, email, phone, password, highwayLocation, experienceYears, services } = req.body;
+
+    // Check if mechanic already exists by email
+    let mechanic = await Mechanic.findOne({ email });
+    if (mechanic) {
+      return res.status(400).json({ message: 'Mechanic with this email already exists' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new mechanic
+    mechanic = new Mechanic({
+      name,
+      shopName,
+      email,
+      phone,
+      password: hashedPassword,
+      highwayLocation,
+      experienceYears,
+      services
+    });
+
+    await mechanic.save();
+
+    res.status(201).json({ message: 'Mechanic registered successfully', mechanic: { id: mechanic._id, name: mechanic.name } });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server Error during Mechanic Registration' });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
