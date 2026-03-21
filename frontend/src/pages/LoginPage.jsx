@@ -2,7 +2,6 @@ import { useState, useContext } from 'react';
 import { Car } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate, Link } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
@@ -37,27 +36,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: credentialResponse.credential })
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        login(data.user, data.token);
-        alert(`Welcome, ${data.user.name}!`);
-        navigate('/');
-      } else {
-        alert(data.message || 'Google login failed.');
-      }
-    } catch (err) {
-      console.error('Google login error:', err);
-      alert('Network error during Google login.');
-    }
   };
 
   return (
