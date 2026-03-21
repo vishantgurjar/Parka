@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
 import EmergencyCard from '../components/EmergencyCard';
 import CustomerCard from '../components/CustomerCard';
+import { Link } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 
 export default function Home({ onOpenPayment }) {
@@ -134,10 +135,10 @@ export default function Home({ onOpenPayment }) {
             
             <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
               <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Are you a highway mechanic?</p>
-              <a href="/mechanic-register" className="btn-outline-primary" style={{ textDecoration: 'none', display: 'inline-flex', padding: '8px 16px', fontSize: '0.9rem' }}>
+              <Link to="/mechanic-register" className="btn-outline-primary" style={{ textDecoration: 'none', display: 'inline-flex', padding: '8px 16px', fontSize: '0.9rem', alignItems: 'center' }}>
                 <Wrench size={16} style={{ marginRight: '8px' }} />
                 Join Our Partner Network
-              </a>
+              </Link>
             </div>
           </div>
         </div>
