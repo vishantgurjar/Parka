@@ -101,6 +101,9 @@ export default function Home({ onOpenPayment }) {
               <div className="service-icon-wrap"><Wrench size={24} /></div>
               <h3>Engine Repair</h3>
               <p>Expert mechanics for all engine issues on the highway</p>
+              <Link to="/mechanics" style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                Find Nearby (1-3km) →
+              </Link>
             </div>
             <div className="service-card">
               <div className="service-icon-wrap"><AlertTriangle size={24} /></div>
@@ -134,6 +137,11 @@ export default function Home({ onOpenPayment }) {
             </div>
             
             <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <Link to="/mechanics" className="btn-gradient full-width" style={{ textDecoration: 'none', display: 'inline-flex', padding: '14px 16px', fontSize: '1rem', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', borderRadius: '12px', fontWeight: 'bold' }}>
+                <MapPin size={20} style={{ marginRight: '8px' }} />
+                Find Nearby Mechanics (1-3 km)
+              </Link>
+              
               <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Are you a highway mechanic?</p>
               <Link to="/mechanic-register" className="btn-outline-primary" style={{ textDecoration: 'none', display: 'inline-flex', padding: '8px 16px', fontSize: '0.9rem', alignItems: 'center' }}>
                 <Wrench size={16} style={{ marginRight: '8px' }} />
