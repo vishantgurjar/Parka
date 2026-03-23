@@ -101,9 +101,7 @@ export default function Home({ onOpenPayment }) {
               <div className="service-icon-wrap"><Wrench size={24} /></div>
               <h3>Engine Repair</h3>
               <p>Expert mechanics for all engine issues on the highway</p>
-              <Link to="/mechanics" style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                Find Nearby (1-3km) →
-              </Link>
+
             </div>
             <div className="service-card">
               <div className="service-icon-wrap"><AlertTriangle size={24} /></div>
