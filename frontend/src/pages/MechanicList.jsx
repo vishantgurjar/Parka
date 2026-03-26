@@ -25,7 +25,7 @@ export default function MechanicList() {
 
       // 2. Initialize Razorpay Checkout
       const options = {
-        key: "STmrw1SE0wAdVz", // User provided Merchant ID
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "", // Removed hardcoded Merchant ID
         amount: order.amount,
         currency: order.currency,
         name: "Parké City",
