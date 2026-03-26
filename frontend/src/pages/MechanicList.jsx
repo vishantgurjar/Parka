@@ -6,73 +6,6 @@ export default function MechanicList() {
   const [mechanics, setMechanics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [processingId, setProcessingId] = useState(null);
-
-  const handlePayment = async (mechanicId, amount) => {
-    try {
-      setProcessingId(mechanicId);
-      // 1. Create order on backend
-      const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payments/order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(amount),
-          mechanicId: mechanicId,
-        })
-      });
-      if (!orderRes.ok) throw new Error('Order creation failed');
-      const order = await orderRes.json();
-
-      // 2. Initialize Razorpay Checkout
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "", // Removed hardcoded Merchant ID
-        amount: order.amount,
-        currency: order.currency,
-        name: "Parké City",
-        description: "Mechanic Booking Fee",
-        order_id: order.id,
-        handler: async function (response) {
-          try {
-            // 3. Verify payment on backend
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payments/verify`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              })
-            });
-            if (!verifyRes.ok) throw new Error('Payment verification failed');
-            alert("Payment Successful! Mechanic has been notified.");
-          } catch (err) {
-            console.error(err);
-            alert("Payment verification failed.");
-          }
-        },
-        prefill: {
-          name: "User",
-          email: "user@example.com",
-          contact: "9999999999"
-        },
-        theme: {
-          color: "#0d9488"
-        }
-      };
-      
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response){
-        alert("Payment Failed: " + response.error.description);
-      });
-      rzp.open();
-
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong while initiating payment.");
-    } finally {
-      setProcessingId(null);
-    }
-  };
 
   useEffect(() => {
     const fetchMechanics = async () => {
@@ -167,18 +100,10 @@ export default function MechanicList() {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button 
-                            onClick={() => handlePayment(mechanic._id, 500)} 
-                            disabled={processingId === mechanic._id}
-                            className="btn-gradient full-width" 
-                            style={{ flex: 1, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer', opacity: processingId === mechanic._id ? 0.7 : 1 }}>
-                            {processingId === mechanic._id ? 'Processing...' : 'Book & Pay ₹500'}
-                        </button>
-                        <a href={`tel:${mechanic.phone}`} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--fg)', cursor: 'pointer' }}>
-                            <PhoneCall size={18} />
-                        </a>
-                    </div>
+                    <a href={`tel:${mechanic.phone}`} className="btn-gradient full-width" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', fontWeight: 'bold', border: 'none' }}>
+                        <PhoneCall size={18} />
+                        Call {mechanic.phone}
+                    </a>
                  </div>
               ))}
            </div>
