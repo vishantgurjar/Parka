@@ -12,11 +12,16 @@ export default function MechanicList() {
     try {
       setProcessingId(mechanicId);
       // 1. Create order on backend
-      const { data: order } = await import('axios').then(m => m.default).then(axios => axios.post(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payments/order`, {
-        amount: amount,
-        mechanicId: mechanicId,
-        // userId: // Pass userId if you have a logged-in user context
-      }));
+      const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payments/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Math.round(amount),
+          mechanicId: mechanicId,
+        })
+      });
+      if (!orderRes.ok) throw new Error('Order creation failed');
+      const order = await orderRes.json();
 
       // 2. Initialize Razorpay Checkout
       const options = {
@@ -29,11 +34,16 @@ export default function MechanicList() {
         handler: async function (response) {
           try {
             // 3. Verify payment on backend
-            await import('axios').then(m => m.default).then(axios => axios.post(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payments/verify`, {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            }));
+            const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payments/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            if (!verifyRes.ok) throw new Error('Payment verification failed');
             alert("Payment Successful! Mechanic has been notified.");
           } catch (err) {
             console.error(err);
