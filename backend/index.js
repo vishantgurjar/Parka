@@ -272,7 +272,7 @@ app.post('/api/payments/order', checkDbConnection, async (req, res) => {
             orderId: order.id,
             amount: amount,
             user: userId,
-            mechanic: mechanicId,
+            ...(mechanicId && { mechanic: mechanicId }),
             status: 'created'
         });
         await payment.save();
