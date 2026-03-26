@@ -21,10 +21,20 @@ if (!JWT_SECRET) {
 }
 
 // Razorpay Instance
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+let razorpay;
+try {
+    if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+        razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+        console.log('Razorpay configured successfully.');
+    } else {
+        console.warn('WARNING: Razorpay keys are missing. Payments will fail.');
+    }
+} catch (err) {
+    console.warn('WARNING: Failed to initialize Razorpay:', err.message);
+}
 
 // Middleware
 app.use(cors());
@@ -253,6 +263,10 @@ app.get('/api/mechanics', checkDbConnection, async (req, res) => {
 // @access  Public (Should be private in production)
 app.post('/api/payments/order', checkDbConnection, async (req, res) => {
     try {
+        if (!razorpay) {
+            return res.status(503).json({ message: "Payment system is not properly configured on the server." });
+        }
+
         const { amount, mechanicId, userId } = req.body;
 
         const options = {
@@ -289,6 +303,10 @@ app.post('/api/payments/order', checkDbConnection, async (req, res) => {
 // @access  Public
 app.post('/api/payments/verify', checkDbConnection, async (req, res) => {
     try {
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            return res.status(503).json({ message: "Payment system is not properly configured on the server." });
+        }
+
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         const sign = razorpay_order_id + "|" + razorpay_payment_id;
