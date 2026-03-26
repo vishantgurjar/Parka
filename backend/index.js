@@ -6,6 +6,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Mechanic = require('./models/Mechanic');
+const Payment = require('./models/Payment');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -16,6 +19,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
     console.warn('WARNING: JWT_SECRET is not defined. Authentication will fail.');
 }
+
+// Razorpay Instance
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 // Middleware
 app.use(cors());
@@ -235,6 +244,77 @@ app.get('/api/mechanics', checkDbConnection, async (req, res) => {
     console.error(err.message);
     res.status(500).json({ message: 'Server Error fetching mechanics' });
   }
+});
+
+// --- PAYMENT ROUTES ---
+
+// @route   POST /api/payments/order
+// @desc    Create a Razorpay Order
+// @access  Public (Should be private in production)
+app.post('/api/payments/order', checkDbConnection, async (req, res) => {
+    try {
+        const { amount, mechanicId, userId } = req.body;
+
+        const options = {
+            amount: amount * 100, // amount in the smallest currency unit (paise)
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+        };
+
+        const order = await razorpay.orders.create(options);
+
+        if (!order) {
+            return res.status(500).json({ message: "Failed to create Razorpay order" });
+        }
+
+        // Save order to database
+        const payment = new Payment({
+            orderId: order.id,
+            amount: amount,
+            user: userId,
+            mechanic: mechanicId,
+            status: 'created'
+        });
+        await payment.save();
+
+        res.status(201).json(order);
+    } catch (error) {
+        console.error("Order Creation Error:", error);
+        res.status(500).json({ message: "Server error during order creation", error: error.message });
+    }
+});
+
+// @route   POST /api/payments/verify
+// @desc    Verify Razorpay Signature
+// @access  Public
+app.post('/api/payments/verify', checkDbConnection, async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSign = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(sign.toString())
+            .digest("hex");
+
+        if (razorpay_signature === expectedSign) {
+            // Update payment status in DB
+            await Payment.findOneAndUpdate(
+                { orderId: razorpay_order_id },
+                { 
+                    status: 'captured',
+                    paymentId: razorpay_payment_id,
+                    signature: razorpay_signature
+                }
+            );
+            return res.status(200).json({ message: "Payment verified successfully" });
+        } else {
+            return res.status(400).json({ message: "Invalid signature sentinel" });
+        }
+    } catch (error) {
+        console.error("Verification Error:", error);
+        res.status(500).json({ message: "Server error during verification" });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
