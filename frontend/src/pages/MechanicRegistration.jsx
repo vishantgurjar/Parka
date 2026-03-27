@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { User, Mail, MapPin, Wrench, Navigation, CheckCircle } from 'lucide-react';
+import { User, Mail, MapPin, Wrench, Navigation, CheckCircle, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import PaymentModal from '../components/PaymentModal';
 
 export default function MechanicRegistration() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -18,6 +20,8 @@ export default function MechanicRegistration() {
     experienceYears: '',
     services: []
   });
+
+  const REGISTRATION_FEE = 499;
 
   const availableServices = [
     'Engine Repair', 'Towing', 'Tire Change', 'Battery Jumpstart', 
@@ -38,16 +42,19 @@ export default function MechanicRegistration() {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleInitiateRegistration = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
     if (formData.services.length === 0) {
       setError("Please select at least one service you offer.");
-      setLoading(false);
       return;
     }
+    setError(null);
+    setShowPayment(true);
+  };
+
+  const handleFinalSubmit = async () => {
+    setLoading(true);
+    setError(null);
     
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics/register`, {
@@ -59,19 +66,21 @@ export default function MechanicRegistration() {
       const data = await res.json();
       
       if (res.ok) {
-        alert("Registration Successful! Welcome to the Parké City Mechanic Network.");
-        // Redirect to home or a mechanic dashboard if you build one later
+        alert("Registration Submitted Successfully! Your profile will be active after payment verification by our team.");
         navigate('/');
       } else {
         setError(data.message || 'Registration failed.');
+        setShowPayment(false);
       }
     } catch (err) {
       console.error('Registration error:', err);
       setError('Network error connecting to the server.');
+      setShowPayment(false);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)' }}>
@@ -93,7 +102,7 @@ export default function MechanicRegistration() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleInitiateRegistration}>
               {/* Personal & Shop Info */}
               <div style={{marginBottom: '32px'}}>
                   <h3 className="section-title">
@@ -166,11 +175,36 @@ export default function MechanicRegistration() {
               </div>
 
               <button type="submit" className="btn-gradient full-width" style={{padding: '16px', fontSize: '1.1rem', border: 'none', borderRadius: '12px', fontWeight: 'bold'}} disabled={loading}>
-                  {loading ? 'Registering...' : 'Register as Mechanic Partner'}
+                  {loading ? 'Processing...' : `Pay ₹${REGISTRATION_FEE} & Register`}
               </button>
           </form>
         </div>
       </div>
+
+      {showPayment && (
+        <PaymentModal 
+          plan={{ name: 'Mechanic Registration', amount: REGISTRATION_FEE }} 
+          onClose={() => setShowPayment(false)} 
+        />
+      )}
+      
+      {/* Overlay Step for Finalizing */}
+      {showPayment && (
+        <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 1001, width: '90%', maxWidth: '400px' }}>
+          <button 
+            onClick={handleFinalSubmit} 
+            className="btn-gradient full-width" 
+            style={{ padding: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}
+            disabled={loading}
+          >
+            {loading ? 'Submitting...' : '✅ I have Paid, Complete Registration'}
+          </button>
+          <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#fff', marginTop: '8px', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+            Registration will be pending until payment is verified.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
+

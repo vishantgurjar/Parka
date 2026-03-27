@@ -10,6 +10,8 @@ const MechanicSchema = new mongoose.Schema({
   experienceYears: { type: Number, required: true },
   services: [{ type: String }],
   isAvailable: { type: Boolean, default: true },
+  isPaid: { type: Boolean, default: false },
 }, { timestamps: true });
+
 
 module.exports = mongoose.model('Mechanic', MechanicSchema);

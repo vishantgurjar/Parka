@@ -229,7 +229,8 @@ app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
 // @access  Public
 app.get('/api/mechanics', checkDbConnection, async (req, res) => {
   try {
-    const mechanics = await Mechanic.find({ isAvailable: true }).select('-password');
+    const mechanics = await Mechanic.find({ isAvailable: true, isPaid: true }).select('-password');
+
     res.json(mechanics);
   } catch (err) {
     console.error(err.message);
