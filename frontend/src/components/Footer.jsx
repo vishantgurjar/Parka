@@ -42,10 +42,10 @@ export default function Footer() {
             </div>
             <div>
               <h4>Support</h4>
-              <a href="#">Help Center</a>
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
-              <a href="#">FAQ</a>
+              <Link to="/help-center">Help Center</Link>
+              <Link to="/privacy-policy">Privacy Policy</Link>
+              <Link to="/terms-of-service">Terms of Service</Link>
+              <Link to="/faq">FAQ</Link>
             </div>
           </div>
         </div>

@@ -8,6 +8,10 @@ import ExtendedRegistration from './pages/ExtendedRegistration';
 import LoginPage from './pages/LoginPage';
 import MechanicRegistration from './pages/MechanicRegistration';
 import MechanicList from './pages/MechanicList';
+import HelpCenter from './pages/HelpCenter';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import FAQ from './pages/FAQ';
 
 // Contexts
 export const ThemeContext = createContext();
@@ -72,6 +76,10 @@ function App() {
               <Route path="/register" element={<ExtendedRegistration />} />
               <Route path="/mechanic-register" element={<MechanicRegistration />} />
               <Route path="/mechanics" element={<MechanicList />} />
+              <Route path="/help-center" element={<HelpCenter />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/faq" element={<FAQ />} />
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
           ) : (
@@ -83,6 +91,10 @@ function App() {
                   <Route path="/register" element={<ExtendedRegistration />} />
                   <Route path="/mechanic-register" element={<MechanicRegistration />} />
                   <Route path="/mechanics" element={<MechanicList />} />
+                  <Route path="/help-center" element={<HelpCenter />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/faq" element={<FAQ />} />
                   <Route path="/login" element={<Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
