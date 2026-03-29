@@ -10,8 +10,8 @@ const CustomerCard = React.forwardRef(({ user, qrUrl }, ref) => {
         {/* Top Header */}
         <div className="card-top-header">
           <div className="brand-badge">
-            <span className="p-icon">P</span>
-            <span className="brand-name">PARKE CITY</span>
+            <img src="/logo.png" alt="Logo" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
+            <span className="brand-name">Parkéé City</span>
           </div>
           <div className="verification-badge">
             <ShieldCheck size={14} />
@@ -58,7 +58,7 @@ const CustomerCard = React.forwardRef(({ user, qrUrl }, ref) => {
         {/* Footer */}
         <div className="customer-card-footer">
           <div className="footer-glow"></div>
-          <span className="secure-text">SECURED BY PARKE CITY SMART PARKING SYSTEMS</span>
+          <span className="secure-text">SECURED BY PARKÉÉ CITY SMART PARKING SYSTEMS</span>
         </div>
       </div>
     </div>

@@ -26,7 +26,7 @@ export default function Footer() {
           <div className="footer-brand">
             <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
               <div className="logo-icon">
-                <Car size={20} />
+                <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
               </div>
               <span className="logo-text">Parkéé City</span>
             </Link>

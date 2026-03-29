@@ -10,8 +10,8 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl }, ref) => {
         {/* Header */}
         <div className="emergency-card-header">
           <div className="card-logo">
-            <span className="logo-box">P</span>
-            <span className="logo-text">PARKE CITY</span>
+            <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', borderRadius: '4px', objectFit: 'cover' }} />
+            <span className="logo-text">Parkéé City</span>
           </div>
           <p className="card-subtitle">24/7 Roadside Assistance & Emergency Repair</p>
         </div>

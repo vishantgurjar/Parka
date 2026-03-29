@@ -192,7 +192,7 @@ export default function ExtendedRegistration() {
           <div className="glass-card">
             <div className="card-header">
                 <h1 className="card-title">
-                    <Car style={{color: 'var(--primary)'}} size={32} />
+                    <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover' }} />
                     Vehicle Details
                 </h1>
                 <p className="card-description">

@@ -40,7 +40,7 @@ export default function LoginPage() {
     <div style={{ paddingTop: '100px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <div className="glass-card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem', margin: '1rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Car size={40} style={{ color: 'var(--primary)', margin: '0 auto' }} />
+          <img src="/logo.png" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', margin: '0 auto', objectFit: 'cover' }} />
           <h3 style={{ marginTop: '1rem', fontSize: '1.75rem' }}>
             {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
           </h3>
