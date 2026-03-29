@@ -15,11 +15,11 @@ export default function Home({ onOpenPayment }) {
 
   useEffect(() => {
     if (user) {
-      // Direct dial format: when scanned, it automatically opens the phone's dialer
-      const telData = `tel:${user.phone || ''}`;
+      // vCard format: when scanned, it shows contact info with name and number
+      const vcardData = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.name || ''}\nTEL:${user.phone || ''}\nEND:VCARD`;
       const base = 'https://api.qrserver.com/v1/create-qr-code/';
       // Use the teal color from the design
-      setQrUrl(`${base}?size=300x300&data=${encodeURIComponent(telData)}&color=0d9488&bgcolor=ffffff`);
+      setQrUrl(`${base}?size=300x300&data=${encodeURIComponent(vcardData)}&color=0d9488&bgcolor=ffffff`);
     } else {
       setQrUrl('');
     }
