@@ -28,7 +28,7 @@ export default function Footer() {
               <div className="logo-icon">
                 <Car size={20} />
               </div>
-              <span className="logo-text">Parké City</span>
+              <span className="logo-text">Parkéé City</span>
             </Link>
             <p>Revolutionizing urban parking with smart technology and seamless QR-based access. Emergency highway assistance available 24/7.</p>
           </div>
@@ -50,7 +50,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          © {new Date().getFullYear()} Parké City. All rights reserved. Built with ❤️ for smarter cities
+          © {new Date().getFullYear()} Parkéé City. All rights reserved. Built with ❤️ for smarter cities
         </div>
       </div>
     </footer>

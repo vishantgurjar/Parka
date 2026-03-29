@@ -34,7 +34,7 @@ export default function Header() {
           <div className="logo-icon">
              <Car size={20} />
           </div>
-          <span className="logo-text">Parké City</span>
+          <span className="logo-text">Parkéé City</span>
         </Link>
         <nav className="nav-desktop">
           <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>

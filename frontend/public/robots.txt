@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://parka-frontend.vercel.app/sitemap.xml
+Sitemap: https://parkee-city-frontend.vercel.app/sitemap.xml

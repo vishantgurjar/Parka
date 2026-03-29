@@ -10,7 +10,7 @@ export default function MechanicList() {
   useEffect(() => {
     const fetchMechanics = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/mechanics`);
         if (!res.ok) throw new Error('Failed to fetch mechanics');
         const data = await res.json();
         

@@ -7,13 +7,13 @@ export default function PaymentModal({ plan, onClose }) {
   
   const qrBaseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
   const amountStr = plan.amount.toString().replace(/,/g, '');
-  const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('Parké City')}&am=${amountStr}&cu=INR&tn=${encodeURIComponent('Parké City - ' + plan.name + ' Plan')}`;
+  const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('Parkéé City')}&am=${amountStr}&cu=INR&tn=${encodeURIComponent('Parkéé City - ' + plan.name + ' Plan')}`;
   const qrUrl = `${qrBaseUrl}?size=250x250&data=${encodeURIComponent(upiUrl)}`;
 
   const payWithApp = (scheme) => {
     const schemes = { tez: 'tez://upi/pay', phonepe: 'phonepe://pay', paytm: 'paytmmp://pay', upi: 'upi://pay' };
     const base = schemes[scheme] || 'upi://pay';
-    const url = `${base}?pa=${UPI_ID}&pn=${encodeURIComponent('Parké City')}&am=${amountStr}&cu=INR&tn=${encodeURIComponent('Parké City - ' + plan.name + ' Plan')}`;
+    const url = `${base}?pa=${UPI_ID}&pn=${encodeURIComponent('Parkéé City')}&am=${amountStr}&cu=INR&tn=${encodeURIComponent('Parkéé City - ' + plan.name + ' Plan')}`;
     window.location.href = url;
   };
 
