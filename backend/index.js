@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Mechanic = require('./models/Mechanic');
+const Complaint = require('./models/Complaint');
 const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -235,6 +236,32 @@ app.get('/api/mechanics', checkDbConnection, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: 'Server Error fetching mechanics' });
+  }
+});
+
+// @route   POST /api/contact
+// @desc    Submit a complaint or inquiry
+// @access  Public
+app.post('/api/contact', checkDbConnection, async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    const newComplaint = new Complaint({
+      name,
+      email,
+      message
+    });
+
+    await newComplaint.save();
+
+    res.status(201).json({ message: 'Complaint submitted successfully' });
+  } catch (err) {
+    console.error('Complaint submission error:', err.message);
+    res.status(500).json({ message: 'Server Error during complaint submission' });
   }
 });
 

@@ -13,6 +13,14 @@ export default function Home({ onOpenPayment }) {
   const cardRef = useRef(null);
   const customerRef = useRef(null);
 
+  // Contact Form State
+  const [contactForm, setContactForm] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (user) {
       // vCard format: when scanned, it shows contact info with name and number
@@ -41,10 +49,30 @@ export default function Home({ onOpenPayment }) {
   };
 
 
-  const handleContact = (e) => {
+  const handleContact = async (e) => {
     e.preventDefault();
-    alert('Thank you! We will get back to you soon. ✓');
-    e.target.reset();
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm)
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        alert('Thank you! Your message has been sent successfully. ✓');
+        setContactForm({ ...contactForm, message: '' });
+      } else {
+        alert(data.message || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      console.error('Contact error:', err);
+      alert('Network error. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -280,19 +308,42 @@ export default function Home({ onOpenPayment }) {
           <form className="contact-form" onSubmit={handleContact}>
             <div className="form-group">
               <label>Full Name</label>
-              <input type="text" placeholder="ABC XYZ" required />
+              <input 
+                type="text" 
+                placeholder="ABC XYZ" 
+                required 
+                value={contactForm.name}
+                onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+              />
             </div>
             <div className="form-group">
               <label>Email Address</label>
-              <input type="email" placeholder="ABC@example.com" required />
+              <input 
+                type="email" 
+                placeholder="ABC@example.com" 
+                required 
+                value={contactForm.email}
+                onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+              />
             </div>
             <div className="form-group">
               <label>Message</label>
-              <textarea rows="5" placeholder="How can we help you?" required></textarea>
+              <textarea 
+                rows="5" 
+                placeholder="How can we help you?" 
+                required
+                value={contactForm.message}
+                onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+              ></textarea>
             </div>
-            <button type="submit" className="btn-gradient full-width" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer'}}>
+            <button 
+              type="submit" 
+              className="btn-gradient full-width" 
+              disabled={isSubmitting}
+              style={{display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1}}
+            >
               <Send size={20} style={{marginRight: '8px'}} />
-              Send Message
+              {isSubmitting ? 'Sending...' : 'Send Message'}
             </button>
           </form>
         </div>
