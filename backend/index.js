@@ -192,7 +192,7 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
 // @access  Public
 app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
   try {
-    const { name, shopName, email, phone, password, highwayLocation, experienceYears, services } = req.body;
+    const { name, shopName, email, phone, password, highwayLocation, experienceYears, services, dateOfBirth, idNumber, latitude, longitude } = req.body;
 
     // Check if mechanic already exists by email
     let mechanic = await Mechanic.findOne({ email });
@@ -213,7 +213,11 @@ app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
       password: hashedPassword,
       highwayLocation,
       experienceYears,
-      services
+      services,
+      dateOfBirth,
+      idNumber,
+      latitude,
+      longitude
     });
 
     await mechanic.save();

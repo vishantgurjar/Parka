@@ -14,10 +14,19 @@ export default function MechanicList() {
         if (!res.ok) throw new Error('Failed to fetch mechanics');
         const data = await res.json();
         
-        // Add simulated distance (1.0 to 3.0 km) for exact local matching
+        // Consistent distance based on mechanic ID (1.0 to 3.0 km)
+        const getConsistentDistance = (id) => {
+          let hash = 0;
+          const strId = String(id);
+          for (let i = 0; i < strId.length; i++) {
+            hash = strId.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          return (1 + (Math.abs(hash) % 20) / 10).toFixed(1);
+        };
+
         const mechanicsWithDistance = data.map(m => ({
           ...m,
-          distance: (Math.random() * 2 + 1).toFixed(1)
+          distance: getConsistentDistance(m._id)
         })).sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
         
         setMechanics(mechanicsWithDistance);
