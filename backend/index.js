@@ -200,6 +200,15 @@ app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
       return res.status(400).json({ message: 'Mechanic with this email already exists' });
     }
 
+    // Strict ID Validation (Aadhar or PAN)
+    const aadharRegex = /^[2-9]{1}[0-9]{11}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const cleanId = idNumber ? idNumber.replace(/[-\s]/g, '').toUpperCase() : '';
+
+    if (!(aadharRegex.test(cleanId) || panRegex.test(cleanId))) {
+      return res.status(400).json({ message: 'Invalid ID Proof. Aadhar (12 digits) or PAN (10 characters) required.' });
+    }
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

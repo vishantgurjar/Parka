@@ -33,7 +33,12 @@ export default function MechanicRegistration() {
   ];
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === 'idNumber') {
+      setFormData(prev => ({ ...prev, [name]: value.toUpperCase() }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const detectLocation = () => {
@@ -98,6 +103,16 @@ export default function MechanicRegistration() {
     }
     if (age < 18) {
       setError("You must be at least 18 years old to register as a partner.");
+      return;
+    }
+
+    // Strict ID Validation (Aadhar or PAN)
+    const aadharRegex = /^[2-9]{1}[0-9]{11}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const cleanId = formData.idNumber.replace(/[-\s]/g, ''); // Allow dashes or spaces in input
+
+    if (!(aadharRegex.test(cleanId) || panRegex.test(cleanId))) {
+      setError("Invalid ID Proof. Please enter a valid 12-digit Aadhar number or a 10-character PAN card number (e.g., ABCDE1234F).");
       return;
     }
 
