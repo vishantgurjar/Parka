@@ -5,6 +5,7 @@ import EmergencyCard from '../components/EmergencyCard';
 import CustomerCard from '../components/CustomerCard';
 import { Link } from 'react-router-dom';
 import { toPng } from 'html-to-image';
+import SEO from '../components/SEO';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
@@ -77,6 +78,10 @@ export default function Home({ onOpenPayment }) {
 
   return (
     <>
+      <SEO 
+        title="Parkéé City - Smart Vehicle Protection & Emergency Services"
+        description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
+      />
       {/* ========== HERO ========== */}
       <section id="home" className="hero">
         <div className="hero-bg"></div>

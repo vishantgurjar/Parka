@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Mail, MapPin, Wrench, Navigation, CheckCircle, CreditCard, Calendar, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 import PaymentModal from '../components/PaymentModal';
 
 export default function MechanicRegistration() {
@@ -156,6 +157,10 @@ export default function MechanicRegistration() {
 
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)' }}>
+      <SEO 
+        title="Become a Partner Mechanic - Parkéé City"
+        description="Join Parkéé City's partner network as a professional mechanic. Provide emergency assistance and grow your business with our smart platform."
+      />
       <div className="container" style={{ maxWidth: '800px' }}>
         <div className="glass-card">
           <div className="card-header">

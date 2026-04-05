@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { Car } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate, Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
@@ -38,6 +39,10 @@ export default function LoginPage() {
 
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <SEO 
+        title="Login - Parkéé City"
+        description="Log in to your Parkéé City account to manage your vehicle protection, subscriptions, and emergency cards."
+      />
       <div className="glass-card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem', margin: '1rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <img src="/logo.png" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', margin: '0 auto', objectFit: 'cover' }} />

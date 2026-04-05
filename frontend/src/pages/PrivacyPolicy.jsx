@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import SEO from '../components/SEO';
 
 export default function PrivacyPolicy() {
   useEffect(() => {
@@ -7,6 +8,10 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="container" style={{ paddingTop: '100px', paddingBottom: '60px', minHeight: '80vh' }}>
+      <SEO 
+        title="Privacy Policy - Parkéé City"
+        description="Learn how Parkéé City protects your personal data and vehicle information. Our commitment to your privacy."
+      />
       <h1 className="section-title" style={{ textAlign: 'left', marginBottom: '1rem' }}>Privacy Policy</h1>
       <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)',boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <p style={{ marginBottom: '1rem' }}>Last updated: {new Date().toLocaleDateString()}</p>

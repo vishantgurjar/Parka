@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import SEO from '../components/SEO';
 
 export default function TermsOfService() {
   useEffect(() => {
@@ -7,6 +8,10 @@ export default function TermsOfService() {
 
   return (
     <div className="container" style={{ paddingTop: '100px', paddingBottom: '60px', minHeight: '80vh' }}>
+      <SEO 
+        title="Terms of Service - Parkéé City"
+        description="Read the terms and conditions for using Parkéé City's smart vehicle protection and emergency services."
+      />
       <h1 className="section-title" style={{ textAlign: 'left', marginBottom: '1rem' }}>Terms of Service</h1>
       <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)',boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <p style={{ marginBottom: '1rem' }}>Last updated: {new Date().toLocaleDateString()}</p>

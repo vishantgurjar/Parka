@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import SEO from '../components/SEO';
 
 export default function FAQ() {
   useEffect(() => {
@@ -7,6 +8,10 @@ export default function FAQ() {
 
   return (
     <div className="container" style={{ paddingTop: '100px', paddingBottom: '60px', minHeight: '80vh' }}>
+      <SEO 
+        title="FAQ - Parkéé City"
+        description="Frequently asked questions about Parkéé City's smart parking solutions, emergency cards, and highway assistance services."
+      />
       <h1 className="section-title" style={{ textAlign: 'left', marginBottom: '1rem' }}>Frequently Asked Questions</h1>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)',boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>

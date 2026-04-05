@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import SEO from '../components/SEO';
 
 export default function HelpCenter() {
   useEffect(() => {
@@ -7,6 +8,10 @@ export default function HelpCenter() {
 
   return (
     <div className="container" style={{ paddingTop: '100px', paddingBottom: '60px', minHeight: '80vh' }}>
+      <SEO 
+        title="Help Center - Parkéé City"
+        description="Get help with your Parkéé City account, subscriptions, and emergency services. Find contact information and support resources."
+      />
       <h1 className="section-title" style={{ textAlign: 'left', marginBottom: '1rem' }}>Help Center</h1>
       <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h3>How can we help you today?</h3>

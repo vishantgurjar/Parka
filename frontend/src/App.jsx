@@ -13,6 +13,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import FAQ from './pages/FAQ';
 
+import { HelmetProvider } from 'react-helmet-async';
+
 // Contexts
 export const ThemeContext = createContext();
 export const AuthContext = createContext();
@@ -67,47 +69,36 @@ function App() {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <AuthContext.Provider value={{ user, login, logout }}>
-        <Router>
-          {!user ? (
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<ExtendedRegistration />} />
-              <Route path="/mechanic-register" element={<MechanicRegistration />} />
-              <Route path="/mechanics" element={<MechanicList />} />
-              <Route path="/help-center" element={<HelpCenter />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="*" element={<Navigate to="/login" />} />
-            </Routes>
-          ) : (
-            <>
-              <Header />
-              <main>
-                <Routes>
-                  <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
-                  <Route path="/register" element={<ExtendedRegistration />} />
-                  <Route path="/mechanic-register" element={<MechanicRegistration />} />
-                  <Route path="/mechanics" element={<MechanicList />} />
-                  <Route path="/help-center" element={<HelpCenter />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/login" element={<Navigate to="/" />} />
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-              </main>
-              <Footer />
-            </>
-          )}
+    <HelmetProvider>
+      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <AuthContext.Provider value={{ user, login, logout }}>
+          <Router>
+            <Header />
+            <main>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
+                <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
+                <Route path="/register" element={<ExtendedRegistration />} />
+                <Route path="/mechanic-register" element={<MechanicRegistration />} />
+                <Route path="/mechanics" element={<MechanicList />} />
+                <Route path="/help-center" element={<HelpCenter />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/faq" element={<FAQ />} />
+                
+                {/* Guest-only routes are handled by redirection logic in components or above */}
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </main>
+            <Footer />
 
-          {/* Modals */}
-          {paymentPlan && <PaymentModal plan={paymentPlan} onClose={() => setPaymentPlan(null)} />}
-        </Router>
-      </AuthContext.Provider>
-    </ThemeContext.Provider>
+            {/* Modals */}
+            {paymentPlan && <PaymentModal plan={paymentPlan} onClose={() => setPaymentPlan(null)} />}
+          </Router>
+        </AuthContext.Provider>
+      </ThemeContext.Provider>
+    </HelmetProvider>
   );
 }
 

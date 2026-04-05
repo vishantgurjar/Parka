@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Wrench, MapPin, PhoneCall, Star, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 export default function MechanicList() {
   const [mechanics, setMechanics] = useState([]);
@@ -43,6 +44,11 @@ export default function MechanicList() {
 
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '4rem' }}>
+      <SEO 
+        title="Find Nearby Mechanics - Parkéé City"
+        description="Find and contact professional mechanics near you for emergency vehicle repair and roadside assistance. 24/7 service available on major highways."
+        keywords="find mechanic, emergency repair, roadside assistance, highway mechanic, Parkéé City"
+      />
       <div className="container" style={{ maxWidth: '1000px' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>

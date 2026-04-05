@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { User, Mail, Calendar, MapPin, Car, FileText, Bookmark, CreditCard } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 export default function ExtendedRegistration() {
   const [step, setStep] = useState(1);
@@ -102,6 +103,10 @@ export default function ExtendedRegistration() {
 
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)' }}>
+      <SEO 
+        title="Register Vehicle - Parkéé City"
+        description="Register your vehicle with Parkéé City to get your smart QR-based Emergency Card and access premium protection services."
+      />
       <div className="container">
         
         {step === 1 ? (
