@@ -310,13 +310,10 @@ app.post('/api/payment/create-order', checkDbConnection, async (req, res) => {
     const order = await rzp.orders.create(options);
     res.json(order);
   } catch (error) {
-    console.error('Full Razorpay Error:', error);
+    console.error('Razorpay Order Error:', error);
     res.status(500).json({ 
       message: 'Error creating Razorpay order', 
-      error: error.message || String(error),
-      error_object: error, // This might show more in some environments
-      description: error.description || 'No description',
-      code: error.code || 'NO_CODE'
+      error: error.message || 'Check Razorpay Dashboard'
     });
   }
 });
