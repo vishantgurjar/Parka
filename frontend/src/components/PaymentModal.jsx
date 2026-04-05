@@ -62,8 +62,6 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             setError("Payment verification failed. Please contact support with Payment ID: " + response.razorpay_payment_id);
           }
         },
-        prefill: {
-          name: "",
           email: "",
           contact: ""
         },
