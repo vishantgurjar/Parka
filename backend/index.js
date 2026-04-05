@@ -304,7 +304,12 @@ app.post('/api/payment/create-order', checkDbConnection, async (req, res) => {
     res.json(order);
   } catch (error) {
     console.error('Razorpay Create Order Error:', error);
-    res.status(500).json({ message: 'Error creating Razorpay order' });
+    // Return detailed error for debugging
+    res.status(500).json({ 
+      message: 'Error creating Razorpay order', 
+      error: error.message,
+      details: error.description || 'Check Razorpay Dashboard for more details'
+    });
   }
 });
 
