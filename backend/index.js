@@ -303,12 +303,14 @@ app.post('/api/payment/create-order', checkDbConnection, async (req, res) => {
     const order = await razorpay.orders.create(options);
     res.json(order);
   } catch (error) {
-    console.error('Razorpay Create Order Error:', error);
-    // Return detailed error for debugging
+    console.error('Full Razorpay Error:', error);
+    // Explicitly return all common Razorpay error fields
     res.status(500).json({ 
       message: 'Error creating Razorpay order', 
-      error: error.message,
-      details: error.description || 'Check Razorpay Dashboard for more details'
+      error: error.message || 'Unknown error',
+      description: error.description || 'No description provided',
+      code: error.code || 'NO_ERROR_CODE',
+      statusCode: error.statusCode || 500
     });
   }
 });
