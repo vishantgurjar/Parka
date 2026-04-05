@@ -293,24 +293,30 @@ app.post('/api/payment/create-order', checkDbConnection, async (req, res) => {
   try {
     const { amount, currency = 'INR', receipt } = req.body;
     
-    // Amount is in Paise
+    console.log('Creating Razorpay order for amount:', amount);
+
+    // Using hardcoded keys directly for debugging to ensure environment variables aren't the issue
+    const rzp = new Razorpay({
+      key_id: 'rzp_test_SZhRunfEKtZwk4',
+      key_secret: 'ufIzR7tT6utmXs43ZWkuUE8E'
+    });
+
     const options = {
-      amount: amount * 100, 
+      amount: Number(amount) * 100, 
       currency,
       receipt: receipt || `receipt_${Date.now()}`
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await rzp.orders.create(options);
     res.json(order);
   } catch (error) {
     console.error('Full Razorpay Error:', error);
-    // Explicitly return all common Razorpay error fields
     res.status(500).json({ 
       message: 'Error creating Razorpay order', 
-      error: error.message || 'Unknown error',
-      description: error.description || 'No description provided',
-      code: error.code || 'NO_ERROR_CODE',
-      statusCode: error.statusCode || 500
+      error: error.message || String(error),
+      error_object: error, // This might show more in some environments
+      description: error.description || 'No description',
+      code: error.code || 'NO_CODE'
     });
   }
 });
