@@ -16,7 +16,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: plan.amount,
-          receipt: `receipt_${entityId}_${Date.now()}`
+          receipt: `${entityId}_${Date.now()}`
         })
       });
 
