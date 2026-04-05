@@ -15,7 +15,6 @@ import FAQ from './pages/FAQ';
 import VehicleLandingPage from './pages/VehicleLandingPage';
 
 import { HelmetProvider } from 'react-helmet-async';
-import { HelmetProvider } from 'react-helmet-async';
 
 // Contexts
 export const ThemeContext = createContext();
