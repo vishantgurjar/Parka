@@ -62,6 +62,28 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             setError("Payment verification failed. Please contact support with Payment ID: " + response.razorpay_payment_id);
           }
         },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'Pay via UPI',
+                instruments: [{ method: 'upi' }]
+              },
+              cards: {
+                name: 'Cards',
+                instruments: [{ method: 'card' }]
+              },
+              netbanking: {
+                name: 'Netbanking',
+                instruments: [{ method: 'netbanking' }]
+              }
+            },
+            sequence: ['block.upi', 'block.cards', 'block.netbanking'],
+            preferences: { show_default_blocks: true }
+          }
+        },
+        prefill: {
+          name: "",
           email: "",
           contact: ""
         },
