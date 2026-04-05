@@ -64,11 +64,11 @@ export default function LoginPage() {
              <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '1rem', color: 'var(--muted)' }}>
                Don't have an account? <button type="button" onClick={() => setMode('register')} style={{ color: 'var(--primary)', background:'none', border:'none', fontWeight: 'bold', cursor: 'pointer' }}>Register here</button>
              </p>
-             <div className="divider" style={{ margin: '1.5rem 0' }}><span>or</span></div>
-             <p style={{ textAlign: 'center', fontSize: '1rem', color: 'var(--muted)' }}>
-               <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Go to Extended Registration Portal</Link>
-             </p>
-           </form>
+              <div className="divider" style={{ margin: '1.5rem 0' }}><span>or</span></div>
+              <p style={{ textAlign: 'center', fontSize: '1rem', color: 'var(--muted)', marginBottom: '1.5rem' }}>
+                <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Go to Extended Registration Portal</Link>
+              </p>
+            </form>
         ) : (
           <div>
             <p style={{textAlign: "center", marginBottom: "1.5rem", fontSize: '1.1rem', lineHeight: '1.5'}}>

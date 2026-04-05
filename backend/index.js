@@ -193,6 +193,23 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
     }
 });
 
+// @route   GET /api/auth/vehicle/:id
+// @desc    Get public vehicle info for QR scan landing page
+// @access  Public
+app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('name phone make model plateNumber color year');
+        if (!user) {
+            return res.status(404).json({ message: 'Vehicle/User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Fetch Vehicle Error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 // --- NEW MECHANIC ROUTES ---
 
 // @route   POST /api/mechanics/register

@@ -24,11 +24,11 @@ export default function Home({ onOpenPayment }) {
 
   useEffect(() => {
     if (user) {
-      // vCard format: when scanned, it shows contact info with name and number
-      const vcardData = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.name || ''}\nTEL:${user.phone || ''}\nEND:VCARD`;
+      // Smart QR: scan leads to fixed vehicle landing page
+      const scanUrl = `${window.location.origin}/v/${user._id}`;
       const base = 'https://api.qrserver.com/v1/create-qr-code/';
       // Use the teal color from the design
-      setQrUrl(`${base}?size=300x300&data=${encodeURIComponent(vcardData)}&color=0d9488&bgcolor=ffffff`);
+      setQrUrl(`${base}?size=300x300&data=${encodeURIComponent(scanUrl)}&color=0d9488&bgcolor=ffffff`);
     } else {
       setQrUrl('');
     }
