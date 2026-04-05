@@ -26,7 +26,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
 
       // 2. Options for Razorpay Checkout
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Parkéé City",

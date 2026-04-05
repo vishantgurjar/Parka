@@ -15,8 +15,8 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Razorpay Instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret'
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E'
 });
 
 const app = express();
@@ -321,7 +321,7 @@ app.post('/api/payment/verify-signature', checkDbConnection, async (req, res) =>
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret')
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E')
       .update(body.toString())
       .digest('hex');
 
