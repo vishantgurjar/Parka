@@ -9,6 +9,7 @@ export default function MechanicRegistration() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [registeredMechanicId, setRegisteredMechanicId] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -80,7 +81,7 @@ export default function MechanicRegistration() {
     });
   };
 
-  const handleInitiateRegistration = (e) => {
+  const handleInitiateRegistration = async (e) => {
     e.preventDefault();
     
     // Validation
@@ -122,14 +123,10 @@ export default function MechanicRegistration() {
       return;
     }
     setError(null);
-    setShowPayment(true);
-  };
-
-  const handleFinalSubmit = async () => {
     setLoading(true);
-    setError(null);
-    
+
     try {
+      // 1. Register the mechanic first (unpaid state)
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/mechanics/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,19 +136,22 @@ export default function MechanicRegistration() {
       const data = await res.json();
       
       if (res.ok) {
-        alert("Registration Submitted Successfully! Your profile will be active after payment verification by our team.");
-        navigate('/');
+        setRegisteredMechanicId(data.mechanic.id);
+        setShowPayment(true);
       } else {
         setError(data.message || 'Registration failed.');
-        setShowPayment(false);
       }
     } catch (err) {
       console.error('Registration error:', err);
       setError('Network error connecting to the server.');
-      setShowPayment(false);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    alert("Registration & Payment Successful! Your profile is now active on the network.");
+    navigate('/');
   };
 
 
@@ -279,25 +279,11 @@ export default function MechanicRegistration() {
       {showPayment && (
         <PaymentModal 
           plan={{ name: 'Mechanic Registration', amount: REGISTRATION_FEE }} 
+          entityId={registeredMechanicId}
+          entityType="mechanic"
           onClose={() => setShowPayment(false)} 
+          onSuccess={handlePaymentSuccess}
         />
-      )}
-      
-      {/* Overlay Step for Finalizing */}
-      {showPayment && (
-        <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 1001, width: '90%', maxWidth: '400px' }}>
-          <button 
-            onClick={handleFinalSubmit} 
-            className="btn-gradient full-width" 
-            style={{ padding: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}
-            disabled={loading}
-          >
-            {loading ? 'Submitting...' : '✅ I have Paid, Complete Registration'}
-          </button>
-          <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#fff', marginTop: '8px', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-            Registration will be pending until payment is verified.
-          </p>
-        </div>
       )}
     </div>
   );

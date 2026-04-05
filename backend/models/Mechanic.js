@@ -15,6 +15,10 @@ const MechanicSchema = new mongoose.Schema({
   longitude: { type: Number },
   isAvailable: { type: Boolean, default: true },
   isPaid: { type: Boolean, default: false },
+  // Razorpay payment tracking
+  razorpayOrderId: { type: String },
+  razorpayPaymentId: { type: String },
+  razorpaySignature: { type: String },
 }, { timestamps: true });
 
 

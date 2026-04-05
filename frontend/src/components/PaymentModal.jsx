@@ -1,79 +1,127 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, ShieldCheck, CreditCard } from 'lucide-react';
 
-export default function PaymentModal({ plan, onClose }) {
-  const [view, setView] = useState('app'); // 'app' or 'qr'
-  const UPI_ID = '7895039922@ybl';
-  
-  const qrBaseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
-  const amountStr = plan.amount.toString().replace(/,/g, '');
-  const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('Parkéé City')}&am=${amountStr}&cu=INR&tn=${encodeURIComponent('Parkéé City - ' + plan.name + ' Plan')}`;
-  const qrUrl = `${qrBaseUrl}?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+export default function PaymentModal({ plan, onClose, entityId, entityType = 'user', onSuccess }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const payWithApp = (scheme) => {
-    const schemes = { tez: 'tez://upi/pay', phonepe: 'phonepe://pay', paytm: 'paytmmp://pay', upi: 'upi://pay' };
-    const base = schemes[scheme] || 'upi://pay';
-    const url = `${base}?pa=${UPI_ID}&pn=${encodeURIComponent('Parkéé City')}&am=${amountStr}&cu=INR&tn=${encodeURIComponent('Parkéé City - ' + plan.name + ' Plan')}`;
-    window.location.href = url;
-  };
+  const handleRazorpayPayment = async () => {
+    setLoading(true);
+    setError(null);
 
-  const copyUPI = () => {
-    navigator.clipboard.writeText(UPI_ID).then(() => alert('UPI ID copied: ' + UPI_ID));
+    try {
+      // 1. Create Order on Backend
+      const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/payment/create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: plan.amount,
+          receipt: `receipt_${entityId}_${Date.now()}`
+        })
+      });
+
+      const orderData = await orderRes.json();
+
+      if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
+
+      // 2. Options for Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Parkéé City",
+        description: `Payment for ${plan.name}`,
+        image: "/logo.png",
+        order_id: orderData.id,
+        handler: async function (response) {
+          // 3. Verify Signature on Backend
+          try {
+            const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/payment/verify-signature`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                entityType,
+                entityId
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok) {
+              alert("Payment Successful! ✓");
+              if (onSuccess) onSuccess(verifyData);
+              onClose();
+            } else {
+              throw new Error(verifyData.message || 'Signature verification failed');
+            }
+          } catch (err) {
+            console.error("Verification Error:", err);
+            setError("Payment verification failed. Please contact support with Payment ID: " + response.razorpay_payment_id);
+          }
+        },
+        prefill: {
+          name: "",
+          email: "",
+          contact: ""
+        },
+        theme: {
+          color: "#0d9488"
+        }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.on('payment.failed', function (response) {
+        setError(response.error.description);
+      });
+      rzp1.open();
+
+    } catch (err) {
+      console.error("Payment Error:", err);
+      setError(err.message || 'Could not initiate payment');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="modal-overlay show" id="paymentModal" onClick={(e) => {
       if(e.target.id === 'paymentModal') onClose();
     }}>
-      <div className="modal-content">
+      <div className="modal-content" style={{ maxWidth: '400px' }}>
         <button className="modal-close" onClick={onClose}><X size={20} /></button>
-        <h3 id="modalTitle">Pay ₹{plan.amount} — {plan.name}</h3>
-        <p className="modal-desc">Choose a UPI app or scan QR code to pay securely</p>
         
-        {view === 'app' ? (
-          <div id="modalAppView">
-            <div className="upi-grid">
-              <button className="upi-app-btn" onClick={() => payWithApp('tez')}>
-                  <div className="upi-icon">G</div>
-                  <div><strong>Google Pay</strong><br/><small>Pay ₹{plan.amount}</small></div>
-              </button>
-              <button className="upi-app-btn" onClick={() => payWithApp('phonepe')}>
-                  <div className="upi-icon" style={{background:'#5f259f', color:'#fff'}}>P</div>
-                  <div><strong>PhonePe</strong><br/><small>Pay ₹{plan.amount}</small></div>
-              </button>
-              <button className="upi-app-btn" onClick={() => payWithApp('paytm')}>
-                  <div className="upi-icon" style={{background:'#00b9f5', color:'#fff'}}>₹</div>
-                  <div><strong>Paytm</strong><br/><small>Pay ₹{plan.amount}</small></div>
-              </button>
-              <button className="upi-app-btn" onClick={() => payWithApp('upi')}>
-                  <div className="upi-icon" style={{background:'#4caf50', color:'#fff'}}>U</div>
-                  <div><strong>BHIM UPI</strong><br/><small>Pay ₹{plan.amount}</small></div>
-              </button>
-            </div>
-            <a href={upiUrl} className="btn-gradient full-width" style={{marginTop:'12px', display:'block', textAlign:'center', padding: '12px'}}>🔗 Open Any UPI App</a>
-            <div className="divider"><span>or</span></div>
-            <div className="modal-actions">
-                <button className="btn-secondary" onClick={() => setView('qr')}>📱 Show QR Code</button>
-                <button className="btn-secondary" onClick={copyUPI}>📋 Copy UPI ID</button>
-            </div>
-            <p className="modal-trust">🔒 Secured by UPI · No data stored</p>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+            <CreditCard size={32} />
           </div>
-        ) : (
-          <div id="modalQRView" className="modal-qr-view">
-            <div className="modal-qr-wrap">
-                <img src={qrUrl} width="200" height="200" alt="UPI QR" />
-            </div>
-            <p>Scan with any UPI app to pay <strong>₹{plan.amount}</strong></p>
-            <div className="upi-id-display">
-                <span>UPI ID:</span>
-                <code>{UPI_ID}</code>
-                <button onClick={copyUPI}>📋</button>
-            </div>
-            <div>
-              <button className="link-btn" onClick={() => setView('app')}>← Back to app selection</button>
-            </div>
+          <h3 id="modalTitle">Pay ₹{plan.amount}</h3>
+          <p className="modal-desc" style={{ fontSize: '0.95rem' }}>Complete payment for <strong>{plan.name}</strong> securely via Razorpay.</p>
+        </div>
+        
+        {error && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            {error}
           </div>
         )}
+
+        <button 
+          className="btn-gradient full-width" 
+          onClick={handleRazorpayPayment} 
+          disabled={loading}
+          style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer' }}
+        >
+          {loading ? 'Processing...' : `Pay Now`}
+        </button>
+
+        <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
+          <p className="modal-trust" style={{ color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+            <ShieldCheck size={14} />
+            Secured by Razorpay · 128-bit Encryption
+          </p>
+        </div>
       </div>
     </div>
   );

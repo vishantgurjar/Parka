@@ -94,7 +94,14 @@ function App() {
             <Footer />
 
             {/* Modals */}
-            {paymentPlan && <PaymentModal plan={paymentPlan} onClose={() => setPaymentPlan(null)} />}
+            {paymentPlan && (
+              <PaymentModal 
+                plan={paymentPlan} 
+                entityId={user?._id} 
+                entityType="user" 
+                onClose={() => setPaymentPlan(null)} 
+              />
+            )}
           </Router>
         </AuthContext.Provider>
       </ThemeContext.Provider>
