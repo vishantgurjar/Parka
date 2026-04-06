@@ -44,7 +44,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 entityType,
-                entityId
+                entityId,
+                amount: plan.amount
               })
             });
 

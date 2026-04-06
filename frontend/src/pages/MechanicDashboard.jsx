@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Power, MapPin, Wrench, PhoneCall, CheckCircle, Radio, Navigation } from 'lucide-react';
+import { Power, MapPin, Wrench, PhoneCall, CheckCircle, Radio, Navigation, Wallet } from 'lucide-react';
 import SEO from '../components/SEO';
 import { io } from 'socket.io-client';
+import PaymentModal from '../components/PaymentModal';
 
 export default function MechanicDashboard() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function MechanicDashboard() {
   const [activeSosRequests, setActiveSosRequests] = useState([]);
   const [socket, setSocket] = useState(null);
   const [bidAmounts, setBidAmounts] = useState({});
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('parkeActiveMechanic');
@@ -47,6 +49,10 @@ export default function MechanicDashboard() {
     newSocket.on('sos-resolved', (sosId) => {
         // Remove resolved SOS from list
         setActiveSosRequests(prev => prev.filter(req => req._id !== sosId));
+    });
+
+    newSocket.on('bid-error', (errMessage) => {
+        alert(errMessage);
     });
 
     return () => {
@@ -139,6 +145,28 @@ export default function MechanicDashboard() {
           </button>
         </div>
 
+        {/* --- MECHANIC WALLET --- */}
+        <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderLeft: '4px solid #10b981' }}>
+            <div>
+                <h3 style={{ margin: '0 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Wallet size={20} style={{ color: '#10b981' }} /> Parkéé Leads Wallet
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--muted)' }}>Balance required to accept SOS Leads (Cost: ₹89 per accepted lead)</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: mechanic.walletBalance < 89 ? '#ef4444' : '#10b981' }}>
+                    ₹{mechanic.walletBalance || 0}
+                </div>
+                <button 
+                    onClick={() => setShowWalletModal(true)} 
+                    className="btn-gradient" 
+                    style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                    Top Up Wallet
+                </button>
+            </div>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -214,6 +242,21 @@ export default function MechanicDashboard() {
         )}
 
       </div>
+
+      {showWalletModal && (
+        <PaymentModal 
+          plan={{ name: 'Wallet Recharge (₹500)', amount: 500 }}
+          entityId={mechanic._id}
+          entityType="wallet"
+          onClose={() => setShowWalletModal(false)}
+          onSuccess={(data) => {
+              const updated = data.mechanic;
+              setMechanic(updated);
+              localStorage.setItem('parkeActiveMechanic', JSON.stringify(updated));
+              alert("Wallet Recharge Successful! Your new balance is ₹" + updated.walletBalance);
+          }}
+        />
+      )}
     </div>
   );
 }

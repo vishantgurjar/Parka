@@ -4,6 +4,7 @@ import { AuthContext } from '../App';
 import { io } from 'socket.io-client';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import PaymentModal from '../components/PaymentModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -60,6 +61,8 @@ export default function MechanicList() {
   const [bids, setBids] = useState([]);
   const [activeSosId, setActiveSosId] = useState(null);
   const [assignedMechanic, setAssignedMechanic] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedBid, setSelectedBid] = useState(null);
 
   useEffect(() => {
     // Attempt to get user location
@@ -170,11 +173,36 @@ export default function MechanicList() {
 
   const handleAcceptBid = (bid) => {
       if (!socket || !activeSosId) return;
-      socket.emit('accept-bid', { sosId: activeSosId, bid });
-      setSosStatus('accepted');
-      setAssignedMechanic(bid);
-      socket.disconnect();
-      setSocket(null);
+
+      if (user?.subscriptionTier === 'diamond') {
+          // Zero Convenience Fee
+          finalizeSOS(bid);
+      } else {
+          // Open Razorpay Payment for Platform Fee
+          setSelectedBid(bid);
+          setShowPaymentModal(true);
+      }
+  };
+
+  const finalizeSOS = async (bidToAccept = selectedBid) => {
+      try {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/sos/finalize`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sosId: activeSosId, bid: bidToAccept })
+          });
+          const data = await res.json();
+          if (res.ok) {
+              setSosStatus('accepted');
+              setAssignedMechanic(bidToAccept);
+              if(socket) socket.disconnect();
+              setSocket(null);
+          } else {
+              alert(data.message || "Failed to finalize SOS booking.");
+          }
+      } catch (err) {
+          alert("Network error finalizing SOS.");
+      }
   };
   // --------------------------------
 

@@ -62,6 +62,12 @@ io.on("connection", (socket) => {
   socket.on("submit-bid", async (data) => {
     // data: { sosId, userId, mechanicId, mechanicName, price, distance, phone }
     try {
+      const mechanic = await Mechanic.findById(data.mechanicId);
+      if (!mechanic || mechanic.walletBalance < 89) {
+          socket.emit("bid-error", "Insufficient Parkéé Leads Wallet Balance. Minimum ₹89 required. Top up to continue.");
+          return;
+      }
+
       const sos = await SOSRequest.findById(data.sosId);
       if (sos && sos.status === 'pending') {
         const bid = {
@@ -514,6 +520,40 @@ app.get('/api/sos/active', checkDbConnection, async (req, res) => {
   }
 });
 
+// @route   POST /api/sos/finalize
+// @desc    User paid the success fee. Deduct mechanic wallet, finalize match.
+// @access  Public
+app.post('/api/sos/finalize', checkDbConnection, async (req, res) => {
+    try {
+        const { sosId, bid } = req.body;
+        const sos = await SOSRequest.findById(sosId);
+        
+        if (!sos) return res.status(404).json({ message: "SOS not found" });
+
+        const mechanic = await Mechanic.findById(bid.mechanicId);
+        if (!mechanic || mechanic.walletBalance < 89) {
+            return res.status(400).json({ message: "Mechanic has insufficient balance. Booking failed." });
+        }
+
+        // Deduct from mechanic wallet
+        mechanic.walletBalance -= 89;
+        await mechanic.save();
+
+        // Finalize SOS
+        sos.status = 'accepted';
+        sos.assignedBid = bid;
+        await sos.save();
+
+        // Notify mechanics
+        io.to('mechanic_sos').emit("sos-resolved", sosId);
+
+        res.json({ message: "SOS Match Finalized Successfully", sos });
+    } catch (err) {
+        console.error("SOS Finalize Error:", err);
+        res.status(500).json({ message: 'Server error finalizing SOS' });
+    }
+});
+
 // --- NEW INCIDENT / ROAD-WATCH ROUTES ---
 
 // @route   POST /api/incidents
@@ -591,39 +631,58 @@ app.post('/api/payment/verify-signature', checkDbConnection, async (req, res) =>
       razorpay_order_id, 
       razorpay_payment_id, 
       razorpay_signature,
-      entityType, // 'mechanic' or 'user'
-      entityId    // The ID of the mechanic/user to update
+      entityType, // 'mechanic', 'user', or 'wallet'
+      entityId,
+      amount
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
+    
+    // Using hardcoded secret for debugging
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E')
+      .createHmac("sha256", 'ufIzR7tT6utmXs43ZWkuUE8E')
       .update(body.toString())
-      .digest('hex');
+      .digest("hex");
 
-    if (expectedSignature === razorpay_signature) {
-      // Payment Verified!
-      if (entityType === 'mechanic') {
-        await Mechanic.findByIdAndUpdate(entityId, {
-          isPaid: true,
-          razorpayOrderId: razorpay_order_id,
-          razorpayPaymentId: razorpay_payment_id,
-          razorpaySignature: razorpay_signature
-        });
-      } else {
-        // Handle User subscription logic if needed
-        await User.findByIdAndUpdate(entityId, {
-          // Add subscription details if model is updated
-        });
-      }
+    const isAuthentic = expectedSignature === razorpay_signature;
 
-      res.json({ success: true, message: 'Payment verified successfully' });
-    } else {
-      res.status(400).json({ success: false, message: 'Invalid signature' });
+    if (!isAuthentic) {
+      return res.status(400).json({ message: 'Invalid payment signature' });
     }
+
+    if (entityType === 'wallet') {
+      const mechanic = await Mechanic.findById(entityId);
+      if (mechanic) {
+        // Add funds to wallet. amount is in params. (eg. if amount was 500)
+        // Ensure amount is passed properly from frontend. Usually Razorpay returns raw success. We use frontend amount for now.
+        mechanic.walletBalance += (amount || 0);
+        await mechanic.save();
+        return res.json({ success: true, message: 'Wallet Recharge Successful', mechanic });
+      }
+    } else if (entityType === 'mechanic') {
+      const mechanic = await Mechanic.findById(entityId);
+      if (mechanic) {
+        mechanic.isPaid = true;
+        mechanic.razorpayOrderId = razorpay_order_id;
+        mechanic.razorpayPaymentId = razorpay_payment_id;
+        mechanic.razorpaySignature = razorpay_signature;
+        await mechanic.save();
+      }
+    } else if (entityType === 'user') {
+      const user = await User.findById(entityId);
+      if (user) {
+        user.isPremium = true;
+        user.razorpayOrderId = razorpay_order_id;
+        user.razorpayPaymentId = razorpay_payment_id;
+        user.razorpaySignature = razorpay_signature;
+        await user.save();
+      }
+    }
+
+    res.json({ success: true, message: 'Payment verified successfully' });
   } catch (error) {
-    console.error('Signature Verification Error:', error);
-    res.status(500).json({ message: 'Error verifying payment' });
+    console.error('Payment Verification Error:', error);
+    res.status(500).json({ message: 'Error verifying payment', error: error.message });
   }
 });
 
