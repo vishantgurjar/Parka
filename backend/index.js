@@ -621,8 +621,8 @@ app.post('/api/payment/create-order', checkDbConnection, async (req, res) => {
 
     // Using hardcoded keys directly for debugging to ensure environment variables aren't the issue
     const rzp = new Razorpay({
-      key_id: 'rzp_test_SZhRunfEKtZwk4',
-      key_secret: 'ufIzR7tT6utmXs43ZWkuUE8E'
+      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E'
     });
 
     const options = {
@@ -658,7 +658,7 @@ app.post('/api/payment/verify-signature', checkDbConnection, async (req, res) =>
     
     // Using hardcoded secret for debugging
     const expectedSignature = crypto
-      .createHmac("sha256", 'ufIzR7tT6utmXs43ZWkuUE8E')
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E')
       .update(body.toString())
       .digest("hex");
 
