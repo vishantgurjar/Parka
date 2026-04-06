@@ -110,15 +110,30 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     <div className="modal-overlay show" id="paymentModal" onClick={(e) => {
       if(e.target.id === 'paymentModal') onClose();
     }}>
-      <div className="modal-content" style={{ maxWidth: '400px' }}>
+      <div className="modal-content" style={{ maxWidth: '450px', padding: '2rem' }}>
         <button className="modal-close" onClick={onClose}><X size={20} /></button>
         
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{ background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
             <CreditCard size={32} />
           </div>
-          <h3 id="modalTitle">Pay ₹{plan.amount}</h3>
-          <p className="modal-desc" style={{ fontSize: '0.95rem' }}>Complete payment for <strong>{plan.name}</strong> securely via Razorpay.</p>
+          <h3 id="modalTitle" style={{ fontSize: '1.5rem' }}>Pay ₹{plan.amount}</h3>
+          
+          {plan.name === 'Gold PRO' ? (
+            <div style={{ background: 'rgba(234, 179, 8, 0.1)', padding: '15px', borderRadius: '12px', marginTop: '1rem', textAlign: 'left', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
+              <h4 style={{ color: '#eab308', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldCheck size={18} /> Upgrade to Gold PRO
+              </h4>
+              <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <li>✓ Secure WebRTC Privacy Calling</li>
+                <li>✓ Holographic Sticker Delivery</li>
+                <li>✓ Multi-Vehicle Support (Up to 5)</li>
+                <li>✓ Null SOS Convenience Fees</li>
+              </ul>
+            </div>
+          ) : (
+            <p className="modal-desc" style={{ fontSize: '0.95rem' }}>Complete payment for <strong>{plan.name}</strong> securely via Razorpay.</p>
+          )}
         </div>
         
         {error && (
@@ -131,9 +146,9 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           className="btn-gradient full-width" 
           onClick={handleRazorpayPayment} 
           disabled={loading}
-          style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer' }}
+          style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', background: plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : 'var(--gradient-primary)' }}
         >
-          {loading ? 'Processing...' : `Pay Now`}
+          {loading ? 'Processing...' : `Pay via Razorpay`}
         </button>
 
         <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', textAlign: 'center' }}>

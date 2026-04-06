@@ -180,7 +180,7 @@ export default function MechanicList() {
              <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>
         ) : (
           viewMode === 'map' ? (
-            <div style={{ position: 'relative', height: '600px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+            <div className="fadeIn" style={{ position: 'relative', height: '600px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
               {mechanics.length === 0 && (
                 <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '8px 20px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 'bold', backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   📍 No mechanics currently online near you
@@ -259,7 +259,7 @@ export default function MechanicList() {
                   <Link to="/mechanic-register" className="btn-gradient" style={{ padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>Register as Mechanic</Link>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+              <div className="fadeIn" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
                 {mechanics.map((mechanic) => (
                   <div key={mechanic._id} className="glass-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%' }}>
                       

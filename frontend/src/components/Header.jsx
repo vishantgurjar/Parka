@@ -3,7 +3,7 @@ import { Moon, Sun, Menu, X, Car } from 'lucide-react';
 import { ThemeContext, AuthContext } from '../App';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-export default function Header() {
+export default function Header({ onOpenPayment }) {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { user, logout } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -40,8 +40,8 @@ export default function Header() {
           <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
-          <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#38bdf8', fontWeight: 'bold'}}>AI Doctor</Link>
-          <Link to="/pricing" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#eab308', fontWeight: 'bold'}}>PRO Plans</Link>
+          <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
+          <button onClick={() => { setIsMenuOpen(false); onOpenPayment('Gold PRO', 999); }} className="shimmer-text" style={{fontWeight: 'bold', background: 'transparent', border: 'none', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit'}}>Get PRO</button>
           {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
           <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
           
@@ -72,8 +72,8 @@ export default function Header() {
         <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
-        <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#38bdf8', fontWeight: 'bold'}}>AI Doctor</Link>
-        <Link to="/pricing" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#eab308', fontWeight: 'bold'}}>PRO Plans</Link>
+        <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
+        <button onClick={() => { setIsMenuOpen(false); onOpenPayment('Gold PRO', 999); }} className="shimmer-text" style={{fontWeight: 'bold', background: 'transparent', border: 'none', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: '0'}}>Get PRO</button>
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
         {user ? (

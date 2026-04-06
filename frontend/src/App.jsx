@@ -15,7 +15,6 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import FAQ from './pages/FAQ';
 import VehicleLandingPage from './pages/VehicleLandingPage';
-import PricingPage from './pages/PricingPage';
 import AIAssistant from './pages/AIAssistant';
 
 import { HelmetProvider } from 'react-helmet-async';
@@ -78,7 +77,7 @@ function App() {
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
           <AuthContext.Provider value={{ user, login, logout }}>
             <Router>
-              <Header />
+              <Header onOpenPayment={handleOpenPayment} />
               <main>
                 <Routes>
                   {/* Public Routes */}
@@ -89,7 +88,6 @@ function App() {
                   <Route path="/mechanic-login" element={<MechanicLogin />} />
                   <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
                   <Route path="/mechanics" element={<MechanicList />} />
-                  <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/ai-doctor" element={<AIAssistant />} />
                   <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />

@@ -907,3 +907,38 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     .services-grid { grid-template-columns: 1fr; }
     .pricing-grid { grid-template-columns: 1fr; }
 }
+
+/* ========== PREMIUM ANIMATIONS ========== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-anim {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(13, 148, 136, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+.pulse-anim { animation: pulse-anim 2s infinite; }
+
+.shimmer-text {
+    background: linear-gradient(90deg, currentColor 25%, #fff 50%, currentColor 75%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s infinite linear;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }

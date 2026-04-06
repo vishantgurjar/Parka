@@ -83,10 +83,10 @@ export default function AIAssistant() {
           </p>
         </div>
 
-        <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center', minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="glass-card fadeIn" style={{ padding: '3rem 2rem', textAlign: 'center', minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           
           {status === 'idle' && (
-            <div style={{ animation: 'fadeIn 0.5s ease-in' }}>
+            <div className="fadeIn">
               <button 
                 onClick={startAnalysis}
                 className="pulse-anim"
@@ -123,7 +123,7 @@ export default function AIAssistant() {
           )}
 
           {status === 'analyzing' && (
-            <div style={{ animation: 'fadeIn 0.5s ease-in', width: '100%', maxWidth: '400px' }}>
+            <div className="fadeIn" style={{ width: '100%', maxWidth: '400px' }}>
               <Activity size={80} color="#38bdf8" className="pulse-anim" style={{ marginBottom: '1.5rem' }} />
               <h2 style={{ color: '#38bdf8' }}>Running AI Accoustic Models...</h2>
               <p style={{ color: 'var(--muted)' }}>Comparing against 10,000+ known engine failure audio signatures.</p>
@@ -134,7 +134,7 @@ export default function AIAssistant() {
           )}
 
           {status === 'complete' && diagnosis && (
-            <div style={{ animation: 'fadeIn 0.5s ease-in', width: '100%', maxWidth: '500px', textAlign: 'left' }}>
+            <div className="fadeIn" style={{ width: '100%', maxWidth: '500px', textAlign: 'left' }}>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
                 {diagnosis.dangerLevel === 'CRITICAL' ? <AlertCircle size={40} color="#ef4444" /> : 
