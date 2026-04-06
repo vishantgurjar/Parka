@@ -303,6 +303,73 @@ app.post('/api/contact', checkDbConnection, async (req, res) => {
   }
 });
 
+// @route   POST /api/mechanics/login
+// @desc    Mechanic Login
+// @access  Public
+app.post('/api/mechanics/login', checkDbConnection, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const mechanic = await Mechanic.findOne({ email });
+    if (!mechanic) return res.status(400).json({ message: 'Invalid credentials' });
+
+    const isMatch = await bcrypt.compare(password, mechanic.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign({ mechanicId: mechanic._id, email: mechanic.email, name: mechanic.name }, JWT_SECRET, { expiresIn: '7d' });
+    
+    const mechResponse = mechanic.toObject();
+    delete mechResponse.password;
+
+    res.json({ token, mechanic: mechResponse, message: 'Login successful' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error during login' });
+  }
+});
+
+// @route   PUT /api/mechanics/:id/status
+// @desc    Toggle mechanic online/offline
+// @access  Public (should be protected in prod)
+app.put('/api/mechanics/:id/status', checkDbConnection, async (req, res) => {
+  try {
+    const { isAvailable } = req.body;
+    const mechanic = await Mechanic.findByIdAndUpdate(
+      req.params.id,
+      { isAvailable },
+      { new: true }
+    ).select('-password');
+    
+    if (!mechanic) return res.status(404).json({ message: 'Mechanic not found' });
+    
+    res.json({ message: 'Location/Availability status updated', mechanic });
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error updating status' });
+  }
+});
+
+// @route   POST /api/alerts/scan
+// @desc    Trigger scan alert (SMS/WhatsApp Mock)
+// @access  Public
+app.post('/api/alerts/scan', checkDbConnection, async (req, res) => {
+  try {
+    const { vehicleId } = req.body;
+    const user = await User.findById(vehicleId);
+    
+    if (user) {
+      console.log(`\n\n========================================`);
+      console.log(`[🚨 EMERGENCY NOTIFICATION SYSTEM: SMS/WhatsApp MOCK]`);
+      console.log(`To: ${user.phone} (${user.name})`);
+      console.log(`Message: "ALERT: Your vehicle (${user.plateNumber}) Parkéé City QR was just scanned. If this isn't you, check on your vehicle immediately!"`);
+      console.log(`Time: ${new Date().toLocaleString()}`);
+      console.log(`========================================\n\n`);
+    }
+
+    res.json({ success: true, message: 'Alert notification sent simulated' });
+  } catch (err) {
+    console.error('Alert Error:', err.message);
+    res.status(500).json({ message: 'Server Error processing alert' });
+  }
+});
+
 // --- PAYMENT ROUTES (Option B: Razorpay) ---
 
 // @route   POST /api/payment/create-order

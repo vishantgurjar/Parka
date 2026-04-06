@@ -1,21 +1,58 @@
 import { useState, useEffect } from 'react';
-import { Wrench, MapPin, PhoneCall, Star, CheckCircle } from 'lucide-react';
+import { Wrench, MapPin, PhoneCall, Star, CheckCircle, Map as MapIcon, List as ListIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+
+// Fix leaflet default icon issue in React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const customMarkerIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const userMarkerIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 export default function MechanicList() {
   const [mechanics, setMechanics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('map'); // 'list' or 'map'
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
+    // Attempt to get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.log("Geolocation error:", err)
+      );
+    }
+
     const fetchMechanics = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/mechanics`);
         if (!res.ok) throw new Error('Failed to fetch mechanics');
         const data = await res.json();
         
-        // Consistent distance based on mechanic ID (1.0 to 3.0 km)
         const getConsistentDistance = (id) => {
           let hash = 0;
           const strId = String(id);
@@ -42,42 +79,99 @@ export default function MechanicList() {
     fetchMechanics();
   }, []);
 
+  const defaultCenter = userLocation ? [userLocation.lat, userLocation.lng] : [28.6139, 77.2090]; // Default Delhi
+
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '4rem' }}>
       <SEO 
         title="Find Nearby Mechanics - Parkéé City"
         description="Find and contact professional mechanics near you for emergency vehicle repair and roadside assistance. 24/7 service available on major highways."
-        keywords="find mechanic, emergency repair, roadside assistance, highway mechanic, Parkéé City"
       />
-      <div className="container" style={{ maxWidth: '1000px' }}>
+      <div className="container" style={{ maxWidth: '1200px' }}>
         
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(13, 148, 136, 0.15)', color: 'var(--primary)', padding: '6px 16px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '1rem' }}>
                 <Wrench size={16} /> Partner Network
             </div>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--fg)' }}>Find a <span className="text-gradient">Nearby Mechanic</span></h1>
-            <p style={{ color: 'var(--muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-                Showing trusted emergency mechanics within a <strong style={{color: 'var(--primary)'}}>1-3 km radius</strong> of your location. Call now for immediate assistance.
-            </p>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '1.5rem' }}>
+              <button 
+                onClick={() => setViewMode('list')} 
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer',
+                  background: viewMode === 'list' ? 'var(--primary)' : 'transparent',
+                  color: viewMode === 'list' ? 'white' : 'var(--fg)',
+                  border: `2px solid var(--primary)`,
+                  transition: 'all 0.3s'
+                }}
+              >
+                <ListIcon size={18} /> List View
+              </button>
+              <button 
+                onClick={() => setViewMode('map')} 
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer',
+                  background: viewMode === 'map' ? 'var(--primary)' : 'transparent',
+                  color: viewMode === 'map' ? 'white' : 'var(--fg)',
+                  border: `2px solid var(--primary)`,
+                  transition: 'all 0.3s'
+                }}
+              >
+                <MapIcon size={18} /> Live Map View
+              </button>
+            </div>
         </div>
 
         {loading ? (
-           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>Loading mechanics directory...</div>
+             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>Loading mechanics directory...</div>
         ) : error ? (
-           <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-              {error}
-           </div>
+             <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>
         ) : mechanics.length === 0 ? (
-           <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-              <Wrench size={48} style={{ color: 'var(--muted)', marginBottom: '1rem' }} />
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>No Mechanics Registered Yet</h3>
-              <p style={{ color: 'var(--muted)' }}>Be the first mechanic to join our network!</p>
-              <Link to="/mechanic-register" className="btn-gradient" style={{ display: 'inline-block', marginTop: '1.5rem', textDecoration: 'none', padding: '10px 20px', borderRadius: '8px' }}>
-                 Register as a Mechanic
-              </Link>
-           </div>
+             <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                 <p>No Online Mechanics Found</p>
+                 <Link to="/mechanic-register" className="btn-gradient" style={{ padding: '10px 20px', borderRadius: '8px', textDecoration: 'none' }}>Register as Mechanic</Link>
+             </div>
         ) : (
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+          viewMode === 'map' ? (
+            <div style={{ height: '600px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              <MapContainer center={defaultCenter} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                />
+                
+                {userLocation && (
+                  <Marker position={[userLocation.lat, userLocation.lng]} icon={userMarkerIcon}>
+                    <Popup><strong>You are here</strong></Popup>
+                  </Marker>
+                )}
+
+                {mechanics.map((mach) => {
+                  // Fallback to slightly randomize coordinates if missing so they appear near user
+                  const lat = mach.latitude || (defaultCenter[0] + (Math.random() - 0.5) * 0.1);
+                  const lng = mach.longitude || (defaultCenter[1] + (Math.random() - 0.5) * 0.1);
+
+                  return (
+                    <Marker key={mach._id} position={[lat, lng]} icon={customMarkerIcon}>
+                      <Popup>
+                        <div style={{ padding: '5px', textAlign: 'center' }}>
+                          <h3 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: '#10b981' }}>{mach.name}</h3>
+                          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>{mach.shopName}</p>
+                          <a href={`tel:${mach.phone}`} style={{ 
+                            background: '#10b981', color: 'white', padding: '8px 12px', borderRadius: '20px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 'bold' 
+                          }}>
+                            <PhoneCall size={14} /> Call Now
+                          </a>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )
+                })}
+              </MapContainer>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
               {mechanics.map((mechanic) => (
                  <div key={mechanic._id} className="glass-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%' }}>
                     
@@ -122,6 +216,7 @@ export default function MechanicList() {
                  </div>
               ))}
            </div>
+          )
         )}
       </div>
     </div>

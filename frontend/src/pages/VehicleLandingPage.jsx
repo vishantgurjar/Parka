@@ -17,6 +17,14 @@ export default function VehicleLandingPage() {
         
         if (res.ok) {
           setVehicle(data);
+
+          // Trigger Security SMS/WhatsApp Alert Mock
+          fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/alerts/scan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vehicleId: id })
+          }).catch(err => console.log('Alert skipped:', err));
+
         } else {
           setError(data.message || 'Vehicle not found');
         }

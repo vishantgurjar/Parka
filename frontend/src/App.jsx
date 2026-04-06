@@ -8,6 +8,8 @@ import ExtendedRegistration from './pages/ExtendedRegistration';
 import LoginPage from './pages/LoginPage';
 import MechanicRegistration from './pages/MechanicRegistration';
 import MechanicList from './pages/MechanicList';
+import MechanicLogin from './pages/MechanicLogin';
+import MechanicDashboard from './pages/MechanicDashboard';
 import HelpCenter from './pages/HelpCenter';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -82,6 +84,8 @@ function App() {
                   <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
                   <Route path="/mechanic-register" element={<MechanicRegistration />} />
+                  <Route path="/mechanic-login" element={<MechanicLogin />} />
+                  <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
                   <Route path="/mechanics" element={<MechanicList />} />
                   <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
