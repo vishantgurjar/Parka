@@ -118,7 +118,7 @@ export default function VehicleLandingPage() {
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
-          {vehicle.subscriptionTier === 'gold' ? (
+          {(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') ? (
             <button onClick={() => setShowSecureCall(true)} className="btn-gradient" style={{ 
               border: 'none',
               cursor: 'pointer',

@@ -72,6 +72,26 @@ function App() {
     setPaymentPlan({ name, amount });
   };
 
+  const handlePaymentSuccess = async () => {
+    try {
+      const tier = paymentPlan.name.includes('Diamond') ? 'diamond' : (paymentPlan.name.includes('Gold') ? 'gold' : 'silver');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/user/upgrade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id, tier })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login(data.user, localStorage.getItem('parkeToken')); // Update AuthContext user
+        alert(`Congratulations! You are now a ${paymentPlan.name} member.`);
+        setPaymentPlan(null);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Issue upgrading account, please contact support.');
+    }
+  };
+
   return (
     <HelmetProvider>
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -108,6 +128,7 @@ function App() {
                   entityId={user?._id} 
                   entityType="user" 
                   onClose={() => setPaymentPlan(null)} 
+                  onSuccess={handlePaymentSuccess}
                 />
               )}
             </Router>
