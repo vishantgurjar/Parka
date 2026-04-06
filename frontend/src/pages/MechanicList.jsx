@@ -176,16 +176,16 @@ export default function MechanicList() {
 
         {loading ? (
              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>Loading mechanics directory...</div>
-        ) : error ? (
+              ) : error ? (
              <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>
-        ) : mechanics.length === 0 ? (
-             <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                 <p>No Online Mechanics Found</p>
-                 <Link to="/mechanic-register" className="btn-gradient" style={{ padding: '10px 20px', borderRadius: '8px', textDecoration: 'none' }}>Register as Mechanic</Link>
-             </div>
         ) : (
           viewMode === 'map' ? (
-            <div style={{ height: '600px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+            <div style={{ position: 'relative', height: '600px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              {mechanics.length === 0 && (
+                <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '8px 20px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 'bold', backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  📍 No mechanics currently online near you
+                </div>
+              )}
               <MapContainer center={defaultCenter} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
                 <TileLayer
                   url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -253,54 +253,60 @@ export default function MechanicList() {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-              {mechanics.map((mechanic) => (
-                 <div key={mechanic._id} className="glass-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                        <div>
-                            <h3 style={{ fontSize: '1.4rem', margin: '0 0 4px 0', color: 'var(--fg)' }}>{mechanic.name}</h3>
-                            <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.95rem' }}>{mechanic.shopName}</div>
-                        </div>
-                        <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                            <Star size={14} fill="currentColor" /> {mechanic.experienceYears}+ Yrs
-                        </div>
-                    </div>
+            mechanics.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                  <p style={{ fontSize: '1.2rem', color: 'var(--muted)', marginBottom: '1.5rem' }}>No Online Mechanics Found in your area right now.</p>
+                  <Link to="/mechanic-register" className="btn-gradient" style={{ padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>Register as Mechanic</Link>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+                {mechanics.map((mechanic) => (
+                  <div key={mechanic._id} className="glass-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                          <div>
+                              <h3 style={{ fontSize: '1.4rem', margin: '0 0 4px 0', color: 'var(--fg)' }}>{mechanic.name}</h3>
+                              <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.95rem' }}>{mechanic.shopName}</div>
+                          </div>
+                          <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                              <Star size={14} fill="currentColor" /> {mechanic.experienceYears}+ Yrs
+                          </div>
+                      </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '8px', fontWeight: '600' }}>
-                        <MapPin size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-                        <span style={{ lineHeight: '1.4' }}>{mechanic.distance} km away</span>
-                    </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                        <span style={{ lineHeight: '1.4' }}>{mechanic.highwayLocation}</span>
-                    </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '8px', fontWeight: '600' }}>
+                          <MapPin size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                          <span style={{ lineHeight: '1.4' }}>{mechanic.distance} km away</span>
+                      </div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                          <span style={{ lineHeight: '1.4' }}>{mechanic.highwayLocation}</span>
+                      </div>
 
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '20px', flexGrow: 1 }}>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '600' }}>Services Offered</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {mechanic.services && mechanic.services.length > 0 ? (
-                                mechanic.services.map((service, idx) => (
-                                    <span key={idx} style={{ background: 'var(--bg)', border: '1px solid var(--border)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <CheckCircle size={10} style={{color: 'var(--primary)'}}/> {service}
-                                    </span>
-                                ))
-                            ) : (
-                                <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>General Assistance</span>
-                            )}
-                        </div>
-                    </div>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '20px', flexGrow: 1 }}>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '600' }}>Services Offered</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {mechanic.services && mechanic.services.length > 0 ? (
+                                  mechanic.services.map((service, idx) => (
+                                      <span key={idx} style={{ background: 'var(--bg)', border: '1px solid var(--border)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                          <CheckCircle size={10} style={{color: 'var(--primary)'}}/> {service}
+                                      </span>
+                                  ))
+                              ) : (
+                                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>General Assistance</span>
+                              )}
+                          </div>
+                      </div>
 
-                    <a href={`tel:${mechanic.phone}`} className="btn-gradient full-width" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', fontWeight: 'bold', border: 'none' }}>
-                        <PhoneCall size={18} />
-                        Call {mechanic.phone}
-                    </a>
-                 </div>
-              ))}
-           </div>
+                      <a href={`tel:${mechanic.phone}`} className="btn-gradient full-width" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', fontWeight: 'bold', border: 'none' }}>
+                          <PhoneCall size={18} />
+                          Call {mechanic.phone}
+                      </a>
+                  </div>
+                ))}
+            </div>
+            )
           )
-        )}
-      </div>
+        )}  </div>
 
       {/* Report Incident Modal */}
       {showIncidentModal && (
