@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight } from 'lucide-react';
+import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock } from 'lucide-react';
 import SEO from '../components/SEO';
+import SecureCallModal from '../components/SecureCallModal';
 
 export default function VehicleLandingPage() {
   const { id } = useParams();
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showSecureCall, setShowSecureCall] = useState(false);
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -115,25 +117,51 @@ export default function VehicleLandingPage() {
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <a href={`tel:${vehicle.phone || '7895039922'}`} className="btn-gradient" style={{ 
-            textDecoration: 'none', 
-            padding: '20px', 
-            borderRadius: '16px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            fontSize: '1.25rem',
-            fontWeight: 'bold',
-            boxShadow: '0 10px 20px rgba(13, 148, 136, 0.2)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}>
-                <PhoneCall size={24} />
+          
+          {vehicle.subscriptionTier === 'gold' ? (
+            <button onClick={() => setShowSecureCall(true)} className="btn-gradient" style={{ 
+              border: 'none',
+              cursor: 'pointer',
+              padding: '20px', 
+              borderRadius: '16px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 20px rgba(234, 179, 8, 0.2)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}>
+                  <Lock size={24} />
+                </div>
+                Secure WebRTC Call
               </div>
-              Contact Owner
-            </div>
-            <ChevronRight size={24} />
-          </a>
+              <ChevronRight size={24} />
+            </button>
+          ) : (
+            <a href={`tel:${vehicle.phone || '7895039922'}`} className="btn-gradient" style={{ 
+              textDecoration: 'none', 
+              padding: '20px', 
+              borderRadius: '16px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              boxShadow: '0 10px 20px rgba(13, 148, 136, 0.2)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}>
+                  <PhoneCall size={24} />
+                </div>
+                Contact Owner
+              </div>
+              <ChevronRight size={24} />
+            </a>
+          )}
 
           <a href="tel:7895039922" style={{ 
             textDecoration: 'none', 
@@ -194,6 +222,10 @@ export default function VehicleLandingPage() {
           </div>
         </div>
       </div>
+
+      {showSecureCall && (
+        <SecureCallModal vehicleId={vehicle._id} onClose={() => setShowSecureCall(false)} />
+      )}
     </div>
   );
 }

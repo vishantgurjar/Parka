@@ -28,6 +28,16 @@ const UserSchema = new mongoose.Schema({
   color: { type: String },
   plateNumber: { type: String },
   
+  // PRO Features
+  subscriptionTier: { type: String, enum: ['free', 'silver', 'gold'], default: 'free' },
+  secondaryVehicles: [{
+    make: String,
+    model: String,
+    year: String,
+    color: String,
+    plateNumber: String,
+  }],
+  
   // Extended Documents Info
   dateOfBirth: { type: String },
   address: { type: String },

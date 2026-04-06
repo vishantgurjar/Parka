@@ -10,6 +10,8 @@ const Complaint = require('./models/Complaint');
 const { OAuth2Client } = require('google-auth-library');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const http = require('http');
+const { Server } = require("socket.io");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -20,7 +22,34 @@ const razorpay = new Razorpay({
 });
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }
+});
+
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// Socket.io WebRTC Signaling Logic
+io.on("connection", (socket) => {
+  console.log("Socket connected for WebRTC:", socket.id);
+
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+  });
+
+  socket.on("call-user", (data) => {
+    io.to(data.userToCall).emit("call-made", { signal: data.signalData, from: data.from });
+  });
+
+  socket.on("answer-call", (data) => {
+    io.to(data.to).emit("call-answered", data.signal);
+  });
+  
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
 
 if (!JWT_SECRET) {
     console.warn('WARNING: JWT_SECRET is not defined. Authentication will fail.');
@@ -198,7 +227,7 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
 // @access  Public
 app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('name phone make model plateNumber color year');
+        const user = await User.findById(req.params.id).select('name phone make model plateNumber color year subscriptionTier');
         if (!user) {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
@@ -209,6 +238,28 @@ app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
     }
 });
 
+
+// @route   POST /api/user/upgrade
+// @desc    Upgrade user to PRO (Mock payment flow validation)
+// @access  Public
+app.post('/api/user/upgrade', checkDbConnection, async (req, res) => {
+  try {
+    const { userId, tier } = req.body; // tier: 'silver' or 'gold'
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    user.subscriptionTier = tier;
+    await user.save();
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    
+    res.json({ success: true, user: userResponse, message: `Successfully upgraded to ${tier.toUpperCase()} PRO!` });
+  } catch (error) {
+    console.error('Upgrade Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // --- NEW MECHANIC ROUTES ---
 
@@ -446,6 +497,6 @@ app.post('/api/payment/verify-signature', checkDbConnection, async (req, res) =>
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Server (with WebRTC Socket) is running on port ${PORT}`);
 });

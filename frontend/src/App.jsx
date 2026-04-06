@@ -15,6 +15,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import FAQ from './pages/FAQ';
 import VehicleLandingPage from './pages/VehicleLandingPage';
+import PricingPage from './pages/PricingPage';
 
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -87,6 +88,7 @@ function App() {
                   <Route path="/mechanic-login" element={<MechanicLogin />} />
                   <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
                   <Route path="/mechanics" element={<MechanicList />} />
+                  <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<TermsOfService />} />
