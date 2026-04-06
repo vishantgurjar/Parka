@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Mechanic = require('./models/Mechanic');
 const Complaint = require('./models/Complaint');
+const Incident = require('./models/Incident');
 const { OAuth2Client } = require('google-auth-library');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -418,6 +419,44 @@ app.post('/api/alerts/scan', checkDbConnection, async (req, res) => {
   } catch (err) {
     console.error('Alert Error:', err.message);
     res.status(500).json({ message: 'Server Error processing alert' });
+  }
+});
+
+// --- NEW INCIDENT / ROAD-WATCH ROUTES ---
+
+// @route   POST /api/incidents
+// @desc    Report a road hazard on the community map
+// @access  Public
+app.post('/api/incidents', checkDbConnection, async (req, res) => {
+  try {
+    const { type, description, latitude, longitude, reportedBy } = req.body;
+    
+    const newIncident = new Incident({
+      type, description, latitude, longitude, reportedBy
+    });
+    
+    await newIncident.save();
+    // Optional: Emit to all connected WebRTC sockets that a new incident happened
+    // io.emit('new-incident', newIncident);
+    
+    res.status(201).json({ success: true, incident: newIncident });
+  } catch (error) {
+    console.error('Incident Report Error:', error);
+    res.status(500).json({ message: 'Server error reporting incident' });
+  }
+});
+
+// @route   GET /api/incidents
+// @desc    Get all active incidents for the live map
+// @access  Public
+app.get('/api/incidents', checkDbConnection, async (req, res) => {
+  try {
+    // Only fetch incidents within the 24 hour window (handled automatically by TTL index, but safe to just query all existing)
+    const incidents = await Incident.find().sort({ createdAt: -1 });
+    res.json(incidents);
+  } catch (error) {
+    console.error('Fetch Incidents Error:', error);
+    res.status(500).json({ message: 'Server error fetching incidents' });
   }
 });
 

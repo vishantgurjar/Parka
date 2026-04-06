@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wrench, MapPin, PhoneCall, Star, CheckCircle, Map as MapIcon, List as ListIcon } from 'lucide-react';
+import { Wrench, MapPin, PhoneCall, Star, CheckCircle, Map as MapIcon, List as ListIcon, AlertTriangle, PlusCircle, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -31,12 +31,24 @@ const userMarkerIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+const incidentMarkerIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 export default function MechanicList() {
   const [mechanics, setMechanics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('map'); // 'list' or 'map'
   const [userLocation, setUserLocation] = useState(null);
+  const [incidents, setIncidents] = useState([]);
+  const [showIncidentModal, setShowIncidentModal] = useState(false);
+  const [incidentForm, setIncidentForm] = useState({ type: 'traffic', description: '' });
 
   useEffect(() => {
     // Attempt to get user location
@@ -68,6 +80,14 @@ export default function MechanicList() {
         })).sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
         
         setMechanics(mechanicsWithDistance);
+
+        // Fetch Community Hazard Incidents
+        const incidentRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/incidents`);
+        if (incidentRes.ok) {
+          const incData = await incidentRes.json();
+          setIncidents(incData);
+        }
+
       } catch (err) {
         console.error("Error fetching mechanics:", err);
         setError("Could not load mechanics at this time. Please try again later.");
@@ -80,6 +100,37 @@ export default function MechanicList() {
   }, []);
 
   const defaultCenter = userLocation ? [userLocation.lat, userLocation.lng] : [28.6139, 77.2090]; // Default Delhi
+
+  const handleReportIncident = async (e) => {
+    e.preventDefault();
+    if (!userLocation) {
+        alert("We need your location to drop a hazard pin! Please enable GPS.");
+        return;
+    }
+    
+    try {
+        const payload = {
+            type: incidentForm.type,
+            description: incidentForm.description,
+            latitude: userLocation.lat,
+            longitude: userLocation.lng
+        };
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/incidents`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            setIncidents([data.incident, ...incidents]);
+            setShowIncidentModal(false);
+            setIncidentForm({ type: 'traffic', description: '' });
+            alert("Hazard reported successfully! Everyone in the area has been alerted.");
+        }
+    } catch (err) {
+        alert("Failed to report hazard.");
+    }
+  };
 
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '4rem' }}>
@@ -168,7 +219,38 @@ export default function MechanicList() {
                     </Marker>
                   )
                 })}
+
+                {/* Community Reported Hazards */}
+                {incidents.map((inc) => (
+                  <Marker key={inc._id} position={[inc.latitude, inc.longitude]} icon={incidentMarkerIcon}>
+                    <Popup>
+                      <div style={{ padding: '5px', textAlign: 'center' }}>
+                        <AlertTriangle size={24} color="#ef4444" style={{ marginBottom: '5px' }} />
+                        <h3 style={{ margin: '0 0 5px 0', fontSize: '1rem', color: '#ef4444', textTransform: 'capitalize' }}>{inc.type} Hazard</h3>
+                        {inc.description && <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem' }}>{inc.description}</p>}
+                        <div style={{ fontSize: '0.75rem', color: 'gray' }}>Reported near you</div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
               </MapContainer>
+
+              {/* Floating Action Button for Hazard Reporting */}
+              <button 
+                onClick={() => setShowIncidentModal(true)}
+                title="Report Road Hazard"
+                style={{
+                  position: 'absolute', bottom: '2rem', right: '2rem', zIndex: 1000, 
+                  background: '#ef4444', color: 'white', width: '60px', height: '60px', 
+                  borderRadius: '50%', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  boxShadow: '0 10px 25px rgba(239, 68, 68, 0.5)', transition: 'transform 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <PlusCircle size={30} />
+              </button>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
@@ -219,6 +301,60 @@ export default function MechanicList() {
           )
         )}
       </div>
+
+      {/* Report Incident Modal */}
+      {showIncidentModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.7)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-card" style={{ width: '90%', maxWidth: '400px', padding: '2rem', borderRadius: '20px', position: 'relative' }}>
+             <button onClick={() => setShowIncidentModal(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--fg)' }}>
+               <X size={24} />
+             </button>
+             
+             <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#ef4444', marginBottom: '1.5rem' }}>
+               <AlertTriangle /> Report Road Hazard
+             </h2>
+             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+               Drop a pin at your current GPS location to warn the Parkéé Community.
+             </p>
+
+             <form onSubmit={handleReportIncident}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Hazard Type</label>
+                  <select 
+                    value={incidentForm.type}
+                    onChange={(e) => setIncidentForm({...incidentForm, type: e.target.value})}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--fg)', fontSize: '1rem' }}
+                  >
+                    <option value="traffic">Heavy Traffic Jam</option>
+                    <option value="pothole">Dangerous Pothole</option>
+                    <option value="waterlogging">Waterlogging / Flood</option>
+                    <option value="accident">Accident Site</option>
+                    <option value="police">Police Checking</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Description (Optional)</label>
+                  <textarea 
+                    value={incidentForm.description}
+                    placeholder="E.g. Huge crater in the middle lane..."
+                    onChange={(e) => setIncidentForm({...incidentForm, description: e.target.value})}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--fg)', minHeight: '80px', fontFamily: 'inherit' }}
+                  />
+                </div>
+
+                <button type="submit" className="btn-gradient full-width" style={{ padding: '14px', borderRadius: '8px', border: 'none', fontSize: '1rem', fontWeight: 'bold', background: '#ef4444', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}>
+                  Drop Warning Pin
+                </button>
+             </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

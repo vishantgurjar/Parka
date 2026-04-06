@@ -40,6 +40,7 @@ export default function Header() {
           <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
+          <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#38bdf8', fontWeight: 'bold'}}>AI Doctor</Link>
           <Link to="/pricing" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#eab308', fontWeight: 'bold'}}>PRO Plans</Link>
           {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
           <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
@@ -71,6 +72,7 @@ export default function Header() {
         <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
+        <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#38bdf8', fontWeight: 'bold'}}>AI Doctor</Link>
         <Link to="/pricing" onClick={(e) => { setIsMenuOpen(false); }} style={{color: '#eab308', fontWeight: 'bold'}}>PRO Plans</Link>
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
