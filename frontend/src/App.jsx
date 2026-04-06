@@ -60,6 +60,11 @@ function App() {
     localStorage.removeItem('parkeToken');
   };
 
+  const isPro = (u = user) => {
+    if (!u) return false;
+    return ['silver', 'gold', 'diamond'].includes(u.subscriptionTier);
+  };
+
   // Modals State
   const [paymentPlan, setPaymentPlan] = useState(null); // { name, amount }
 
@@ -95,7 +100,7 @@ function App() {
   return (
     <HelmetProvider>
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-          <AuthContext.Provider value={{ user, login, logout }}>
+          <AuthContext.Provider value={{ user, login, logout, isPro }}>
             <Router>
               <Header onOpenPayment={handleOpenPayment} />
               <main>

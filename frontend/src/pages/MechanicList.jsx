@@ -7,6 +7,8 @@ import SEO from '../components/SEO';
 import PaymentModal from '../components/PaymentModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import TrackingMap from '../components/TrackingMap';
+import { AuthContext } from '../App';
 
 // Fix leaflet default icon issue in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -53,7 +55,53 @@ export default function MechanicList() {
   const [showIncidentModal, setShowIncidentModal] = useState(false);
   const [incidentForm, setIncidentForm] = useState({ type: 'traffic', description: '' });
 
-  const { user } = useContext(AuthContext);
+  const { user, isPro } = useContext(AuthContext);
+  
+  // Point 1: Live Tracking state
+  const [mechanicLocation, setMechanicLocation] = useState(null);
+
+  // Point 6: Voice SOS state
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+
+  useEffect(() => {
+    if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      setVoiceSupported(true);
+    }
+  }, []);
+
+  const toggleVoiceSOS = () => {
+    if (!isPro()) return alert("Voice SOS is a PRO feature. Please upgrade to use it.");
+    
+    if (isVoiceListening) {
+      setIsVoiceListening(false);
+    } else {
+      startVoiceRecognition();
+    }
+  };
+
+  const startVoiceRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsVoiceListening(true);
+    recognition.onend = () => setIsVoiceListening(false);
+    recognition.onerror = () => setIsVoiceListening(false);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+      console.log("Voice Transcript:", transcript);
+      if (transcript.includes("help me") || transcript.includes("parkee help") || transcript.includes("emergency")) {
+        handleBroadcastSOS();
+        recognition.stop();
+      }
+    };
+
+    recognition.start();
+  };
 
   // SOS States
   const [sosStatus, setSosStatus] = useState('idle'); // idle, broadcasting, accepted
@@ -163,6 +211,10 @@ export default function MechanicList() {
             newSocket.on('mechanic-bid', (bid) => {
                 setBids(prev => [...prev, bid]);
             });
+
+            newSocket.on('mechanic-moved', (loc) => {
+                setMechanicLocation(loc);
+            });
         }
     } catch (err) {
         console.error("Broadcast error:", err);
@@ -259,9 +311,29 @@ export default function MechanicList() {
                 <p style={{color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '15px'}}>Stranded? Broadcast your location to all nearby mechanics and get instant bids.</p>
                 
                 {sosStatus === 'idle' && (
-                    <button onClick={handleBroadcastSOS} className="btn-gradient" style={{background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                        <Radio size={20} /> Broadcast SOS Now
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <button onClick={handleBroadcastSOS} className="btn-gradient" style={{background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                            <Radio size={20} /> Broadcast SOS Now
+                        </button>
+                        
+                        {voiceSupported && (
+                            <button 
+                                onClick={toggleVoiceSOS} 
+                                style={{
+                                    width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)',
+                                    background: isVoiceListening ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                                    color: isVoiceListening ? '#ef4444' : 'var(--muted)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer',
+                                    fontWeight: '600', transition: 'all 0.3s'
+                                }}
+                            >
+                                <div className={isVoiceListening ? "pulse-anim" : ""} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                                    {isVoiceListening ? "Listening for 'Help Me'..." : "Enable Voice SOS (PRO)"}
+                                </div>
+                            </button>
+                        )}
+                    </div>
                 )}
 
                 {sosStatus === 'broadcasting' && (
@@ -296,11 +368,31 @@ export default function MechanicList() {
                         <h4 style={{color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px'}}>
                             <CheckCircle size={20} /> Mechanic Assigned!
                         </h4>
+                        
+                        {/* Point 1: Live Tracking Map (PRO Only) */}
+                        {isPro() ? (
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '10px' }}>PRO FEATURE: Live Mechanic Tracking Active</p>
+                                <TrackingMap userLocation={userLocation} mechanicLocation={mechanicLocation} />
+                            </div>
+                        ) : (
+                            <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px dashed #38bdf8', padding: '15px', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: '#38bdf8', fontWeight: 'bold' }}>
+                                    ✨ Upgrade to PRO to see your mechanic's live location on the map!
+                                </p>
+                            </div>
+                        )}
+
                         <p style={{marginBottom: '5px'}}><strong>{assignedMechanic.mechanicName}</strong> is on their way.</p>
                         <p style={{color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '15px'}}>Agreed Amount: ₹{assignedMechanic.price} (Cash/UPI directly to mechanic)</p>
-                        <a href={`tel:${assignedMechanic.phone}`} className="btn-gradient" style={{textDecoration: 'none', padding: '10px 20px', borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#10b981', border: 'none'}}>
-                            <PhoneCall size={16} /> Call Mechanic
-                        </a>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                            <a href={`tel:${assignedMechanic.phone}`} className="btn-gradient" style={{textDecoration: 'none', padding: '10px 20px', borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#10b981', border: 'none'}}>
+                                <PhoneCall size={16} /> Call Mechanic
+                            </a>
+                            <button onClick={() => { setSosStatus('idle'); setAssignedMechanic(null); setMechanicLocation(null); }} className="btn-secondary" style={{ borderRadius: '30px', padding: '10px 20px' }}>
+                                Close
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -457,10 +549,32 @@ export default function MechanicList() {
                           </div>
                       </div>
 
-                      <a href={`tel:${mechanic.phone}`} className="btn-gradient full-width" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', fontWeight: 'bold', border: 'none' }}>
-                          <PhoneCall size={18} />
-                          Call {mechanic.phone}
-                      </a>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                          <a href={`tel:${mechanic.phone}`} className="btn-gradient" style={{ flex: 1, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', fontWeight: 'bold', border: 'none' }}>
+                              <PhoneCall size={18} />
+                              Call
+                          </a>
+                          <button 
+                            onClick={() => {
+                                if (isPro()) {
+                                    window.open(`https://wa.me/${mechanic.phone}?text=${encodeURIComponent(`Hi ${mechanic.name}, I found your profile on Parkéé City. I need assistance with my ${user?.make || 'vehicle'}...`)}`, '_blank');
+                                } else {
+                                    alert("WhatsApp Chat is a PRO feature! Please upgrade to Silver or Gold plan to use it.");
+                                }
+                            }}
+                            className={isPro() ? "btn-secondary" : "btn-muted"}
+                            style={{ 
+                                padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold',
+                                background: isPro() ? '#25D366' : 'var(--card-bg)',
+                                color: isPro() ? '#fff' : 'var(--muted)',
+                                position: 'relative'
+                            }}
+                          >
+                              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                              {!isPro() && <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#eab308', color: '#000', fontSize: '0.6rem', padding: '2px 4px', borderRadius: '4px' }}>PRO</span>}
+                          </button>
+                      </div>
                   </div>
                 ))}
             </div>

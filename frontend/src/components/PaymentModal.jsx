@@ -63,30 +63,10 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             setError("Payment verification failed. Please contact support with Payment ID: " + response.razorpay_payment_id);
           }
         },
-        config: {
-          display: {
-            blocks: {
-              upi: {
-                name: 'Pay via UPI',
-                instruments: [{ method: 'upi' }]
-              },
-              cards: {
-                name: 'Cards',
-                instruments: [{ method: 'card' }]
-              },
-              netbanking: {
-                name: 'Netbanking',
-                instruments: [{ method: 'netbanking' }]
-              }
-            },
-            sequence: ['block.upi', 'block.cards', 'block.netbanking'],
-            preferences: { show_default_blocks: true }
-          }
-        },
         prefill: {
-          name: "",
-          email: "",
-          contact: ""
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || ""
         },
         theme: {
           color: "#0d9488"
@@ -147,6 +127,13 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           ) : (
             <p className="modal-desc" style={{ fontSize: '0.95rem' }}>Complete payment for <strong>{plan.name}</strong> securely via Razorpay.</p>
           )}
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+            <img src="https://img.icons8.com/color/48/000000/upi.png" alt="UPI" style={{ height: '24px' }} />
+            <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" style={{ height: '24px' }} />
+            <img src="https://img.icons8.com/color/48/000000/mastercard.png" alt="Mastercard" style={{ height: '24px' }} />
+            <img src="https://img.icons8.com/color/48/000000/google-pay-india.png" alt="GPay" style={{ height: '24px' }} />
+          </div>
         </div>
         
         {error && (

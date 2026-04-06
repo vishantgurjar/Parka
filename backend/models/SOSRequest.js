@@ -8,6 +8,10 @@ const SOSRequestSchema = new mongoose.Schema({
         lat: { type: Number, required: true },
         lng: { type: Number, required: true }
     },
+    mechanicLocation: {
+        lat: { type: Number },
+        lng: { type: Number }
+    },
     status: { 
         type: String, 
         enum: ['pending', 'accepted', 'completed', 'cancelled'],

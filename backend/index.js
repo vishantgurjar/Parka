@@ -98,12 +98,28 @@ io.on("connection", (socket) => {
         // Broadcast to all mechanics that this SOS is resolved (so it clears from their dashboard)
         io.to('mechanic_sos').emit("sos-resolved", data.sosId);
         // Specifically tell the winning mechanic
-        // Note: they can listen to sos-resolved and check if they won via fetching state
+        io.to(`mechanic_${data.bid.mechanicId}`).emit("sos-match-confirmed", { sosId: data.sosId, sos });
       }
     } catch (err) {
       console.error("Accept Bid Error:", err);
     }
   });
+
+  socket.on("update-mechanic-location", async (data) => {
+    // data: { sosId, userId, location: { lat, lng } }
+    try {
+      const sos = await SOSRequest.findById(data.sosId);
+      if (sos && sos.status === 'accepted') {
+        sos.mechanicLocation = data.location;
+        await sos.save();
+        // Emit to the user so they see the marker move
+        io.to(`sos_${data.userId}`).emit("mechanic-moved", data.location);
+      }
+    } catch (err) {
+      console.error("Update Location Error:", err);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });
@@ -546,6 +562,8 @@ app.post('/api/sos/finalize', checkDbConnection, async (req, res) => {
 
         // Notify mechanics
         io.to('mechanic_sos').emit("sos-resolved", sosId);
+        // Specifically tell the winning mechanic
+        io.to(`mechanic_${bid.mechanicId}`).emit("sos-match-confirmed", { sosId, sos });
 
         res.json({ message: "SOS Match Finalized Successfully", sos });
     } catch (err) {

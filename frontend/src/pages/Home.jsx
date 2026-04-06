@@ -8,7 +8,34 @@ import { toPng } from 'html-to-image';
 import SEO from '../components/SEO';
 
 export default function Home({ onOpenPayment }) {
-  const { user } = useContext(AuthContext);
+  const { user, isPro } = useContext(AuthContext);
+  
+  // Point 6: Voice SOS
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+
+  useEffect(() => {
+    if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      setVoiceSupported(true);
+    }
+  }, []);
+
+  const startVoiceSOS = () => {
+    if (!isPro()) return alert("Voice SOS is a PRO feature. Please upgrade to use it.");
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.onstart = () => setIsVoiceListening(true);
+    recognition.onend = () => setIsVoiceListening(false);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      if (transcript.includes("help me") || transcript.includes("parkee help")) {
+        window.location.href = '/mechanics?sos=true';
+      }
+    };
+    recognition.start();
+  };
   const [qrUrl, setQrUrl] = useState('');
   const [activeTab, setActiveTab] = useState('emergency'); // 'emergency' or 'customer'
   const cardRef = useRef(null);
@@ -162,10 +189,32 @@ export default function Home({ onOpenPayment }) {
               <PhoneCall size={20} />
               789-503-9922
             </a>
-            <div className="emergency-location">
+            <div className="emergency-location" style={{ marginBottom: '1.5rem' }}>
               <MapPin size={16} />
               Service available on all major highways
             </div>
+
+            {/* Point 6: Voice SOS Button (PRO Exclusive) */}
+            {voiceSupported && (
+              <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                <button 
+                  onClick={startVoiceSOS}
+                  style={{ 
+                    padding: '12px 24px', borderRadius: '50px', border: '1.5px solid var(--border)',
+                    background: isVoiceListening ? 'rgba(239, 68, 68, 0.15)' : 'var(--card-bg)',
+                    color: isVoiceListening ? '#ef4444' : 'var(--muted)',
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
+                    fontWeight: 'bold', fontSize: '0.9rem'
+                  }}
+                >
+                  <div className={isVoiceListening ? "pulse-anim" : ""} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    {isVoiceListening ? "Listening..." : (isPro() ? "Voice SOS Enabled" : "Voice SOS (PRO ONLY)")}
+                  </div>
+                </button>
+                {!isPro() && <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '6px' }}>Upgrade to Silver/Gold to unlock voice triggers</p>}
+              </div>
+            )}
             
             <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
               <Link to="/mechanics" className="btn-gradient full-width" style={{ textDecoration: 'none', display: 'inline-flex', padding: '14px 16px', fontSize: '1rem', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', borderRadius: '12px', fontWeight: 'bold' }}>

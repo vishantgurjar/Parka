@@ -51,6 +51,13 @@ export default function MechanicDashboard() {
         setActiveSosRequests(prev => prev.filter(req => req._id !== sosId));
     });
 
+    newSocket.on('sos-match-confirmed', (data) => {
+        // data: { sosId, sos }
+        setAcceptedSOS(data.sos);
+        setActiveSosRequests(prev => prev.filter(req => req._id !== data.sosId));
+        alert("🎉 SOS MATCH CONFIRMED! Drive safe to the customer. Live tracking started.");
+    });
+
     newSocket.on('bid-error', (errMessage) => {
         alert(errMessage);
     });
@@ -59,6 +66,28 @@ export default function MechanicDashboard() {
         newSocket.disconnect();
     };
   }, [navigate]);
+
+  // Point 1: Live Tracking Heartbeat
+  const [acceptedSOS, setAcceptedSOS] = useState(null);
+  useEffect(() => {
+    let watchId;
+    if (acceptedSOS && socket) {
+        watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                socket.emit('update-mechanic-location', {
+                    sosId: acceptedSOS._id,
+                    userId: acceptedSOS.userId,
+                    location: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+                });
+            },
+            (err) => console.log("Tracking error:", err),
+            { enableHighAccuracy: true }
+        );
+    }
+    return () => {
+        if(watchId) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [acceptedSOS, socket]);
 
   const toggleStatus = async () => {
     setUpdating(true);
@@ -200,6 +229,33 @@ export default function MechanicDashboard() {
                 <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444' }}>
                     <Radio className="pulse-anim" /> Live SOS Broadcasts
                 </h2>
+
+                {acceptedSOS && (
+                    <div className="glass-card fadeIn" style={{ border: '2px solid #10b981', padding: '1.5rem', marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#10b981', marginBottom: '1rem' }}>
+                            <Navigation size={24} className="pulse-anim" /> 
+                            <h3 style={{ margin: 0 }}>ACTIVE JOB: On My Way</h3>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <div>
+                                <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '0 0 4px 0' }}>DRIVER</p>
+                                <p style={{ fontWeight: 'bold' }}>{acceptedSOS.userName}</p>
+                            </div>
+                            <div>
+                                <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '0 0 4px 0' }}>PHONE</p>
+                                <p style={{ fontWeight: 'bold' }}>{acceptedSOS.userPhone}</p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <a href={`tel:${acceptedSOS.userPhone}`} className="btn-gradient" style={{ flex: 1, textDecoration: 'none', background: '#10b981' }}>
+                                <PhoneCall size={18} /> Call Driver
+                            </a>
+                            <button onClick={() => setAcceptedSOS(null)} className="btn-outline-primary" style={{ flex: 1 }}>
+                                Complete Job
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {activeSosRequests.length === 0 ? (
                     <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '12px', color: 'var(--muted)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
