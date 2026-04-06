@@ -195,54 +195,54 @@ export default function Home({ onOpenPayment }) {
             <p className="section-desc">Subscribe to a plan that works for you. Cancel anytime. Pay securely via UPI.</p>
           </div>
           <div className="pricing-grid">
-            {/* Monthly */}
+            {/* Silver Plan */}
             <div className="pricing-card">
               <div className="plan-header">
                 <div className="plan-icon"><CheckCircle size={20} /></div>
-                <div><h3>Monthly</h3></div>
+                <div><h3>Silver</h3></div>
               </div>
               <div className="plan-price"><span className="currency">₹</span><span className="amount">250</span></div>
               <span className="period">/month</span>
               <ul className="plan-features">
-                <li><span className="check">✓</span> Perfect for quick visits</li>
-                <li><span className="check">✓</span> No commitment required</li>
-                <li><span className="check">✓</span> Pay as you go</li>
-                <li><span className="check">✓</span> Basic support</li>
+                <li><span className="check">✓</span> Standard QR Profile</li>
+                <li><span className="check">✓</span> SMS Alert System</li>
+                <li><span className="check">✓</span> 1 Vehicle Limit</li>
+                <li><span className="check">✓</span> Basic Tech Support</li>
               </ul>
-              <button className="plan-btn" onClick={() => onOpenPayment('Monthly', '250')}>Subscribe Now</button>
+              <button className="plan-btn" onClick={() => onOpenPayment('Silver', '250')}>Subscribe Now</button>
             </div>
-            {/* Half Yearly (Featured) */}
+            {/* Gold PRO (Featured) */}
             <div className="pricing-card featured">
               <div className="plan-badge">⭐ Most Popular</div>
               <div className="plan-header">
                 <div className="plan-icon featured-icon"><ShieldCheck size={20} /></div>
-                <div><h3>Half Yearly</h3><span className="savings">Save 70%</span></div>
+                <div><h3>Gold PRO</h3><span className="savings">Half Yearly</span></div>
               </div>
               <div className="plan-price"><span className="currency">₹</span><span className="amount">450</span></div>
               <span className="period">/6 months</span>
               <ul className="plan-features">
-                <li><span className="check featured-check">✓</span> Best value for regular trips</li>
-                <li><span className="check featured-check">✓</span> Up to 6 months coverage</li>
-                <li><span className="check featured-check">✓</span> Priority access & support</li>
-                <li><span className="check featured-check">✓</span> Save ₹1,050 vs monthly</li>
+                <li style={{fontWeight: 'bold', color: 'var(--primary)'}}><span className="check featured-check">✓</span> Secure WebRTC Privacy Calling</li>
+                <li><span className="check featured-check">✓</span> Holographic Sticker Delivery</li>
+                <li><span className="check featured-check">✓</span> Up to 3 Vehicles</li>
+                <li><span className="check featured-check">✓</span> Priority SOS Assistance</li>
               </ul>
-              <button className="plan-btn plan-btn-featured" onClick={() => onOpenPayment('Half Yearly', '450')}>Subscribe Now</button>
+              <button className="plan-btn plan-btn-featured" onClick={() => onOpenPayment('Gold PRO', '450')}>Subscribe Now</button>
             </div>
-            {/* Yearly */}
-            <div className="pricing-card">
+            {/* Diamond PRO */}
+            <div className="pricing-card" style={{border: '2px solid #8b5cf6'}}>
               <div className="plan-header">
-                <div className="plan-icon"><ShieldCheck size={20} /></div>
-                <div><h3>Yearly</h3><span className="savings">Save 67%</span></div>
+                <div className="plan-icon" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}><ShieldCheck size={20} /></div>
+                <div><h3>Diamond PRO</h3><span className="savings" style={{color: '#8b5cf6'}}>Yearly</span></div>
               </div>
               <div className="plan-price"><span className="currency">₹</span><span className="amount">1,000</span></div>
               <span className="period">/year</span>
               <ul className="plan-features">
-                <li><span className="check">✓</span> Unlimited access all year</li>
-                <li><span className="check">✓</span> Reserved spot guarantee</li>
-                <li><span className="check">✓</span> 24/7 premium support</li>
-                <li><span className="check">✓</span> Save ₹2,000 vs monthly</li>
+                <li style={{fontWeight: 'bold', color: '#8b5cf6'}}><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Everything in Gold PRO</li>
+                <li><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Multi-Vehicle Support (Up to 5)</li>
+                <li><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Zero SOS Convenience Fees</li>
+                <li><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Dedicated Analytics Log</li>
               </ul>
-              <button className="plan-btn" onClick={() => onOpenPayment('Yearly', '1000')}>Subscribe Now</button>
+              <button className="plan-btn" style={{background: '#8b5cf6', color: '#fff'}} onClick={() => onOpenPayment('Diamond PRO', '1000')}>Subscribe Now</button>
             </div>
           </div>
           <p className="pricing-trust">

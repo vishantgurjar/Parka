@@ -41,7 +41,7 @@ export default function Header({ onOpenPayment }) {
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-          <button onClick={() => { setIsMenuOpen(false); onOpenPayment('Gold PRO', 999); }} className="shimmer-text" style={{fontWeight: 'bold', background: 'transparent', border: 'none', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit'}}>Get PRO</button>
+          <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>
           {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
           <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
           
@@ -73,7 +73,7 @@ export default function Header({ onOpenPayment }) {
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-        <button onClick={() => { setIsMenuOpen(false); onOpenPayment('Gold PRO', 999); }} className="shimmer-text" style={{fontWeight: 'bold', background: 'transparent', border: 'none', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: '0'}}>Get PRO</button>
+        <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
         {user ? (

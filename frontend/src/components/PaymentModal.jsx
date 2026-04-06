@@ -127,8 +127,20 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
               <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <li>✓ Secure WebRTC Privacy Calling</li>
                 <li>✓ Holographic Sticker Delivery</li>
+                <li>✓ Multi-Vehicle Support (Up to 3)</li>
+                <li>✓ Priority SOS Assistance</li>
+              </ul>
+            </div>
+          ) : plan.name === 'Diamond PRO' ? (
+            <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '15px', borderRadius: '12px', marginTop: '1rem', textAlign: 'left', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+              <h4 style={{ color: '#8b5cf6', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldCheck size={18} /> Upgrade to Diamond PRO
+              </h4>
+              <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <li>✓ Everything in Gold PRO</li>
                 <li>✓ Multi-Vehicle Support (Up to 5)</li>
-                <li>✓ Null SOS Convenience Fees</li>
+                <li>✓ Zero SOS Convenience Fees</li>
+                <li>✓ Dedicated Analytics Log</li>
               </ul>
             </div>
           ) : (
@@ -146,7 +158,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           className="btn-gradient full-width" 
           onClick={handleRazorpayPayment} 
           disabled={loading}
-          style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', background: plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : 'var(--gradient-primary)' }}
+          style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', background: plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : plan.name === 'Diamond PRO' ? 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)' : 'var(--gradient-primary)' }}
         >
           {loading ? 'Processing...' : `Pay via Razorpay`}
         </button>
