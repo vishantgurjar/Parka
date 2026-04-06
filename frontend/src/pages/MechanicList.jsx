@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Wrench, MapPin, PhoneCall, Star, CheckCircle, Map as MapIcon, List as ListIcon, AlertTriangle, PlusCircle, X } from 'lucide-react';
+import { useState, useEffect, useContext } from 'react';
+import { Wrench, MapPin, PhoneCall, Star, CheckCircle, Map as MapIcon, List as ListIcon, AlertTriangle, PlusCircle, X, Radio, Check } from 'lucide-react';
+import { AuthContext } from '../App';
+import { io } from 'socket.io-client';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -49,6 +51,15 @@ export default function MechanicList() {
   const [incidents, setIncidents] = useState([]);
   const [showIncidentModal, setShowIncidentModal] = useState(false);
   const [incidentForm, setIncidentForm] = useState({ type: 'traffic', description: '' });
+
+  const { user } = useContext(AuthContext);
+
+  // SOS States
+  const [sosStatus, setSosStatus] = useState('idle'); // idle, broadcasting, accepted
+  const [socket, setSocket] = useState(null);
+  const [bids, setBids] = useState([]);
+  const [activeSosId, setActiveSosId] = useState(null);
+  const [assignedMechanic, setAssignedMechanic] = useState(null);
 
   useEffect(() => {
     // Attempt to get user location
@@ -101,6 +112,72 @@ export default function MechanicList() {
 
   const defaultCenter = userLocation ? [userLocation.lat, userLocation.lng] : [28.6139, 77.2090]; // Default Delhi
 
+  // ---------- SOS LOGIC -----------
+  useEffect(() => {
+    // Cleanup socket on unmount
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, [socket]);
+
+  const handleBroadcastSOS = async () => {
+    if (!userLocation) {
+        alert("We need your location to broadcast an SOS! Please enable GPS.");
+        return;
+    }
+    if (!user) {
+        alert("Please log in to use SOS Broadcasts.");
+        window.location.href = '/login';
+        return;
+    }
+
+    setSosStatus('broadcasting');
+    try {
+        const payload = {
+            userId: user._id,
+            userName: user.name,
+            userPhone: user.phone || 'N/A',
+            location: { lat: userLocation.lat, lng: userLocation.lng }
+        };
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/sos/broadcast`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            setActiveSosId(data.sosRequest._id);
+
+            // Establish Socket to listen for incoming bids
+            const newSocket = io(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}`);
+            setSocket(newSocket);
+
+            newSocket.on('connect', () => {
+                newSocket.emit('join-sos-room', user._id);
+            });
+
+            newSocket.on('mechanic-bid', (bid) => {
+                setBids(prev => [...prev, bid]);
+            });
+        }
+    } catch (err) {
+        console.error("Broadcast error:", err);
+        alert("Failed to broadcast SOS. Please check your connection.");
+        setSosStatus('idle');
+    }
+  };
+
+  const handleAcceptBid = (bid) => {
+      if (!socket || !activeSosId) return;
+      socket.emit('accept-bid', { sosId: activeSosId, bid });
+      setSosStatus('accepted');
+      setAssignedMechanic(bid);
+      socket.disconnect();
+      setSocket(null);
+  };
+  // --------------------------------
+
   const handleReportIncident = async (e) => {
     e.preventDefault();
     if (!userLocation) {
@@ -146,6 +223,61 @@ export default function MechanicList() {
             </div>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--fg)' }}>Find a <span className="text-gradient">Nearby Mechanic</span></h1>
             
+            {/* --- LIVE SOS BIDDING --- */}
+            <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid #eab308', padding: '1.5rem', borderRadius: '16px', maxWidth: '600px', margin: '0 auto 2rem' }}>
+                <h3 style={{color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px'}}>
+                    <Radio size={20} className="pulse-anim" /> Live SOS Broadcast
+                </h3>
+                <p style={{color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '15px'}}>Stranded? Broadcast your location to all nearby mechanics and get instant bids.</p>
+                
+                {sosStatus === 'idle' && (
+                    <button onClick={handleBroadcastSOS} className="btn-gradient" style={{background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                        <Radio size={20} /> Broadcast SOS Now
+                    </button>
+                )}
+
+                {sosStatus === 'broadcasting' && (
+                    <div className="fadeIn">
+                        <div style={{color: '#eab308', fontWeight: 'bold', marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                            <div className="loader" style={{width: '20px', height: '20px', borderTopColor: '#eab308'}}></div>
+                            Broadcasting... Waiting for Mechanic Bids
+                        </div>
+                        {bids.length > 0 ? (
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                {bids.map((b, idx) => (
+                                    <div key={idx} style={{background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div style={{textAlign: 'left'}}>
+                                            <strong>{b.mechanicName}</strong> <span style={{fontSize: '0.8rem', color: 'var(--muted)'}}>({b.distance} km)</span>
+                                            <div style={{color: '#10b981', fontWeight: 'bold'}}>Offer: ₹{b.price}</div>
+                                        </div>
+                                        <button onClick={() => handleAcceptBid(b)} style={{background: '#10b981', color: '#fff', padding: '8px 16px', borderRadius: '20px', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px'}}>
+                                            <Check size={16} /> Accept
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p style={{fontSize: '0.85rem', color: 'var(--muted)'}}>No bids yet. Please wait.</p>
+                        )}
+                        <button onClick={() => { if(socket) socket.disconnect(); setSosStatus('idle'); setBids([]); }} style={{background: 'transparent', color: '#ef4444', border: 'none', textDecoration: 'underline', marginTop: '15px', fontSize: '0.9rem'}}>Cancel Broadcast</button>
+                    </div>
+                )}
+
+                {sosStatus === 'accepted' && assignedMechanic && (
+                    <div className="fadeIn" style={{background: 'rgba(16, 185, 129, 0.1)', padding: '15px', borderRadius: '12px', border: '1px solid #10b981'}}>
+                        <h4 style={{color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px'}}>
+                            <CheckCircle size={20} /> Mechanic Assigned!
+                        </h4>
+                        <p style={{marginBottom: '5px'}}><strong>{assignedMechanic.mechanicName}</strong> is on their way.</p>
+                        <p style={{color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '15px'}}>Agreed Amount: ₹{assignedMechanic.price} (Cash/UPI directly to mechanic)</p>
+                        <a href={`tel:${assignedMechanic.phone}`} className="btn-gradient" style={{textDecoration: 'none', padding: '10px 20px', borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#10b981', border: 'none'}}>
+                            <PhoneCall size={16} /> Call Mechanic
+                        </a>
+                    </div>
+                )}
+            </div>
+            {/* ----------------------- */}
+
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '1.5rem' }}>
               <button 
                 onClick={() => setViewMode('list')} 

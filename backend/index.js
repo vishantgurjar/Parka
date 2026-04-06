@@ -8,6 +8,7 @@ const User = require('./models/User');
 const Mechanic = require('./models/Mechanic');
 const Complaint = require('./models/Complaint');
 const Incident = require('./models/Incident');
+const SOSRequest = require('./models/SOSRequest');
 const { OAuth2Client } = require('google-auth-library');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -47,6 +48,56 @@ io.on("connection", (socket) => {
     io.to(data.to).emit("call-answered", data.signal);
   });
   
+  // ================= SOS BIDDING LOGIC =================
+  socket.on("join-sos-room", (userId) => {
+    socket.join(`sos_${userId}`);
+    console.log(`Socket ${socket.id} joined SOS room sos_${userId}`);
+  });
+
+  socket.on("mechanic-subscribe", (mechanicId) => {
+    socket.join(`mechanic_sos`);
+    console.log(`Mechanic ${socket.id} subscribed to SOS alerts`);
+  });
+
+  socket.on("submit-bid", async (data) => {
+    // data: { sosId, userId, mechanicId, mechanicName, price, distance, phone }
+    try {
+      const sos = await SOSRequest.findById(data.sosId);
+      if (sos && sos.status === 'pending') {
+        const bid = {
+          mechanicId: data.mechanicId,
+          mechanicName: data.mechanicName,
+          price: data.price,
+          distance: data.distance,
+          phone: data.phone
+        };
+        sos.bids.push(bid);
+        await sos.save();
+        // Emit specifically to the user who requested the SOS
+        io.to(`sos_${data.userId}`).emit("mechanic-bid", bid);
+      }
+    } catch (err) {
+      console.error("Bid Submit Error:", err);
+    }
+  });
+
+  socket.on("accept-bid", async (data) => {
+    // data: { sosId, bid }
+    try {
+      const sos = await SOSRequest.findById(data.sosId);
+      if (sos && sos.status === 'pending') {
+        sos.status = 'accepted';
+        sos.assignedBid = data.bid;
+        await sos.save();
+        // Broadcast to all mechanics that this SOS is resolved (so it clears from their dashboard)
+        io.to('mechanic_sos').emit("sos-resolved", data.sosId);
+        // Specifically tell the winning mechanic
+        // Note: they can listen to sos-resolved and check if they won via fetching state
+      }
+    } catch (err) {
+      console.error("Accept Bid Error:", err);
+    }
+  });
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });
@@ -419,6 +470,47 @@ app.post('/api/alerts/scan', checkDbConnection, async (req, res) => {
   } catch (err) {
     console.error('Alert Error:', err.message);
     res.status(500).json({ message: 'Server Error processing alert' });
+  }
+});
+
+// --- NEW SOS BIDDING ROUTES ---
+
+// @route   POST /api/sos/broadcast
+// @desc    Broadcast a new SOS request
+// @access  Public
+app.post('/api/sos/broadcast', checkDbConnection, async (req, res) => {
+  try {
+    const { userId, userName, userPhone, location } = req.body;
+    const sosRequest = new SOSRequest({
+      userId,
+      userName,
+      userPhone,
+      location,
+      bids: []
+    });
+    await sosRequest.save();
+    
+    // Broadcast via socket.io inside the router
+    // This emits to all mechanics who have joined the 'mechanic_sos' room
+    io.to('mechanic_sos').emit('incoming-sos', sosRequest);
+
+    res.status(201).json({ message: 'SOS Broadcasted Successfully', sosRequest });
+  } catch (err) {
+    console.error('SOS Broadcast Error:', err);
+    res.status(500).json({ message: 'Server error during SOS broadcast' });
+  }
+});
+
+// @route   GET /api/sos/active
+// @desc    Get pending SOS requests for Mechanics dashboard
+// @access  Public
+app.get('/api/sos/active', checkDbConnection, async (req, res) => {
+  try {
+    // Only return SOS requests that are currently pending
+    const activeRequests = await SOSRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
+    res.json(activeRequests);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching active SOS requests' });
   }
 });
 
