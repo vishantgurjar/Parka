@@ -813,10 +813,10 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
         1. If the input (symptom or audio) does NOT seem to be related to a car or vehicle issue (e.g. they are talking about food, weather, or just nonsensical noise), respond with: "ERROR_NOT_A_CAR_ISSUE".
         2. If it IS a car issue, provide a structured diagnostic report in JSON format exactly like this:
         {
-          "issue": "Short title of the problem",
+          "issue": "Short title of the problem in English",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
-          "details": "A detailed explanation of what is happening and why.",
-          "action": "What the user should do immediately (e.g., Pull over, Drive slowly, etc.)",
+          "details": "Detail explanation in informal 'WhatsApp style' Hinglish (Hindi + English mix). Use friendly tone. Example: 'Bhai, aapke engine se jo ticking awaz aa rahi hai wo oil kam hone ki wajah se ho sakti hai.'",
+          "action": "Immediate advice in Hinglish. Example: 'Pehle car side mein lagao aur oil level check karo.'",
           "estimatedCost": "Approximate repair cost range in INR (e.g. ₹2,000 - ₹5,000)"
         }
         Do not include any Markdown formatting or extra text, just the raw JSON or the error string.`;
@@ -845,12 +845,12 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
         const input = (req.body.symptom || '').toLowerCase();
         
         const fallbackDatabase = [
-            { keywords: ['squeal', 'belt', 'high pitch'], issue: "Worn Serpentine Belt", dangerLevel: "MEDIUM", details: "A high-pitched squealing sound often indicates a slipping or worn serpentine belt. This belt powers your alternator, power steering, and AC.", action: "Tighten or replace the belt soon.", estimatedCost: "₹1,200 - ₹2,500" },
-            { keywords: ['grinding', 'brake', 'pad', 'squeak'], issue: "Worn Brake Pads", dangerLevel: "CRITICAL", details: "Metallic grinding while braking means your brake pads are completely worn down to the metal. This significantly reduces braking power.", action: "PULL OVER and have your brakes inspected immediately.", estimatedCost: "₹2,500 - ₹4,500" },
-            { keywords: ['ticking', 'tap', 'click'], issue: "Low Oil or Valve Issue", dangerLevel: "MEDIUM", details: "A rapid ticking sound often indicates low engine oil or a valve adjustment issue (lifter tick).", action: "Check your oil level immediately and top up if low.", estimatedCost: "₹500 - ₹1,500 (Oil Top-up)" },
-            { keywords: ['knock', 'thud', 'deep'], issue: "Engine Rod Knock", dangerLevel: "CRITICAL", details: "Deep metallic knocking from within the engine is a sign of severe internal damage (connecting rod bearing failure).", action: "STOP the engine immediately. Internal damage is imminent.", estimatedCost: "₹40.000 - ₹1,20,000" },
-            { keywords: ['smoke', 'white'], issue: "Coolant Leak / Head Gasket", dangerLevel: "CRITICAL", details: "White smoke from the exhaust usually means coolant is leaking into the engine, possibly due to a blown head gasket.", action: "Stop driving and check for engine overheating.", estimatedCost: "₹15,000 - ₹35,000" },
-            { keywords: ['smoke', 'blue', 'black'], issue: "Oil Burning / Fuel Mixture", dangerLevel: "MEDIUM", details: "Blue smoke indicates burning oil; black smoke indicates a rich fuel mixture (too much gas).", action: "Have a mechanic check your fuel injectors or oil seals.", estimatedCost: "₹5,000 - ₹12,000" }
+            { keywords: ['squeal', 'belt', 'high pitch'], issue: "Worn Serpentine Belt", dangerLevel: "MEDIUM", details: "Bhai, aapki car ki belt ghis gayi hai ya dhili ho gayi hai, isiliye ye awaz aa rahi hai.", action: "Belt ko tight karwao ya nayi dalwa lo.", estimatedCost: "₹1,200 - ₹2,500" },
+            { keywords: ['grinding', 'brake', 'pad', 'squeak'], issue: "Worn Brake Pads", dangerLevel: "CRITICAL", details: "Brake pads ekdum khatam ho chuke hain, metal-to-metal ghis raha hai jo bahut khatarnak hai.", action: "Gaadi abhi roko aur brake check karwao turant!", estimatedCost: "₹2,500 - ₹4,500" },
+            { keywords: ['ticking', 'tap', 'click'], issue: "Low Oil or Valve Issue", dangerLevel: "MEDIUM", details: "Ye ticking awaz engine oil kam hone ki wajah se aa rahi hai.", action: "Pehle engine oil check karo aur kam hai toh top-up karo.", estimatedCost: "₹500 - ₹1,500 (Oil Top-up)" },
+            { keywords: ['knock', 'thud', 'deep'], issue: "Engine Rod Knock", dangerLevel: "CRITICAL", details: "Engine ke andar se gehri awaz aane ka matlab hai ki internal damage ho chuka hai.", action: "Gaadi turant band kar do varna pura engine kharab ho jayega.", estimatedCost: "₹40.000 - ₹1,20,000" },
+            { keywords: ['smoke', 'white'], issue: "Coolant Leak / Head Gasket", dangerLevel: "CRITICAL", details: "Safed dhuan matlab engine mein coolant ja raha hai, head gasket leak ho sakta hai.", action: "Gaadi overheating check karo aur drive mat karo.", estimatedCost: "₹15,000 - ₹35,000" },
+            { keywords: ['smoke', 'blue', 'black'], issue: "Oil Burning / Fuel Mixture", dangerLevel: "MEDIUM", details: "Neela dhua matlab tel jal raha hai, kala dhua matlab fuel mixture sahi nahi hai.", action: "Mechanic se fuel injectors check karwao.", estimatedCost: "₹5,000 - ₹12,000" }
         ];
 
         // Find best match
@@ -865,8 +865,8 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
             return res.json({
                 issue: "Complex Engine Vibration",
                 dangerLevel: "LOW",
-                details: "We detected an unusual acoustic signature. While not matching a specific known critical failure, it indicates general wear in the engine mounts or idling system.",
-                action: "Visit a mechanic for a physical inspection when possible.",
+                details: "Hume car mein kuch ajeeb vibration detect hui hai. Ye engine mounts ya idling system ki wajah se ho sakta hai.",
+                action: "Jab time mile toh kisi mechanic se normal checkup karwa lena.",
                 estimatedCost: "₹1,000 - ₹3,000"
             });
         }
