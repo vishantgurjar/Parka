@@ -10,6 +10,8 @@ export default function VehicleLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showSecureCall, setShowSecureCall] = useState(false);
+  const [nearestMechanic, setNearestMechanic] = useState({ phone: '7895039922', name: 'Parkéé Admin' });
+
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -26,7 +28,9 @@ export default function VehicleLandingPage() {
               (position) => {
                 const { latitude, longitude } = position.coords;
                 sendScanAlert(latitude, longitude, data.phone);
+                fetchNearestMechanic(latitude, longitude);
               },
+
               (error) => {
                 console.log("Location denied or error:", error);
                 sendScanAlert(null, null, data.phone);
@@ -59,6 +63,19 @@ export default function VehicleLandingPage() {
         })
       }).catch(err => console.log('Alert skipped:', err));
     };
+
+    const fetchNearestMechanic = async (lat, lng) => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/mechanics/nearest?lat=${lat}&lng=${lng}`);
+        if (res.ok) {
+          const data = await res.json();
+          setNearestMechanic(data);
+        }
+      } catch (err) {
+        console.log("Could not find nearest mechanic:", err);
+      }
+    };
+
 
     fetchVehicle();
   }, [id]);
@@ -196,7 +213,7 @@ export default function VehicleLandingPage() {
           )}
           
           {/* 3. Highway Emergency Help (Critical) */}
-          <a href="tel:7895039922" style={{ 
+          <a href={`tel:${nearestMechanic.phone}`} style={{ 
             textDecoration: 'none', 
             padding: '20px', 
             borderRadius: '20px', 
@@ -222,10 +239,11 @@ export default function VehicleLandingPage() {
               <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '14px' }}>
                 <AlertTriangle size={28} />
               </div>
-              HIGHWAY HELP (24/7)
+              {nearestMechanic.name === 'Parkéé Admin' ? 'HIGHWAY HELP (24/7)' : `SOS: ${nearestMechanic.shopName || nearestMechanic.name}`}
             </div>
             <ChevronRight size={24} />
           </a>
+
 
           {/* 4. Find Mechanic */}
           <Link to="/mechanics" style={{ 

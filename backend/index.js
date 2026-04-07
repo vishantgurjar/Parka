@@ -399,8 +399,13 @@ app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
       dateOfBirth,
       idNumber,
       latitude,
-      longitude
+      longitude,
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)]
+      }
     });
+
 
     await mechanic.save();
 
@@ -411,13 +416,39 @@ app.post('/api/mechanics/register', checkDbConnection, async (req, res) => {
   }
 });
 
+// @route   GET /api/mechanics/nearest
+// @desc    Find the nearest available mechanic
+app.get('/api/mechanics/nearest', checkDbConnection, async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    if (!lat || !lng) return res.status(400).json({ message: 'Coordinates required' });
+
+    const nearest = await Mechanic.findOne({
+      isAvailable: true,
+      isPaid: true,
+      location: {
+        $near: {
+          $geometry: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+          $maxDistance: 50000 // 50km
+        }
+      }
+    }).select('name phone shopName');
+
+    if (!nearest) {
+      return res.json({ phone: '7895039922', name: 'Parkéé Admin' }); // Fallback
+    }
+
+    res.json(nearest);
+  } catch (err) {
+    console.error('Nearest Mechanic Error:', err);
+    res.status(500).json({ message: 'Error finding nearest mechanic' });
+  }
+});
+
 // @route   GET /api/mechanics
-// @desc    Get all registered mechanics
-// @access  Public
 app.get('/api/mechanics', checkDbConnection, async (req, res) => {
   try {
     const mechanics = await Mechanic.find({ isAvailable: true, isPaid: true }).select('-password');
-
     res.json(mechanics);
   } catch (err) {
     console.error(err.message);
@@ -426,6 +457,7 @@ app.get('/api/mechanics', checkDbConnection, async (req, res) => {
 });
 
 // @route   POST /api/contact
+
 // @desc    Submit a complaint or inquiry
 // @access  Public
 app.post('/api/contact', checkDbConnection, async (req, res) => {

@@ -13,6 +13,11 @@ const MechanicSchema = new mongoose.Schema({
   idNumber: { type: String },
   latitude: { type: Number },
   longitude: { type: Number },
+  location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], default: [0, 0] } // [lng, lat]
+  },
+
   isAvailable: { type: Boolean, default: true },
   isPaid: { type: Boolean, default: false },
   // Razorpay payment tracking
@@ -27,5 +32,7 @@ const MechanicSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+MechanicSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Mechanic', MechanicSchema);
+
