@@ -194,35 +194,35 @@ export default function AIAssistant() {
           )}
 
           {status === 'recording' && (
-            <div style={{ animation: 'fadeIn 0.5s ease-in', width: '100%', maxWidth: '400px' }}>
-              <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '6px', alignItems: 'flex-end', height: '80px' }}>
+            <div style={{ animation: 'fadeIn 0.5s ease-in', width: '100%', maxWidth: '400px', position: 'relative' }}>
+              <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', height: '100px' }}>
                 {visualizerData.map((height, i) => (
-                  <div key={i} style={{
-                    width: '8px', 
-                    height: `${height}px`, 
-                    background: '#ef4444', 
-                    borderRadius: '4px',
-                    transition: 'height 0.05s ease'
+                  <div key={i} className="sonic-bar" style={{
+                    height: `${Math.max(15, height * 0.8)}px`, 
+                    animationDelay: `${i * 0.05}s`
                   }} />
                 ))}
               </div>
-              <h2 style={{ color: '#ef4444' }}>Listening to Engine...</h2>
-              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '2rem', overflow: 'hidden' }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: '#ef4444', transition: 'width 0.2s linear' }} />
+              <h2 style={{ color: '#38bdf8', letterSpacing: '1px' }}>Listening to Engine...</h2>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginTop: '2rem', overflow: 'hidden' }}>
+                <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', transition: 'width 0.2s linear' }} />
               </div>
             </div>
           )}
 
+
           {status === 'analyzing' && (
-            <div className="fadeIn" style={{ width: '100%', maxWidth: '400px' }}>
+            <div className="fadeIn" style={{ width: '100%', maxWidth: '400px', position: 'relative', overflow: 'hidden', borderRadius: '20px', padding: '2rem' }}>
+              <div className="scanline"></div>
               <Activity size={80} color="#38bdf8" className="pulse-anim" style={{ marginBottom: '1.5rem' }} />
-              <h2 style={{ color: '#38bdf8' }}>AI Mechanic Analyzing...</h2>
-              <p style={{ color: 'var(--muted)' }}>Providing real-time specialized diagnostics...</p>
-              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '2rem', overflow: 'hidden' }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: '#38bdf8', transition: 'width 0.3s linear' }} />
+              <h2 style={{ color: '#38bdf8' }}>AI Deep Scan Scanning...</h2>
+              <p style={{ color: 'var(--muted)' }}>Analyzing acoustic patterns and technical signatures...</p>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginTop: '2rem', overflow: 'hidden' }}>
+                <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', transition: 'width 0.3s linear' }} />
               </div>
             </div>
           )}
+
 
           {status === 'complete' && diagnosis && (
             <div className="fadeIn" style={{ width: '100%', maxWidth: '500px', textAlign: 'left' }}>
@@ -245,7 +245,23 @@ export default function AIAssistant() {
 
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '1.5rem' }}>
                 <h4 style={{ margin: '0 0 10px 0', color: 'var(--muted)', textTransform: 'uppercase', fontSize: '0.85rem' }}>AI Diagnostic Details</h4>
-                <p style={{ margin: 0, lineHeight: 1.6 }}>{diagnosis.details}</p>
+                <p style={{ margin: '0 0 1rem 0', lineHeight: 1.6 }}>{diagnosis.details}</p>
+                
+                {/* Confidence Meter */}
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                      <span style={{ color: 'var(--muted)' }}>AI Confidence Score</span>
+                      <span style={{ color: diagnosis.confidence > 85 ? '#10b981' : '#eab308' }}>{diagnosis.confidence || 85}%</span>
+                   </div>
+                   <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ 
+                        width: `${diagnosis.confidence || 85}%`, 
+                        height: '100%', 
+                        background: diagnosis.confidence > 85 ? '#10b981' : '#eab308',
+                        transition: 'width 1s ease-out' 
+                      }} />
+                   </div>
+                </div>
               </div>
 
               {diagnosis.estimatedCost && (

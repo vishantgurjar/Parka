@@ -897,7 +897,8 @@ function getSmartDiagnosis(userInput, signature) {
                 dangerLevel: "MEDIUM",
                 details: "Hume ek bahut teekhi (high pitch) awaz sunayi di hai. Ye aksar dhili engine belt ya turbo leak ki nishani hoti hai.",
                 action: "Bonnet khol kar belt ki tension check karo.",
-                estimatedCost: "₹1,200 - ₹3,500"
+                estimatedCost: "₹1,200 - ₹3,500",
+                confidence: 88
             };
         } else if (signature === 'low') {
             bestResult = {
@@ -905,7 +906,8 @@ function getSmartDiagnosis(userInput, signature) {
                 dangerLevel: "CRITICAL",
                 details: "Hume engine se ek bhari (thud-thud) awaz sunayi de rahi hai. Ye engine ke internal parts ya suspension ki wajah se ho sakti hai.",
                 action: "Risk mat lo, gaadi turant side mein karke engine oil check karo.",
-                estimatedCost: "₹10,000 - ₹50,000"
+                estimatedCost: "₹10,000 - ₹50,000",
+                confidence: 88
             };
         } else {
             // Fallback for generic 'engine' or 'car' mentions help
@@ -915,14 +917,18 @@ function getSmartDiagnosis(userInput, signature) {
                     dangerLevel: "LOW",
                     details: "Aapki car mein normal servicing ki zaroorat ho sakti hai. Sensors aur engine oil ek baar check karwa lo.",
                     action: "Najdiki mechanic ke pas jaakar general checkup karwao.",
-                    estimatedCost: "₹500 - ₹1,500"
+                    estimatedCost: "₹500 - ₹1,500",
+                    confidence: 78
                 };
             } else {
                 // Pick a random unknown response
                 const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
-                bestResult = { ...randomUnknown };
+                bestResult = { ...randomUnknown, confidence: 64 };
             }
         }
+    } else {
+        // High confidence for exact match
+        bestResult.confidence = Math.min(98, 82 + (maxScore * 1.2));
     }
 
     // Add Natural Hinglish Variety (WhatsApp style)

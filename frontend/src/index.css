@@ -1163,11 +1163,30 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     animation: shimmer 2s infinite linear;
 }
 
-@keyframes pulse-gold {
-    0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+@keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
 }
-.pulse-gold {
-    animation: pulse-gold 2s infinite;
+
+.scanline {
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 0 15px #38bdf8;
+    z-index: 10;
+    pointer-events: none;
+    animation: scanline 2s linear infinite;
+}
+
+@keyframes sonicWave {
+    0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+    50% { transform: scaleY(1.5); opacity: 1; }
+}
+
+.sonic-bar {
+    width: 6px;
+    border-radius: 50px;
+    background: linear-gradient(0deg, #38bdf8 0%, #818cf8 100%);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    animation: sonicWave 1.2s infinite ease-in-out;
 }
