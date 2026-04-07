@@ -8,7 +8,10 @@ const User = require('./models/User');
 const Mechanic = require('./models/Mechanic');
 const Complaint = require('./models/Complaint');
 const Incident = require('./models/Incident');
+const Review = require('./models/Review');
+const User = require('./models/User'); 
 const SOSRequest = require('./models/SOSRequest');
+
 const { OAuth2Client } = require('google-auth-library');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -322,7 +325,6 @@ app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
 
 // @route   POST /api/user/upgrade
 // @desc    Upgrade user to PRO (Mock payment flow validation)
-// @access  Public
 app.post('/api/user/upgrade', checkDbConnection, async (req, res) => {
   try {
     const { userId, tier } = req.body; // tier: 'silver' or 'gold'
@@ -341,6 +343,7 @@ app.post('/api/user/upgrade', checkDbConnection, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // --- NEW MECHANIC ROUTES ---
 
@@ -790,7 +793,80 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
 
 
 
+// --- SMART QR SCAN ALERT (Updated with Location) ---
+app.post('/api/alerts/scan', async (req, res) => {
+    const { vehicleId, ownerPhone, lat, lng } = req.body;
+    
+    // Simulate Alert (e.g., via SMS or Dashboard Notification)
+    console.log(`[QR ALERT] Vehicle ${vehicleId} scanned. Owner notified at ${ownerPhone}`);
+    
+    let locationMsg = "";
+    try {
+        const owner = await User.findOne({ phone: ownerPhone });
+        // Check if owner is PRO (Silver/Gold/Diamond)
+        if (owner && ['silver', 'gold', 'diamond'].includes(owner.subscriptionTier)) {
+            if (lat && lng) {
+                const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                locationMsg = `📍 Location detected: ${mapsUrl}`;
+                console.log(`[PRO ALERT] Sending GPS coordinates to owner: ${mapsUrl}`);
+            } else {
+                locationMsg = " (Location access was denied by scanner)";
+            }
+        }
+    } catch (err) {
+        console.error("Alert error:", err);
+    }
+
+    res.json({ 
+        success: true, 
+        message: `Alert sent to owner.${locationMsg}` 
+    });
+});
+
+// --- RATING & REVIEW SYSTEM ---
+app.post('/api/reviews', async (req, res) => {
+    try {
+        const { mechanicId, userId, userName, rating, comment, sosId } = req.body;
+        
+        const review = new Review({ mechanicId, userId, userName, rating, comment, sosId });
+        await review.save();
+
+        // Update Mechanic Average Rating
+        const mechanic = await Mechanic.findById(mechanicId);
+        if (mechanic) {
+            const newTotalReviews = (mechanic.numReviews || 0) + 1;
+            const currentAvg = mechanic.averageRating || 0;
+            const newAvg = ((currentAvg * (mechanic.numReviews || 0)) + rating) / newTotalReviews;
+            
+            mechanic.averageRating = Number(newAvg.toFixed(1));
+            mechanic.numReviews = newTotalReviews;
+            await mechanic.save();
+        }
+
+        res.status(201).json({ success: true, review });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to submit review." });
+    }
+});
+
+// Mark SOS as Completed
+app.post('/api/sos/:id/complete', async (req, res) => {
+    try {
+        const sos = await SOSRequest.findById(req.params.id);
+        if (sos) {
+            sos.status = 'completed';
+            await sos.save();
+            res.json({ success: true, message: "SOS marked as completed." });
+        } else {
+            res.status(404).json({ message: "SOS not found." });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Error updating SOS status." });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server (with WebRTC Socket) is running on port ${PORT}`);
 });
+

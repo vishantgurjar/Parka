@@ -20,12 +20,21 @@ export default function VehicleLandingPage() {
         if (res.ok) {
           setVehicle(data);
 
-          // Trigger Security SMS/WhatsApp Alert Mock
-          fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/alerts/scan`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ vehicleId: id })
-          }).catch(err => console.log('Alert skipped:', err));
+          // Request location to notify owner (PRO Feature logic is on backend)
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const { latitude, longitude } = position.coords;
+                sendScanAlert(latitude, longitude, data.phone);
+              },
+              (error) => {
+                console.log("Location denied or error:", error);
+                sendScanAlert(null, null, data.phone);
+              }
+            );
+          } else {
+            sendScanAlert(null, null, data.phone);
+          }
 
         } else {
           setError(data.message || 'Vehicle not found');
@@ -38,8 +47,22 @@ export default function VehicleLandingPage() {
       }
     };
 
+    const sendScanAlert = (lat, lng, ownerPhone) => {
+      fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/alerts/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          vehicleId: id, 
+          ownerPhone: ownerPhone,
+          lat, 
+          lng 
+        })
+      }).catch(err => console.log('Alert skipped:', err));
+    };
+
     fetchVehicle();
   }, [id]);
+
 
   if (loading) {
     return (

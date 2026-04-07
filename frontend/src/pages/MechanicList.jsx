@@ -104,13 +104,18 @@ export default function MechanicList() {
   };
 
   // SOS States
-  const [sosStatus, setSosStatus] = useState('idle'); // idle, broadcasting, accepted
+  const [sosStatus, setSosStatus] = useState('idle'); // idle, broadcasting, accepted, completed
   const [socket, setSocket] = useState(null);
   const [bids, setBids] = useState([]);
   const [activeSosId, setActiveSosId] = useState(null);
   const [assignedMechanic, setAssignedMechanic] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedBid, setSelectedBid] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+
+
 
   useEffect(() => {
     // Attempt to get user location
@@ -256,6 +261,46 @@ export default function MechanicList() {
           alert("Network error finalizing SOS.");
       }
   };
+
+  const handleCompleteSOS = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/sos/${activeSosId}/complete`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            setSosStatus('completed');
+            setShowRatingModal(true);
+        }
+    } catch (err) {
+        alert("Error marking job as complete.");
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/reviews`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mechanicId: assignedMechanic.mechanicId,
+                userId: user._id,
+                userName: user.name,
+                rating,
+                comment,
+                sosId: activeSosId
+            })
+        });
+        if (res.ok) {
+            alert("Thank you for your feedback!");
+            setShowRatingModal(false);
+            setSosStatus('idle');
+            setAssignedMechanic(null);
+        }
+    } catch (err) {
+        alert("Failed to submit review.");
+    }
+  };
+
   // --------------------------------
 
   const handleReportIncident = async (e) => {
@@ -389,12 +434,22 @@ export default function MechanicList() {
                             <a href={`tel:${assignedMechanic.phone}`} className="btn-gradient" style={{textDecoration: 'none', padding: '10px 20px', borderRadius: '30px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#10b981', border: 'none'}}>
                                 <PhoneCall size={16} /> Call Mechanic
                             </a>
-                            <button onClick={() => { setSosStatus('idle'); setAssignedMechanic(null); setMechanicLocation(null); }} className="btn-secondary" style={{ borderRadius: '30px', padding: '10px 20px' }}>
-                                Close
+                            <button onClick={handleCompleteSOS} className="btn-secondary" style={{ borderRadius: '30px', padding: '10px 20px', background: 'var(--primary)', color: '#fff', border: 'none' }}>
+                                Mark Job Done
                             </button>
                         </div>
                     </div>
                 )}
+
+                {sosStatus === 'completed' && (
+                    <div className="fadeIn" style={{padding: '15px', textAlign: 'center'}}>
+                         <CheckCircle size={50} color="#10b981" style={{marginBottom: '10px'}} />
+                         <h3 style={{color: '#10b981'}}>Job Completed!</h3>
+                         <p style={{color: 'var(--muted)', fontSize: '0.9rem'}}>Thank you for using Parkéé City SOS.</p>
+                         <button onClick={() => setSosStatus('idle')} className="btn-secondary" style={{marginTop: '15px', padding: '10px 20px', borderRadius: '30px'}}>Close</button>
+                    </div>
+                )}
+
             </div>
             {/* ----------------------- */}
 
@@ -521,8 +576,9 @@ export default function MechanicList() {
                               <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.95rem' }}>{mechanic.shopName}</div>
                           </div>
                           <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                              <Star size={14} fill="currentColor" /> {mechanic.experienceYears}+ Yrs
+                              <Star size={14} fill="currentColor" /> {mechanic.averageRating > 0 ? `${mechanic.averageRating} (${mechanic.numReviews})` : `${mechanic.experienceYears}+ Yrs`}
                           </div>
+
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '8px', fontWeight: '600' }}>
@@ -582,7 +638,50 @@ export default function MechanicList() {
           )
         )}  </div>
 
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.8)', zIndex: 10001,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-card fadeIn" style={{ width: '90%', maxWidth: '400px', padding: '2rem', textAlign: 'center' }}>
+            <h2 style={{marginBottom: '1rem'}}>Rate Your Mechanic</h2>
+            <p style={{color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem'}}>How was your experience with {assignedMechanic?.mechanicName}?</p>
+            
+            <div style={{display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '2rem'}}>
+                {[1,2,3,4,5].map(num => (
+                    <Star 
+                        key={num} 
+                        size={32} 
+                        fill={rating >= num ? "#eab308" : "transparent"} 
+                        color="#eab308" 
+                        style={{cursor: 'pointer'}} 
+                        onClick={() => setRating(num)}
+                    />
+                ))}
+            </div>
+
+            <textarea 
+                placeholder="Write a quick comment (optional)..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                style={{
+                    width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--border)', color: 'var(--fg)', marginBottom: '1.5rem', minHeight: '80px'
+                }}
+            />
+
+            <button onClick={handleSubmitReview} className="btn-gradient full-width" style={{padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold'}}>
+                Submit Review
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Report Incident Modal */}
+
       {showIncidentModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 

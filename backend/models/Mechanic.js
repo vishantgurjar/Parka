@@ -21,6 +21,10 @@ const MechanicSchema = new mongoose.Schema({
   razorpaySignature: { type: String },
   // SOS Commission Wallet
   walletBalance: { type: Number, default: 0 },
+  // Ratings & Reviews
+  averageRating: { type: Number, default: 0 },
+  numReviews: { type: Number, default: 0 },
+
 }, { timestamps: true });
 
 
