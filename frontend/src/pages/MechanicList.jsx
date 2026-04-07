@@ -8,7 +8,7 @@ import PaymentModal from '../components/PaymentModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import TrackingMap from '../components/TrackingMap';
-import { AuthContext } from '../App';
+
 
 // Fix leaflet default icon issue in React
 delete L.Icon.Default.prototype._getIconUrl;
