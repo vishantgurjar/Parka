@@ -806,21 +806,48 @@ const CAR_DIAGNOSTIC_DB = [
     { keywords: ['smoke', 'white', 'steam', 'heat', 'temperature', 'boil'], issue: "Overheating / Head Gasket", dangerLevel: "CRITICAL", details: "Safed dhua (steam) aur engine temperature high hone ka matlab hai coolant leak. Ye engine ko hamesha ke liye dead kar sakta hai.", action: "GAADI TURANT ROKO! Engine thanda hone do aur coolant check karo, bina pani ke driving mat karo.", estimatedCost: "₹15,000 - ₹35,000" },
     { keywords: ['smoke', 'blue', 'burning', 'oil', 'smell'], issue: "Oil Burning / Piston Rings", dangerLevel: "MEDIUM", details: "Neela dhua (blue smoke) ka matlab hai ki engine 'oil pee raha hai' yaani tel jala raha hai. Piston rings ya gaskets kamzor ho gaye hain.", action: "Engine oil level check karte raho aur compression test karwao.", estimatedCost: "₹10,000 - ₹25,000" },
     { keywords: ['bump', 'noise', 'thud', 'suspension', 'jump', 'shocker'], issue: "Suspension/Shockers Failure", dangerLevel: "LOW", details: "Gaddhon mein 'gud-gud' ya 'thud' awaz aa rahi hai? Aapke shockers ya suspension bushes khatam ho gaye hain.", action: "Suspension repair karwao varna steering aur control kharab hoga.", estimatedCost: "₹5,000 - ₹15,000" },
-    { keywords: ['fuel', 'smell', 'petrol', 'diesel', 'leak', 'line'], issue: "Fuel Leakage", dangerLevel: "CRITICAL", details: "Petrol ya diesel ki smell aana bahut dangerous hai. Fuel line ya tank mein leak ho sakta hai, aag lagne ka khatra hai.", action: "Gaadi bilkul mat chalao! Ignitios off rakho aur mechanic ko bulao.", estimatedCost: "₹500 - ₹3,000" },
-    { keywords: ['hard', 'steering', 'power', 'heavy', 'tight'], issue: "Power Steering Failure", dangerLevel: "MEDIUM", details: "Steering bahut bhaari (hard) ho gaya hai? Power steering motor ya fluid kam ho sakta hai.", action: "Steering fluid top-up karo aur belt check karwao.", estimatedCost: "₹1,000 - ₹5,000" },
-    { keywords: ['misfire', 'missing', 'jerk', 'pickup', 'spark'], issue: "Engine Misfire / Spark Plug", dangerLevel: "MEDIUM", details: "Gaadi jhatke (jerks) le rahi hai aur pickup kam ho gaya hai? Shayad spark plug ya ignition coil kharab hai.", action: "Spark plugs clean karwao ya badal lo.", estimatedCost: "₹800 - ₹2,500" },
-    { keywords: ['clutch', 'hard', 'slip', 'gear', 'shift'], issue: "Clutch Plate Wear", dangerLevel: "MEDIUM", details: "Gear shifting hard ho gayi hai ya clutch upar chhodne par pickup nahi mil raha? Clutch plate ghis gayi hai.", action: "Clutch set change karwana padega.", estimatedCost: "₹6,000 - ₹12,000" },
+    { keywords: ['fuel', 'smell', 'petrol', 'diesel', 'leak', 'line', 'tel', 'oil leak'], issue: "Fuel Leakage", dangerLevel: "CRITICAL", details: "Petrol ya diesel ki smell aana bahut dangerous hai. Fuel line ya tank mein leak ho sakta hai, aag lagne ka khatra hai.", action: "Gaadi bilkul mat chalao! Ignitios off rakho aur mechanic ko bulao.", estimatedCost: "₹500 - ₹3,000" },
+    { keywords: ['hard', 'steering', 'power', 'heavy', 'tight', 'mudna'], issue: "Power Steering Failure", dangerLevel: "MEDIUM", details: "Steering bahut bhaari (hard) ho gaya hai? Power steering motor ya fluid kam ho sakta hai.", action: "Steering fluid top-up karo aur belt check karwao.", estimatedCost: "₹1,000 - ₹5,000" },
+    { keywords: ['misfire', 'missing', 'jerk', 'pickup', 'spark', 'jhatka', 'stop'], issue: "Engine Misfire / Spark Plug", dangerLevel: "MEDIUM", details: "Gaadi jhatke (jerks) le rahi hai aur pickup kam ho gaya hai? Shayad spark plug ya ignition coil kharab hai.", action: "Spark plugs clean karwao ya badal lo.", estimatedCost: "₹800 - ₹2,500" },
+    { keywords: ['clutch', 'hard', 'slip', 'gear', 'shift', 'phase'], issue: "Clutch Plate Wear", dangerLevel: "MEDIUM", details: "Gear shifting hard ho gayi hai ya clutch upar chhodne par pickup nahi mil raha? Clutch plate ghis gayi hai.", action: "Clutch set change karwana padega.", estimatedCost: "₹6,000 - ₹12,000" },
+    { keywords: ['noise', 'sound', 'awaz', 'shor', 'vibration', 'ajeeb'], issue: "General Engine Noise", dangerLevel: "LOW", details: "Engine se ajeeb awaz aa rahi hai jo wear-and-tear ki wajah se ho sakti hai. Shayad koi mount ya plastic part dhila hai.", action: "Ek baar bonnet khol kar check karo koi part toh nahi hil raha.", estimatedCost: "₹200 - ₹1,000" },
 ];
 
 function getSmartDiagnosis(userInput) {
     const input = (userInput || '').toLowerCase();
+    
+    // 1. Array of Generic/Unknown responses to avoid repetition
+    const unknownResponses = [
+        {
+            issue: "Complex Technical Issue",
+            dangerLevel: "LOW",
+            details: "Hume car mein kuch ajeeb detect hua hai par exact problem clear nahi hai. Ye sensors ya electrical system ki dikkat ho sakti hai.",
+            action: "Ek baar laptop scanning karwa lo kisi ache mechanic se.",
+            estimatedCost: "₹500 - ₹1,500"
+        },
+        {
+            issue: "Acoustic Signature Mismatch",
+            dangerLevel: "MEDIUM",
+            details: "Sound analyzer ko thodi confusion ho rahi hai. Ye engine ke kisi internal part ka noise lag raha hai.",
+            action: "Gaadi ki speed kam rakho aur engine oil level check karo.",
+            estimatedCost: "₹1,000 - ₹3,000"
+        },
+        {
+            issue: "Undetermined Mechanical Wear",
+            dangerLevel: "LOW",
+            details: "Aapki description ke hisaab se ye normal wear and tear lag raha hai. Shayad purani gaadi hone ki wajah se ye awaz hai.",
+            action: "Normal service karwane par ye theek ho sakta hai.",
+            estimatedCost: "₹2,000 - ₹4,000"
+        }
+    ];
+
     let bestResult = null;
     let maxScore = 0;
 
     CAR_DIAGNOSTIC_DB.forEach(item => {
         let score = 0;
         item.keywords.forEach(kw => {
-            if (input.includes(kw)) score += 2; // Exact word match
+            if (input.includes(kw)) score += 2; 
         });
         if (score > maxScore) {
             maxScore = score;
@@ -829,18 +856,14 @@ function getSmartDiagnosis(userInput) {
     });
 
     if (!bestResult || maxScore === 0) {
-        return {
-            issue: "Complex Technical Issue",
-            dangerLevel: "LOW",
-            details: "Bhai, hume car mein kuch ajeeb vibration detect hui hai par bina machine ke kehna mushkil hai. Ye sensors ya idling system ki wajah se ho sakta hai.",
-            action: "Jab time mile toh kisi mechanic se normal laptop scanning karwa lena.",
-            estimatedCost: "₹1,000 - ₹3,000"
-        };
+        // Pick a random unknown response
+        const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
+        bestResult = { ...randomUnknown };
     }
 
     // Add Natural Hinglish Variety (WhatsApp style)
-    const prefixes = ["Bhai, ", "Aapki gaadi mein ", "System check se pata chala hai ki ", "Hume ye lagta hai: "];
-    const suffixes = ["", " Dhyan rakho bhai.", " Safe drive karo.", " Fikar mat karo, minor issue hai."];
+    const prefixes = ["Bhai, ", "Aapki gaadi mein ", "System check se pata chala hai ki ", "Hume ye lagta hai: ", "Suno bhai, "];
+    const suffixes = ["", " Dhyan rakho bhai.", " Safe drive karo.", " Fikar mat karo.", " Check karwa lena jaldi."];
     
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
