@@ -940,9 +940,9 @@ function getSmartDiagnosis(userInput, signature) {
 // --- AI DIAGNOSTIC ROUTE ---
 app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
     try {
-        const { symptom, audioBase64 } = req.body;
+        const { symptom, audioBase64, audioSignature } = req.body;
 
-        if (!symptom && !audioBase64) {
+        if (!symptom && !audioBase64 && !audioSignature) {
             return res.status(400).json({ message: "No input provided for analysis." });
         }
 
