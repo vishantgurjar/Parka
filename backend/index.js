@@ -14,6 +14,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const http = require('http');
 const { Server } = require("socket.io");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -22,6 +24,11 @@ const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
   key_secret: process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E'
 });
+
+// Gemini AI Config
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_FALLBACK_IF_ANY");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
 
 const app = express();
 const server = http.createServer(app);
@@ -703,6 +710,53 @@ app.post('/api/payment/verify-signature', checkDbConnection, async (req, res) =>
     res.status(500).json({ message: 'Error verifying payment', error: error.message });
   }
 });
+
+// --- AI DIAGNOSTIC ROUTE ---
+app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
+    try {
+        const { symptom, audioBase64 } = req.body;
+
+        if (!symptom && !audioBase64) {
+            return res.status(400).json({ message: "No input provided for analysis." });
+        }
+
+        let prompt = `You are a professional car mechanic and "AI Doctor" for the Parkéé City platform. 
+        A user is reporting a possible car engine/mechanical issue.
+        Symptom description: "${symptom || 'User provided audio recording'}"
+
+        CRITICAL INSTRUCTIONS:
+        1. If the input (symptom or audio) does NOT seem to be related to a car or vehicle issue (e.g. they are talking about food, weather, or just nonsensical noise), respond with: "ERROR_NOT_A_CAR_ISSUE".
+        2. If it IS a car issue, provide a structured diagnostic report in JSON format exactly like this:
+        {
+          "issue": "Short title of the problem",
+          "dangerLevel": "LOW/MEDIUM/CRITICAL",
+          "details": "A detailed explanation of what is happening and why.",
+          "action": "What the user should do immediately (e.g., Pull over, Drive slowly, etc.)"
+        }
+        Do not include any Markdown formatting or extra text, just the raw JSON or the error string.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+
+        if (text.includes("ERROR_NOT_A_CAR_ISSUE")) {
+          return res.status(400).json({ 
+            message: "Our AI Doctor only responds to car-related issues. Please ensure you are providing engine/vehicle sounds or descriptions." 
+          });
+        }
+
+        try {
+          const diagnostic = JSON.parse(text);
+          res.json(diagnostic);
+        } catch (parseErr) {
+          console.error("AI Parse Error:", text);
+          res.status(500).json({ message: "AI delivered an ill-formatted response. Please try again." });
+        }
+    } catch (error) {
+        console.error('AI Diagnostic Error:', error);
+        res.status(500).json({ message: 'AI Analysis failed. Check your API key or network.' });
+    }
+});
+
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
