@@ -274,9 +274,25 @@ export default function AIAssistant() {
                 </div>
               )}
 
-              <div style={{ background: 'rgba(56, 189, 248, 0.1)', borderLeft: '4px solid #38bdf8', padding: '1rem', borderRadius: '0 8px 8px 0', marginBottom: '2rem' }}>
+              <div style={{ background: 'rgba(56, 189, 248, 0.1)', borderLeft: '4px solid #38bdf8', padding: '1rem', borderRadius: '0 8px 8px 0', marginBottom: '1.5rem' }}>
                 <strong style={{color: '#38bdf8'}}>Recommended Action:</strong> {diagnosis.action}
               </div>
+
+              {diagnosis.otherPossibilities && diagnosis.otherPossibilities.length > 0 && (
+                <div style={{ marginTop: '0.5rem', marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                   <h5 style={{ margin: '0 0 10px 0', color: 'var(--muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Other Possible Causes Detected</h5>
+                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {diagnosis.otherPossibilities.map((p, idx) => (
+                        <span key={idx} style={{ 
+                            fontSize: '0.8rem', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', 
+                            padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(56,189,248,0.2)' 
+                        }}>
+                          {p}
+                        </span>
+                      ))}
+                   </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button onClick={() => setStatus('idle')} className="btn-secondary" style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '8px', cursor: 'pointer' }}>

@@ -858,6 +858,7 @@ function getSmartDiagnosis(userInput, signature) {
 
     let bestResult = null;
     let maxScore = 0;
+    let candidates = [];
 
     CAR_DIAGNOSTIC_DB.forEach(item => {
         let score = 0;
@@ -871,7 +872,7 @@ function getSmartDiagnosis(userInput, signature) {
         
         // --- REAL-TIME AUDIO SIGNATURE BOOST ---
         if (signature === 'high' && item.keywords.some(k => ['belt', 'squeal', 'turbo', 'whistle', 'o2'].includes(k))) {
-            score += 15; // Very high priority if signature matches keywords
+            score += 15;
         }
         if (signature === 'low' && item.keywords.some(k => ['knock', 'thud', 'engine', 'suspension', 'deep', 'battery'].includes(k))) {
             score += 15;
@@ -885,9 +886,22 @@ function getSmartDiagnosis(userInput, signature) {
 
         if (score > maxScore) {
             maxScore = score;
-            bestResult = { ...item };
+            candidates = [{ ...item }];
+        } else if (score === maxScore && score > 0) {
+            candidates.push({ ...item });
         }
     });
+
+    // Pick a random best candidate for variety
+    if (candidates.length > 0) {
+        const randomIndex = Math.floor(Math.random() * candidates.length);
+        bestResult = candidates[randomIndex];
+        // Collect other possibilities (excluding the one we picked)
+        bestResult.otherPossibilities = candidates
+            .filter((_, i) => i !== randomIndex)
+            .slice(0, 3)
+            .map(c => c.issue);
+    }
 
     if (!bestResult || maxScore === 0) {
         // Fallback based ONLY on signature if no input matched
@@ -898,7 +912,8 @@ function getSmartDiagnosis(userInput, signature) {
                 details: "Hume ek bahut teekhi (high pitch) awaz sunayi di hai. Ye aksar dhili engine belt ya turbo leak ki nishani hoti hai.",
                 action: "Bonnet khol kar belt ki tension check karo.",
                 estimatedCost: "₹1,200 - ₹3,500",
-                confidence: 88
+                confidence: 88,
+                otherPossibilities: ["Serpentine Belt Tensioner", "Turbocharger Leak"]
             };
         } else if (signature === 'low') {
             bestResult = {
@@ -907,7 +922,18 @@ function getSmartDiagnosis(userInput, signature) {
                 details: "Hume engine se ek bhari (thud-thud) awaz sunayi de rahi hai. Ye engine ke internal parts ya suspension ki wajah se ho sakti hai.",
                 action: "Risk mat lo, gaadi turant side mein karke engine oil check karo.",
                 estimatedCost: "₹10,000 - ₹50,000",
-                confidence: 88
+                confidence: 88,
+                otherPossibilities: ["Engine Rod Knock", "Suspension Bushing Failure"]
+            };
+        } else if (signature === 'mid') {
+            bestResult = {
+                issue: "Mid-Frequency Friction Detected",
+                dangerLevel: "MEDIUM",
+                details: "Gaadi se ghisne jaisi awaz aa rahi hai. Ye brakes, wheel bearing, ya clutch ki ghisawat ho sakti hai.",
+                action: "Dhire drive kare aur brakes check karwayein.",
+                estimatedCost: "₹2,500 - ₹8,000",
+                confidence: 82,
+                otherPossibilities: ["Brake Pad Wear", "Wheel Bearing Noise", "Clutch Plate Grinding"]
             };
         } else {
             // Fallback for generic 'engine' or 'car' mentions help
