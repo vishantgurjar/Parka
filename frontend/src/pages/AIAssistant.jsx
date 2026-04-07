@@ -30,7 +30,7 @@ export default function AIAssistant() {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 64;
+      analyser.fftSize = 512; // Increased for better resolution
       source.connect(analyser);
       
       audioContextRef.current = audioContext;
@@ -74,10 +74,11 @@ export default function AIAssistant() {
           let signature = 'mid'; // Default
           if (history.length > 0) {
              const avgBin = history.reduce((a, b) => a + b, 0) / history.length;
-             // Bin frequency = (Bin Index * SampleRate) / FFTSize
-             // For 44.1kHz and FFT 64, each bin is ~689Hz
-             if (avgBin > 8) signature = 'high'; // > 5.5kHz (Squeal)
-             else if (avgBin < 3) signature = 'low'; // < 2kHz (Thud/Knock)
+             // With 512 FFT and 44.1kHz, each bin is approx 86Hz
+             // High > 3000Hz (Bin > 35)
+             // Low < 500Hz (Bin < 6)
+             if (avgBin > 35) signature = 'high';
+             else if (avgBin < 6) signature = 'low';
           }
           setAudioSignature(signature);
 
