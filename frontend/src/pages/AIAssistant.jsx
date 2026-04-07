@@ -232,8 +232,13 @@ export default function AIAssistant() {
                 {diagnosis.dangerLevel === 'CRITICAL' ? <AlertCircle size={40} color="#ef4444" /> : 
                  diagnosis.dangerLevel === 'MEDIUM' ? <AlertCircle size={40} color="#eab308" /> : 
                  <CheckCircle size={40} color="#10b981" />}
-                <div>
-                  <h2 style={{ margin: 0 }}>{diagnosis.issue}</h2>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <h2 style={{ margin: 0 }}>{diagnosis.issue}</h2>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: 'var(--muted)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                      v{diagnosis.version || "2.1-Legacy"}
+                    </span>
+                  </div>
                   <span style={{ 
                     fontSize: '0.8rem', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px',
                     background: diagnosis.dangerLevel === 'CRITICAL' ? 'rgba(239,68,68,0.2)' : diagnosis.dangerLevel === 'MEDIUM' ? 'rgba(234,179,8,0.2)' : 'rgba(16,185,129,0.2)',

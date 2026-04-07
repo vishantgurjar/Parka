@@ -950,6 +950,7 @@ function getSmartDiagnosis(userInput, signature) {
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
     
     bestResult.details = prefix + bestResult.details + suffix;
+    bestResult.version = "4.0-PRO";
 
     return bestResult;
 }
