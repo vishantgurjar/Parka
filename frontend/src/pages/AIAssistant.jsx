@@ -8,6 +8,8 @@ export default function AIAssistant() {
   const [diagnosis, setDiagnosis] = useState(null);
   const [symptom, setSymptom] = useState('');
   const [error, setError] = useState(null);
+  const [audioSignature, setAudioSignature] = useState(null);
+  const freqHistoryRef = useRef([]);
   
   // Audio Visualizer Refs
   const audioContextRef = useRef(null);
@@ -35,8 +37,23 @@ export default function AIAssistant() {
       analyserRef.current = analyser;
       dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
 
+      freqHistoryRef.current = [];
       const updateVisualizer = () => {
         analyser.getByteFrequencyData(dataArrayRef.current);
+        
+        // Track the dominant frequency for real analysis
+        let maxVal = 0;
+        let maxBin = 0;
+        for (let i = 0; i < dataArrayRef.current.length; i++) {
+          if (dataArrayRef.current[i] > maxVal) {
+            maxVal = dataArrayRef.current[i];
+            maxBin = i;
+          }
+        }
+        if (maxVal > 50) { // Only count if there's significant sound
+           freqHistoryRef.current.push(maxBin);
+        }
+
         // Normalize for our 15 bars
         const scaled = Array.from(dataArrayRef.current.slice(0, 15)).map(v => Math.max(20, v / 2));
         setVisualizerData(scaled);
@@ -51,9 +68,22 @@ export default function AIAssistant() {
         setProgress(recTimer);
         if (recTimer >= 100) {
           clearInterval(recInterval);
+          
+          // Calculate the final signature before stopping
+          const history = freqHistoryRef.current;
+          let signature = 'mid'; // Default
+          if (history.length > 0) {
+             const avgBin = history.reduce((a, b) => a + b, 0) / history.length;
+             // Bin frequency = (Bin Index * SampleRate) / FFTSize
+             // For 44.1kHz and FFT 64, each bin is ~689Hz
+             if (avgBin > 8) signature = 'high'; // > 5.5kHz (Squeal)
+             else if (avgBin < 3) signature = 'low'; // < 2kHz (Thud/Knock)
+          }
+          setAudioSignature(signature);
+
           stopRecording(stream);
           setStatus('analyzing');
-          analyzeData();
+          analyzeData(signature);
         }
       }, 200);
 
@@ -69,7 +99,7 @@ export default function AIAssistant() {
     if (audioContextRef.current) audioContextRef.current.close();
   };
 
-  const analyzeData = async () => {
+  const analyzeData = async (signature) => {
     setProgress(0);
     // Simulate some progress for UI feel
     const progressTimer = setInterval(() => {
@@ -80,7 +110,10 @@ export default function AIAssistant() {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/ai/diagnose`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symptom: symptom || "Engine sound analysis requested via microphone." })
+        body: JSON.stringify({ 
+            symptom: symptom, 
+            audioSignature: signature || audioSignature 
+        })
       });
 
       const data = await res.json();

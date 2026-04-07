@@ -828,7 +828,7 @@ const CAR_DIAGNOSTIC_DB = [
     { keywords: ['wiper', 'glass', 'rain', 'stuck', 'pani'], issue: "Wiper Motor / Linkage", dangerLevel: "LOW", details: "Barsaat mein wiper dhire chal rahe hain ya atak gaye hain? Motor ya linkage mein mitti jam gayi hai.", action: "Greasing karwao ya motor badlo.", estimatedCost: "₹800 - ₹2,500" },
 ];
 
-function getSmartDiagnosis(userInput) {
+function getSmartDiagnosis(userInput, signature) {
     const input = (userInput || '').toLowerCase();
     
     // 1. Array of Generic/Unknown responses to avoid repetition
@@ -869,6 +869,17 @@ function getSmartDiagnosis(userInput) {
             }
         });
         
+        // --- REAL-TIME AUDIO SIGNATURE BOOST ---
+        if (signature === 'high' && item.keywords.some(k => ['belt', 'squeal', 'turbo', 'whistle', 'o2'].includes(k))) {
+            score += 15; // Very high priority if signature matches keywords
+        }
+        if (signature === 'low' && item.keywords.some(k => ['knock', 'thud', 'engine', 'suspension', 'deep', 'battery'].includes(k))) {
+            score += 15;
+        }
+        if (signature === 'mid' && item.keywords.some(k => ['brake', 'grind', 'bearing', 'clutch', 'vibration'].includes(k))) {
+            score += 15;
+        }
+
         // Bonus for multi-keyword matches
         if (score > 5) score += 3;
 
@@ -879,19 +890,38 @@ function getSmartDiagnosis(userInput) {
     });
 
     if (!bestResult || maxScore === 0) {
-        // Fallback for generic 'engine' or 'car' mentions help
-        if (input.includes('car') || input.includes('engine') || input.includes('check')) {
+        // Fallback based ONLY on signature if no input matched
+        if (signature === 'high') {
             bestResult = {
-                issue: "General Engine Check Required",
-                dangerLevel: "LOW",
-                details: "Aapki car mein normal servicing ki zaroorat ho sakti hai. Sensors aur engine oil ek baar check karwa lo.",
-                action: "Najdiki mechanic ke pas jaakar general checkup karwao.",
-                estimatedCost: "₹500 - ₹1,500"
+                issue: "High-Pitch Squeal Detected",
+                dangerLevel: "MEDIUM",
+                details: "Hume ek bahut teekhi (high pitch) awaz sunayi di hai. Ye aksar dhili engine belt ya turbo leak ki nishani hoti hai.",
+                action: "Bonnet khol kar belt ki tension check karo.",
+                estimatedCost: "₹1,200 - ₹3,500"
+            };
+        } else if (signature === 'low') {
+            bestResult = {
+                issue: "Low-Frequency Knocking Heard",
+                dangerLevel: "CRITICAL",
+                details: "Hume engine se ek bhari (thud-thud) awaz sunayi de rahi hai. Ye engine ke internal parts ya suspension ki wajah se ho sakti hai.",
+                action: "Risk mat lo, gaadi turant side mein karke engine oil check karo.",
+                estimatedCost: "₹10,000 - ₹50,000"
             };
         } else {
-            // Pick a random unknown response
-            const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
-            bestResult = { ...randomUnknown };
+            // Fallback for generic 'engine' or 'car' mentions help
+            if (input.includes('car') || input.includes('engine') || input.includes('check')) {
+                bestResult = {
+                    issue: "General Engine Check Required",
+                    dangerLevel: "LOW",
+                    details: "Aapki car mein normal servicing ki zaroorat ho sakti hai. Sensors aur engine oil ek baar check karwa lo.",
+                    action: "Najdiki mechanic ke pas jaakar general checkup karwao.",
+                    estimatedCost: "₹500 - ₹1,500"
+                };
+            } else {
+                // Pick a random unknown response
+                const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
+                bestResult = { ...randomUnknown };
+            }
         }
     }
 
@@ -953,7 +983,7 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
         
         // --- SMART FALLBACK ENGINE ---
         // Since Gemini is not available, we use our internally trained high-quality database
-        const diagnostic = getSmartDiagnosis(req.body.symptom || '');
+        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature);
         res.json(diagnostic);
     }
 });
