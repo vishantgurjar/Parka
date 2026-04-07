@@ -811,6 +811,21 @@ const CAR_DIAGNOSTIC_DB = [
     { keywords: ['misfire', 'missing', 'jerk', 'pickup', 'spark', 'jhatka', 'stop'], issue: "Engine Misfire / Spark Plug", dangerLevel: "MEDIUM", details: "Gaadi jhatke (jerks) le rahi hai aur pickup kam ho gaya hai? Shayad spark plug ya ignition coil kharab hai.", action: "Spark plugs clean karwao ya badal lo.", estimatedCost: "₹800 - ₹2,500" },
     { keywords: ['clutch', 'hard', 'slip', 'gear', 'shift', 'phase'], issue: "Clutch Plate Wear", dangerLevel: "MEDIUM", details: "Gear shifting hard ho gayi hai ya clutch upar chhodne par pickup nahi mil raha? Clutch plate ghis gayi hai.", action: "Clutch set change karwana padega.", estimatedCost: "₹6,000 - ₹12,000" },
     { keywords: ['noise', 'sound', 'awaz', 'shor', 'vibration', 'ajeeb'], issue: "General Engine Noise", dangerLevel: "LOW", details: "Engine se ajeeb awaz aa rahi hai jo wear-and-tear ki wajah se ho sakti hai. Shayad koi mount ya plastic part dhila hai.", action: "Ek baar bonnet khol kar check karo koi part toh nahi hil raha.", estimatedCost: "₹200 - ₹1,000" },
+    { keywords: ['abs', 'anti-lock', 'braking light', 'dashboard light', 'abs sensor'], issue: "ABS Sensor Failure", dangerLevel: "MEDIUM", details: "Aapki car ka ABS (Anti-lock Braking System) sensor shayad ganda hai ya kharab ho gaya hai. Isse emergency braking mein dikkat aa sakti hai.", action: "Sensor saaf karwao ya computer scanning se faulty sensor badal lo.", estimatedCost: "₹1,500 - ₹4,000" },
+    { keywords: ['o2', 'oxygen', 'mileage', 'average', 'petrol jada', 'sensor'], issue: "Oxygen (O2) Sensor Issue", dangerLevel: "LOW", details: "Agar mileage kam ho gayi hai aur exhaust se ajeeb smell aa rahi hai, toh O2 sensor carbon jamne ki wajah se sahi reading nahi de raha.", action: "Sensor clean karwao ya naya dalwa lo mileage sudhaarne ke liye.", estimatedCost: "₹2,500 - ₹6,000" },
+    { keywords: ['maf', 'mass air', 'stalling', 'engine stop', 'dirty'], issue: "MAF Sensor Clog", dangerLevel: "MEDIUM", details: "MAF sensor throttle body ke paas hota hai. Agar ye ganda ho jaye toh gaadi idling par band (stall) hone lagti hai.", action: "Technical spray se sensor clean karwao.", estimatedCost: "₹500 - ₹1,200" },
+    { keywords: ['fan', 'radiator', 'heating', 'ac stop', 'fan noise'], issue: "Radiator Fan Failure", dangerLevel: "CRITICAL", details: "Radiator fan nahi chal raha isiliye engine overheat ho raha hai aur AC bhi cooling chhod raha hai.", action: "Fan ki relay aur motor check karwao turant.", estimatedCost: "₹1,000 - ₹3,500" },
+    { keywords: ['alternator', 'charge', 'battery light', 'dim light', 'current'], issue: "Alternator / Charging Issue", dangerLevel: "HIGH", details: "Battery light dashboard par aane ka matlab hai ki alternator current nahi bana raha. Gaadi beech raste mein band ho sakti hai.", action: "Alternator ki carbon brushes aur belt check karwao.", estimatedCost: "₹2,000 - ₹5,000" },
+    { keywords: ['automatic', 'gearbox', 'lag', 'cvt', 'shift delay', 'jerk gear'], issue: "Transmission Lag / Fluid Issue", dangerLevel: "MEDIUM", details: "Automatic gear shift hone mein deri (lag) ya jhatke (jerks) lag rahe hain? Shayad Gear Oil (ATF) purana ho gaya hai.", action: "Transmission fluid level aur quality check karwao.", estimatedCost: "₹3,000 - ₹8,000" },
+    { keywords: ['catalytic', 'exhaust', 'rat-rat', 'choke', 'pickup kam'], issue: "Catalytic Converter Choke", dangerLevel: "MEDIUM", details: "Exhaust 'Silencer' ke andar ka filter (Cat-con) jam ho gaya hai, isiliye engine khul ke saans nahi le paa raha aur pickup gir gaya hai.", action: "Converter cleaning ya 'de-carb' karwana padega.", estimatedCost: "₹2,000 - ₹5,500" },
+    { keywords: ['thermostat', 'temp', 'gauge', 'needle', 'cold'], issue: "Thermostat Valve Stuck", dangerLevel: "MEDIUM", details: "Agar temp needle hamesha 'Cold' rehti hai ya ekdum 'Hot' ho jati hai, toh thermostat valve atak gaya hai.", action: "Valve ko replace karwao varna engine overheat hoga.", estimatedCost: "₹800 - ₹2,000" },
+    { keywords: ['humming', 'bearing', 'vroom', 'wheel noise', 'pahiya awaz'], issue: "Wheel Bearing Wear", dangerLevel: "MEDIUM", details: "Gaadi chalne par 'humm-humm' jaisi awaz pahiye se aa rahi hai? Wheel bearing ghis chuka hai.", action: "Bearing badal lo varna pahiya jam (seize) ho sakta hai.", estimatedCost: "₹1,500 - ₹3,500" },
+    { keywords: ['coil', 'shaking', 'vibration', 'engine vibration', 'miss'], issue: "Ignition Coil / Misfire", dangerLevel: "MEDIUM", details: "Agar engine bahut jyada vibrates kar raha hai aur 'misfiring' ho rahi hai, toh shayad ek ignition coil current nahi de rahi.", action: "Check engine light scan karwao aur coil badlo.", estimatedCost: "₹1,200 - ₹4,000" },
+    { keywords: ['pump', 'fuel pump', 'buzzing', 'whining', 'starting'], issue: "Fuel Pump Weak", dangerLevel: "MEDIUM", details: "Piche ki seat ke niche se 'whining' noise aa rahi hai? Fuel pump petrol/diesel sahi pressure se nahi bhej raha.", action: "Filter clean karo ya pump badlo.", estimatedCost: "₹3,000 - ₹9,000" },
+    { keywords: ['filter', 'breath', 'air filter', 'heavy'], issue: "Dirty Air Filter", dangerLevel: "LOW", details: "Air filter mitti se bhar gaya hai, engine ko saaf hawa nahi mil rahi, isse mileage aur pickup dono kam honge.", action: "Filter nikalo aur naya 'air filter' lagao.", estimatedCost: "₹300 - ₹800" },
+    { keywords: ['turbo', 'whistle', 'boost', 'power loss', 'pickup'], issue: "Turbocharger Issue", dangerLevel: "HIGH", details: "Agar 'whistling' (seeti) ki awaz tez ho gayi hai aur pickup gayab hai, toh turbo leak ya jam ho sakta hai.", action: "Turbo pipes aur intercooler check karwao.", estimatedCost: "₹5,000 - ₹25,000" },
+    { keywords: ['timing', 'ticking', 'old belt', 'engine life'], issue: "Timing Belt/Chain Wear", dangerLevel: "CRITICAL", details: "Timing belt ghis gayi hai. Agar ye tooti, toh engine ke valves mukad (bend) ho jayenge aur lakhon ka kharcha hoga.", action: "Kilo meters ke हिसाब se timing belt badal lo.", estimatedCost: "₹4,000 - ₹12,000" },
+    { keywords: ['wiper', 'glass', 'rain', 'stuck', 'pani'], issue: "Wiper Motor / Linkage", dangerLevel: "LOW", details: "Barsaat mein wiper dhire chal rahe hain ya atak gaye hain? Motor ya linkage mein mitti jam gayi hai.", action: "Greasing karwao ya motor badlo.", estimatedCost: "₹800 - ₹2,500" },
 ];
 
 function getSmartDiagnosis(userInput) {
@@ -847,8 +862,16 @@ function getSmartDiagnosis(userInput) {
     CAR_DIAGNOSTIC_DB.forEach(item => {
         let score = 0;
         item.keywords.forEach(kw => {
-            if (input.includes(kw)) score += 2; 
+            if (input.includes(kw)) {
+                // Boost score for specific technical terms
+                const technicalTerms = ['abs', 'o2', 'maf', 'alternator', 'turbo', 'catalytic', 'thermostat', 'battery', 'clutch'];
+                score += technicalTerms.includes(kw) ? 5 : 2;
+            }
         });
+        
+        // Bonus for multi-keyword matches
+        if (score > 5) score += 3;
+
         if (score > maxScore) {
             maxScore = score;
             bestResult = { ...item };
@@ -856,9 +879,20 @@ function getSmartDiagnosis(userInput) {
     });
 
     if (!bestResult || maxScore === 0) {
-        // Pick a random unknown response
-        const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
-        bestResult = { ...randomUnknown };
+        // Fallback for generic 'engine' or 'car' mentions help
+        if (input.includes('car') || input.includes('engine') || input.includes('check')) {
+            bestResult = {
+                issue: "General Engine Check Required",
+                dangerLevel: "LOW",
+                details: "Aapki car mein normal servicing ki zaroorat ho sakti hai. Sensors aur engine oil ek baar check karwa lo.",
+                action: "Najdiki mechanic ke pas jaakar general checkup karwao.",
+                estimatedCost: "₹500 - ₹1,500"
+            };
+        } else {
+            // Pick a random unknown response
+            const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
+            bestResult = { ...randomUnknown };
+        }
     }
 
     // Add Natural Hinglish Variety (WhatsApp style)
