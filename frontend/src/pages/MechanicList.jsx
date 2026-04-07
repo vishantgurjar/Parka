@@ -383,28 +383,41 @@ export default function MechanicList() {
 
                 {sosStatus === 'broadcasting' && (
                     <div className="fadeIn">
-                        <div style={{color: '#eab308', fontWeight: 'bold', marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+                        <div className="shimmer-loading" style={{color: '#eab308', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '12px', border: '1px solid rgba(234, 179, 8, 0.2)'}}>
                             <div className="loader" style={{width: '20px', height: '20px', borderTopColor: '#eab308'}}></div>
-                            Broadcasting... Waiting for Mechanic Bids
+                            Broadcasting SOS... Finding Best Deals
                         </div>
                         {bids.length > 0 ? (
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
                                 {bids.map((b, idx) => (
-                                    <div key={idx} style={{background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <div key={idx} className="fadeInUp" style={{background: 'var(--bg)', padding: '16px', borderRadius: '16px', border: '1px solid #eab308', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 8px 20px rgba(234, 179, 8, 0.1)', animationDelay: `${idx * 0.1}s`}}>
                                         <div style={{textAlign: 'left'}}>
-                                            <strong>{b.mechanicName}</strong> <span style={{fontSize: '0.8rem', color: 'var(--muted)'}}>({b.distance} km)</span>
-                                            <div style={{color: '#10b981', fontWeight: 'bold'}}>Offer: ₹{b.price}</div>
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px'}}>
+                                                <strong style={{fontSize: '1.1rem'}}>{b.mechanicName}</strong>
+                                                <span style={{fontSize: '0.7rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 8px', borderRadius: '20px', fontWeight: 'BOLD'}}>FASTEST RESPONSE</span>
+                                            </div>
+                                            <div style={{fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                                <Navigation size={14} /> {b.distance} km away
+                                            </div>
+                                            <div style={{color: '#10b981', fontWeight: '800', fontSize: '1.3rem', marginTop: '6px'}}>₹{b.price}</div>
                                         </div>
-                                        <button onClick={() => handleAcceptBid(b)} style={{background: '#10b981', color: '#fff', padding: '8px 16px', borderRadius: '20px', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                            <Check size={16} /> Accept
+                                        <button onClick={() => handleAcceptBid(b)} className="pulse-gold" style={{background: '#10b981', color: '#fff', padding: '12px 24px', borderRadius: '30px', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+                                            <Check size={18} /> Accept
                                         </button>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p style={{fontSize: '0.85rem', color: 'var(--muted)'}}>No bids yet. Please wait.</p>
+                            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                <p style={{fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0'}}>Waiting for nearby mechanics to respond...</p>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '10px' }}>
+                                    <div className="pulse-anim" style={{ width: '8px', height: '8px', background: '#eab308', borderRadius: '50%' }}></div>
+                                    <div className="pulse-anim" style={{ width: '8px', height: '8px', background: '#eab308', borderRadius: '50%', animationDelay: '0.2s' }}></div>
+                                    <div className="pulse-anim" style={{ width: '8px', height: '8px', background: '#eab308', borderRadius: '50%', animationDelay: '0.4s' }}></div>
+                                </div>
+                            </div>
                         )}
-                        <button onClick={() => { if(socket) socket.disconnect(); setSosStatus('idle'); setBids([]); }} style={{background: 'transparent', color: '#ef4444', border: 'none', textDecoration: 'underline', marginTop: '15px', fontSize: '0.9rem'}}>Cancel Broadcast</button>
+                        <button onClick={() => { if(socket) socket.disconnect(); setSosStatus('idle'); setBids([]); }} style={{background: 'transparent', color: '#ef4444', border: 'none', textDecoration: 'underline', marginTop: '20px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer' }}>Cancel Broadcast</button>
                     </div>
                 )}
 

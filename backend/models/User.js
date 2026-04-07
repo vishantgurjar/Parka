@@ -51,6 +51,8 @@ const UserSchema = new mongoose.Schema({
   insuranceProvider: { type: String },
   insurancePolicyNumber: { type: String },
   insuranceExpiryDate: { type: String },
+  // Gamification
+  parkeePoints: { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

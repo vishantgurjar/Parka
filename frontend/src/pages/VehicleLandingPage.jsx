@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock } from 'lucide-react';
+import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock, Bell, Lightbulb, Info } from 'lucide-react';
 import SEO from '../components/SEO';
 import SecureCallModal from '../components/SecureCallModal';
+import { AuthContext } from '../App';
 
 export default function VehicleLandingPage() {
   const { id } = useParams();
@@ -11,6 +12,8 @@ export default function VehicleLandingPage() {
   const [error, setError] = useState(null);
   const [showSecureCall, setShowSecureCall] = useState(false);
   const [nearestMechanic, setNearestMechanic] = useState({ phone: '7895039922', name: 'Parkéé Admin' });
+  const [reporting, setReporting] = useState(null);
+  const { user: currentUser } = useContext(AuthContext);
 
 
   useEffect(() => {
@@ -79,6 +82,33 @@ export default function VehicleLandingPage() {
 
     fetchVehicle();
   }, [id]);
+
+  const handleReportIssue = async (issueType) => {
+    if (reporting) return;
+    setReporting(issueType);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/user/report-issue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vehicleId: id,
+          reporterId: currentUser?._id,
+          issueType: issueType
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ Success! ${data.message}`);
+      } else {
+        alert(data.message || "Failed to notify owner.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error reporting issue. Check your connection.");
+    } finally {
+      setReporting(null);
+    }
+  };
 
 
   if (loading) {
@@ -267,6 +297,54 @@ export default function VehicleLandingPage() {
             </div>
             <ChevronRight size={24} />
           </Link>
+
+          {/* 5. Report Issue (Neighbor Rewards) */}
+          <div className="glass-premium" style={{ marginTop: '1rem', padding: '1.5rem', borderRadius: '24px', border: '1px dashed var(--border)' }}>
+             <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)' }}>
+                <Bell size={18} /> Help the Owner
+             </h3>
+             <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1.25rem' }}>
+                See something wrong? Notify {vehicle.name} instantly and earn <strong>50 Parkéé Points</strong>.
+             </p>
+             
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {[
+                  { id: 'wrong_parking', label: 'Wrongly Parked', icon: AlertTriangle },
+                  { id: 'lights_on', label: 'Lights are ON', icon: Lightbulb },
+                  { id: 'window_open', label: 'Window Open', icon: Info },
+                  { id: 'flat_tire', label: 'Flat Tire', icon: Wrench }
+                ].map((item) => (
+                  <button 
+                    key={item.id}
+                    disabled={reporting === item.id}
+                    onClick={() => handleReportIssue(item.label)}
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--border)',
+                      padding: '12px 8px',
+                      borderRadius: '12px',
+                      color: 'var(--fg)',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <item.icon size={14} color="var(--primary)" />
+                    {reporting === item.label ? 'Notifying...' : item.label}
+                  </button>
+                ))}
+             </div>
+             
+             {!currentUser && (
+               <p style={{ marginTop: '12px', fontSize: '0.75rem', color: '#eab308', textAlign: 'center' }}>
+                  Log in to earn points for helping!
+               </p>
+             )}
+          </div>
         </div>
 
         {/* Footer Info */}

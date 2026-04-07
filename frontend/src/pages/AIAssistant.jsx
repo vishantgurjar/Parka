@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send } from 'lucide-react';
+import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send, Banknote } from 'lucide-react';
 import SEO from '../components/SEO';
 
 export default function AIAssistant() {
@@ -214,6 +214,16 @@ export default function AIAssistant() {
                 <h4 style={{ margin: '0 0 10px 0', color: 'var(--muted)', textTransform: 'uppercase', fontSize: '0.85rem' }}>AI Diagnostic Details</h4>
                 <p style={{ margin: 0, lineHeight: 1.6 }}>{diagnosis.details}</p>
               </div>
+
+              {diagnosis.estimatedCost && (
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', borderLeft: '4px solid #10b981', padding: '1rem', borderRadius: '0 8px 8px 0', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', marginBottom: '4px' }}>
+                    <Banknote size={18} />
+                    <strong style={{fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px'}}>Estimated Repair Cost</strong>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>{diagnosis.estimatedCost}</p>
+                </div>
+              )}
 
               <div style={{ background: 'rgba(56, 189, 248, 0.1)', borderLeft: '4px solid #38bdf8', padding: '1rem', borderRadius: '0 8px 8px 0', marginBottom: '2rem' }}>
                 <strong style={{color: '#38bdf8'}}>Recommended Action:</strong> {diagnosis.action}

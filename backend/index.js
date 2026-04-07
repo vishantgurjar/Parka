@@ -664,6 +664,43 @@ app.get('/api/incidents', checkDbConnection, async (req, res) => {
     res.status(500).json({ message: 'Server error fetching incidents' });
   }
 });
+// --- NEW REPORT ISSUE ROUTE (Gamification) ---
+app.post('/api/user/report-issue', checkDbConnection, async (req, res) => {
+  try {
+    const { vehicleId, reporterId, issueType } = req.body;
+    const vehicleOwner = await User.findById(vehicleId);
+    if (!vehicleOwner) return res.status(404).json({ message: 'Vehicle owner not found' });
+
+    // 1. Notify Owner (Simulated)
+    console.log(`\n\n[📢 NEIGHBORLY HELP ALERT]`);
+    console.log(`Owner: ${vehicleOwner.name} (${vehicleOwner.phone})`);
+    console.log(`Vehicle: ${vehicleOwner.plateNumber} (${vehicleOwner.make} ${vehicleOwner.model})`);
+    console.log(`Reported Issue: "${issueType.toUpperCase()}"`);
+    console.log(`Reporter ID: ${reporterId || 'Guest'}`);
+    console.log(`Time: ${new Date().toLocaleString()}\n\n`);
+
+    // 2. Reward Reporter (if logged in)
+    let pointsEarned = 0;
+    if (reporterId) {
+        const reporter = await User.findById(reporterId);
+        if (reporter) {
+            reporter.parkeePoints = (reporter.parkeePoints || 0) + 50;
+            await reporter.save();
+            pointsEarned = 50;
+        }
+    }
+
+    res.json({ 
+        success: true, 
+        message: `Owner notified about ${issueType}. You earned ${pointsEarned} Parkéé Points!`,
+        pointsEarned 
+    });
+  } catch (error) {
+    console.error('Report Issue Error:', error);
+    res.status(500).json({ message: 'Server error reporting issue' });
+  }
+});
+
 
 // --- PAYMENT ROUTES (Option B: Razorpay) ---
 
@@ -779,7 +816,8 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
           "issue": "Short title of the problem",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
           "details": "A detailed explanation of what is happening and why.",
-          "action": "What the user should do immediately (e.g., Pull over, Drive slowly, etc.)"
+          "action": "What the user should do immediately (e.g., Pull over, Drive slowly, etc.)",
+          "estimatedCost": "Approximate repair cost range in INR (e.g. ₹2,000 - ₹5,000)"
         }
         Do not include any Markdown formatting or extra text, just the raw JSON or the error string.`;
 
@@ -807,12 +845,12 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
         const input = (req.body.symptom || '').toLowerCase();
         
         const fallbackDatabase = [
-            { keywords: ['squeal', 'belt', 'high pitch'], issue: "Worn Serpentine Belt", dangerLevel: "MEDIUM", details: "A high-pitched squealing sound often indicates a slipping or worn serpentine belt. This belt powers your alternator, power steering, and AC.", action: "Tighten or replace the belt soon." },
-            { keywords: ['grinding', 'brake', 'pad', 'squeak'], issue: "Worn Brake Pads", dangerLevel: "CRITICAL", details: "Metallic grinding while braking means your brake pads are completely worn down to the metal. This significantly reduces braking power.", action: "PULL OVER and have your brakes inspected immediately." },
-            { keywords: ['ticking', 'tap', 'click'], issue: "Low Oil or Valve Issue", dangerLevel: "MEDIUM", details: "A rapid ticking sound often indicates low engine oil or a valve adjustment issue (lifter tick).", action: "Check your oil level immediately and top up if low." },
-            { keywords: ['knock', 'thud', 'deep'], issue: "Engine Rod Knock", dangerLevel: "CRITICAL", details: "Deep metallic knocking from within the engine is a sign of severe internal damage (connecting rod bearing failure).", action: "STOP the engine immediately. Internal damage is imminent." },
-            { keywords: ['smoke', 'white'], issue: "Coolant Leak / Head Gasket", dangerLevel: "CRITICAL", details: "White smoke from the exhaust usually means coolant is leaking into the engine, possibly due to a blown head gasket.", action: "Stop driving and check for engine overheating." },
-            { keywords: ['smoke', 'blue', 'black'], issue: "Oil Burning / Fuel Mixture", dangerLevel: "MEDIUM", details: "Blue smoke indicates burning oil; black smoke indicates a rich fuel mixture (too much gas).", action: "Have a mechanic check your fuel injectors or oil seals." }
+            { keywords: ['squeal', 'belt', 'high pitch'], issue: "Worn Serpentine Belt", dangerLevel: "MEDIUM", details: "A high-pitched squealing sound often indicates a slipping or worn serpentine belt. This belt powers your alternator, power steering, and AC.", action: "Tighten or replace the belt soon.", estimatedCost: "₹1,200 - ₹2,500" },
+            { keywords: ['grinding', 'brake', 'pad', 'squeak'], issue: "Worn Brake Pads", dangerLevel: "CRITICAL", details: "Metallic grinding while braking means your brake pads are completely worn down to the metal. This significantly reduces braking power.", action: "PULL OVER and have your brakes inspected immediately.", estimatedCost: "₹2,500 - ₹4,500" },
+            { keywords: ['ticking', 'tap', 'click'], issue: "Low Oil or Valve Issue", dangerLevel: "MEDIUM", details: "A rapid ticking sound often indicates low engine oil or a valve adjustment issue (lifter tick).", action: "Check your oil level immediately and top up if low.", estimatedCost: "₹500 - ₹1,500 (Oil Top-up)" },
+            { keywords: ['knock', 'thud', 'deep'], issue: "Engine Rod Knock", dangerLevel: "CRITICAL", details: "Deep metallic knocking from within the engine is a sign of severe internal damage (connecting rod bearing failure).", action: "STOP the engine immediately. Internal damage is imminent.", estimatedCost: "₹40.000 - ₹1,20,000" },
+            { keywords: ['smoke', 'white'], issue: "Coolant Leak / Head Gasket", dangerLevel: "CRITICAL", details: "White smoke from the exhaust usually means coolant is leaking into the engine, possibly due to a blown head gasket.", action: "Stop driving and check for engine overheating.", estimatedCost: "₹15,000 - ₹35,000" },
+            { keywords: ['smoke', 'blue', 'black'], issue: "Oil Burning / Fuel Mixture", dangerLevel: "MEDIUM", details: "Blue smoke indicates burning oil; black smoke indicates a rich fuel mixture (too much gas).", action: "Have a mechanic check your fuel injectors or oil seals.", estimatedCost: "₹5,000 - ₹12,000" }
         ];
 
         // Find best match
@@ -828,7 +866,8 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
                 issue: "Complex Engine Vibration",
                 dangerLevel: "LOW",
                 details: "We detected an unusual acoustic signature. While not matching a specific known critical failure, it indicates general wear in the engine mounts or idling system.",
-                action: "Visit a mechanic for a physical inspection when possible."
+                action: "Visit a mechanic for a physical inspection when possible.",
+                estimatedCost: "₹1,000 - ₹3,000"
             });
         }
 
