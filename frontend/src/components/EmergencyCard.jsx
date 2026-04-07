@@ -15,8 +15,10 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl }, ref) => {
   return (
     <div className={`emergency-card-container ${themeClass}`} ref={ref}>
       <div className={`electric-border ${isDiamond ? 'electric-border-diamond' : isGold ? 'electric-border-gold' : ''}`}>
-        <div className="emergency-card glass-premium shimmer-shimmer">
+        <div className="emergency-card glass-premium">
+          <div className="shimmer-shimmer"></div>
           {/* Animated Background Highlights */}
+
           <div className="holograph-blur" style={{ top: '10%', left: '10%' }}></div>
           <div className="holograph-blur" style={{ bottom: '10%', right: '10%', background: 'radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)' }}></div>
 

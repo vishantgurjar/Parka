@@ -50,16 +50,19 @@ export default function Home({ onOpenPayment }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    const baseUrl = window.location.origin;
+    const qrApi = 'https://api.qrserver.com/v1/create-qr-code/';
+    
     if (user) {
-      // Smart QR: scan leads to fixed vehicle landing page
-      const scanUrl = `${window.location.origin}/v/${user._id}`;
-      const base = 'https://api.qrserver.com/v1/create-qr-code/';
-      // Use the teal color from the design
-      setQrUrl(`${base}?size=300x300&data=${encodeURIComponent(scanUrl)}&color=0d9488&bgcolor=ffffff`);
+      const scanUrl = `${baseUrl}/v/${user._id}`;
+      setQrUrl(`${qrApi}?size=300x300&data=${encodeURIComponent(scanUrl)}&color=0d9488&bgcolor=ffffff`);
     } else {
-      setQrUrl('');
+      // Demo URL for guests
+      const demoUrl = `${baseUrl}/v/demo`;
+      setQrUrl(`${qrApi}?size=300x300&data=${encodeURIComponent(demoUrl)}&color=0d9488&bgcolor=ffffff`);
     }
   }, [user]);
+
 
   const handleDownload = async (type) => {
     const ref = type === 'emergency' ? cardRef : customerRef;
@@ -302,9 +305,13 @@ export default function Home({ onOpenPayment }) {
       </section>
 
       {/* ========== QR SECTION ========== */}
-      {user && (
-        <section id="qr" className="qr-section">
-          <div className="container">
+      <section id="qr" className="qr-section">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Your <span className="text-gradient">Smart Vehicle ID</span> Card</h2>
+            <p className="section-desc">Get your premium QR card today. Highly attractive, professional, and life-saving.</p>
+          </div>
+
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
               <button 
                 onClick={() => setActiveTab('emergency')} 
@@ -325,15 +332,33 @@ export default function Home({ onOpenPayment }) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
               {activeTab === 'emergency' ? (
                 <div style={{ transform: 'scale(1.1)', margin: '1rem 0' }}>
-                  <EmergencyCard ref={cardRef} user={user} qrUrl={qrUrl} />
+                  <EmergencyCard 
+                    ref={cardRef} 
+                    user={user || { name: 'VISHANT GURJAR', subscriptionTier: 'diamond' }} 
+                    qrUrl={qrUrl} 
+                  />
                 </div>
               ) : (
                 <div style={{ transform: 'scale(1)', margin: '1rem 0' }}>
-                  <CustomerCard ref={customerRef} user={user} qrUrl={qrUrl} />
+                  <CustomerCard 
+                    ref={customerRef} 
+                    user={user || { name: 'VISHANT GURJAR', subscriptionTier: 'gold', plateNumber: 'HR51 AA 0001' }} 
+                    qrUrl={qrUrl} 
+                  />
                 </div>
               )}
               
-              <div className="qr-actions" style={{ maxWidth: '450px', width: '100%' }}>
+              {!user && (
+                <div style={{ textAlign: 'center', marginTop: '1rem', background: 'rgba(56, 189, 248, 0.1)', padding: '10px 20px', borderRadius: '12px', border: '1px dashed #38bdf8' }}>
+                  <p style={{ color: '#38bdf8', fontWeight: 'bold', margin: 0 }}>
+                    ✨ Log in to generate your personalized Card!
+                  </p>
+                  <Link to="/login" style={{ color: 'var(--primary)', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: '800', marginTop: '5px', display: 'block' }}>Log In Now →</Link>
+                </div>
+              )}
+
+              <div className="qr-actions" style={{ maxWidth: '450px', width: '100%', display: user ? 'flex' : 'none' }}>
+
                 <button onClick={() => handleDownload(activeTab)} className="btn-outline-primary" style={{ border: 'none', cursor: 'pointer' }}>
                   <Download size={16} />
                   Download {activeTab === 'emergency' ? 'Emergency Card' : 'Customer Card'}
@@ -350,7 +375,7 @@ export default function Home({ onOpenPayment }) {
             </div>
           </div>
         </section>
-      )}
+
 
       {/* ========== CONTACT ========== */}
       <section id="contact" className="contact">

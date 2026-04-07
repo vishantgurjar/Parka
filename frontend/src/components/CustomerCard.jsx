@@ -10,8 +10,10 @@ const CustomerCard = React.forwardRef(({ user, qrUrl }, ref) => {
   return (
     <div className="customer-card-container" ref={ref}>
       <div className={`electric-border ${isDiamond ? 'electric-border-diamond' : isGold ? 'electric-border-gold' : ''}`}>
-        <div className="customer-card glass-premium shimmer-shimmer">
+        <div className="customer-card glass-premium">
+          <div className="shimmer-shimmer"></div>
           {/* Top Header */}
+
           <div className="card-top-header" style={{ background: 'rgba(15, 23, 42, 0.6)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="brand-badge">
               <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', borderRadius: '4px' }} />
