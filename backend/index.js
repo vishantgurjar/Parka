@@ -9,8 +9,8 @@ const Mechanic = require('./models/Mechanic');
 const Complaint = require('./models/Complaint');
 const Incident = require('./models/Incident');
 const Review = require('./models/Review');
-const User = require('./models/User'); 
 const SOSRequest = require('./models/SOSRequest');
+
 
 const { OAuth2Client } = require('google-auth-library');
 const Razorpay = require('razorpay');
@@ -311,7 +311,20 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
 // @access  Public
 app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
     try {
+        if (req.params.id === 'demo') {
+            return res.json({
+                name: 'VISHANT GURJAR',
+                phone: '7895039922',
+                make: 'MERCEDES',
+                model: 'G-WAGON',
+                plateNumber: 'HR51 AA 0001',
+                color: 'MATTE BLACK',
+                year: '2024',
+                subscriptionTier: 'diamond'
+            });
+        }
         const user = await User.findById(req.params.id).select('name phone make model plateNumber color year subscriptionTier');
+
         if (!user) {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
