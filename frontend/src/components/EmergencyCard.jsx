@@ -39,8 +39,8 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl }, ref) => {
               
               <div style={{ display: 'flex', gap: '16px' }}>
                 <div>
-                   <span className="minimal-label">Policy No.</span>
-                   <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>PC-{user._id.slice(-6).toUpperCase()}</span>
+                   <span className="minimal-label">Vehicle Plate</span>
+                   <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#111827', textTransform: 'uppercase' }}>{user.plateNumber || 'HR-51-AA-0001'}</span>
                 </div>
                 <div>
                    <span className="minimal-label">Access</span>
