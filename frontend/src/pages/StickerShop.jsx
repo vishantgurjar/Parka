@@ -44,7 +44,7 @@ const StickerShop = () => {
         if (!res) return alert("Razorpay SDK failed to load. Are you online?");
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/stickers/order`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/stickers/order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ amount: STICKER_PRICE })
@@ -59,7 +59,7 @@ const StickerShop = () => {
                 description: `Premium ${selectedType} Sticker`,
                 order_id: orderData.id,
                 handler: async (response) => {
-                    const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/stickers/finalize`, {
+                    const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/stickers/finalize`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

@@ -6,6 +6,12 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
   const [error, setError] = useState(null);
 
   const handleRazorpayPayment = async () => {
+    if (!entityId || entityId === 'undefined') {
+      setError("Please log in to upgrade your account.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
