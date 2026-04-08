@@ -28,34 +28,33 @@ export default function Header({ onOpenPayment }) {
   };
 
   return (
-    <header className="header" id="header">
-      <div className="container header-inner">
+    <header className="header glass" id="header" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="container header-inner" style={{ height: '72px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
-          <div className="logo-icon">
+          <div className="logo-icon pulse-primary">
              <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text">Parkéé City</span>
+          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
         </Link>
         <nav className="nav-desktop">
           <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
-          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
-          <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
-          <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-          <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>
-          {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
-          <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
+          <Link to="/community-help" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Community ✨</Link>
+          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
+          <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
+          <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
+          <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ color: 'var(--primary)', fontWeight: '600', padding: '0 10px', display: 'flex', alignItems: 'center', height: '100%' }}>
+              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
-              </span>
-              <button onClick={() => { logout(); navigate('/'); }} className="btn-outline-primary" style={{ padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold' }}>
+              </div>
+              <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
                 Sign Out
               </button>
             </div>
           ) : (
-            <button className="btn-login" onClick={() => navigate('/login')} style={{ background: 'var(--primary)', border: 'none', color: 'white', cursor: 'pointer', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold' }}>Login / Register</button>
+            <button className="btn-gradient" onClick={() => navigate('/login')} style={{ border: 'none', cursor: 'pointer', padding: '10px 20px', borderRadius: '50px', fontWeight: 'bold' }}>Login</button>
           )}
         </nav>
         <div className="header-actions">

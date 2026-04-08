@@ -113,33 +113,50 @@ export default function Home({ onOpenPayment }) {
         description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
       />
       {/* ========== HERO ========== */}
-      <section id="home" className="hero">
-        <div className="hero-bg"></div>
-        <div className="hero-glow hero-glow-1"></div>
-        <div className="hero-glow hero-glow-2"></div>
+      <section id="home" className="hero" style={{ perspective: '1000px' }}>
+        <div className="hero-bg" style={{ background: 'radial-gradient(circle at top right, rgba(94, 234, 212, 0.1), transparent 40%), radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.1), transparent 40%)' }}></div>
+        <div className="hero-glow hero-glow-1 animate-float" style={{ opacity: 0.15 }}></div>
+        <div className="hero-glow hero-glow-2 animate-float" style={{ animationDelay: '-3s', opacity: 0.1 }}></div>
+        
         <div className="container hero-content">
-          <div className="hero-badge">
+          <div className="hero-badge glass animate-float" style={{ border: '1px solid var(--primary-glow)', boxShadow: '0 0 20px var(--primary-glow)', color: 'var(--primary)' }}>
             <ShieldCheck size={16} />
-            Smart Vehicle Protection
+            Next-Gen Vehicle Security
           </div>
-          <h1 className="hero-title">
-            Smart Solutions for <span className="text-gradient">Every Vehicle</span>
+          
+          <h1 className="hero-title" style={{ letterSpacing: '-2px' }}>
+            The Smartest Way to <br />
+            <span className="text-gradient">Protect Your Vehicle</span>
           </h1>
-          <p className="hero-desc">
-            Secure your vehicle with our advanced QR-based Emergency Cards. Get 24/7 roadside assistance, smarter parking, and instant contact access, all in one scan.
+          
+          <p className="hero-desc" style={{ fontSize: '1.2rem', marginBottom: '4rem' }}>
+            Experience 24/7 Roadside Intelligence. From QR-based Emergency ID Cards to AI-powered Diagnostics, we've got you covered.
           </p>
-          <div className="hero-stats">
+          
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '4rem' }}>
+            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px' }}>
+              <MapPin size={22} />
+              Find Help Now
+            </Link>
+            <Link to="/community-help" className="glass" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Community✨
+            </Link>
+          </div>
+
+          <div className="hero-stats glass" style={{ padding: '2rem', borderRadius: '24px', maxWidth: '800px', margin: '0 auto', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="stat">
               <div className="stat-value text-gradient">500+</div>
-              <div className="stat-label">Parking Spots</div>
+              <div className="stat-label">Smart Spots</div>
             </div>
+            <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
             <div className="stat">
               <div className="stat-value text-gradient">24/7</div>
-              <div className="stat-label">Support</div>
+              <div className="stat-label">Live Support</div>
             </div>
+            <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
             <div className="stat">
               <div className="stat-value text-gradient">50K+</div>
-              <div className="stat-label">Happy Users</div>
+              <div className="stat-label">Trusted Users</div>
             </div>
           </div>
         </div>
@@ -160,25 +177,24 @@ export default function Home({ onOpenPayment }) {
             <p className="section-desc">Stranded on the highway? Our emergency repair team is just one call away. Professional mechanics available 24/7.</p>
           </div>
           <div className="services-grid">
-            <div className="service-card">
+            <div className="service-card glass-card">
               <div className="service-icon-wrap"><Wrench size={24} /></div>
               <h3>Engine Repair</h3>
               <p>Expert mechanics for all engine issues on the highway</p>
-
             </div>
-            <div className="service-card">
+            <div className="service-card glass-card">
               <div className="service-icon-wrap"><AlertTriangle size={24} /></div>
-              <h3>Breakdown Assistance</h3>
+              <h3>Breakdown Help</h3>
               <p>Quick response for vehicle breakdowns anywhere</p>
             </div>
-            <div className="service-card">
+            <div className="service-card glass-card">
               <div className="service-icon-wrap"><CheckCircle size={24} /></div>
-              <h3>24/7 Available</h3>
+              <h3>24/7 Support</h3>
               <p>Round the clock emergency support on highways</p>
             </div>
-            <div className="service-card">
+            <div className="service-card glass-card">
               <div className="service-icon-wrap"><ShieldCheck size={24} /></div>
-              <h3>Safe & Reliable</h3>
+              <h3>Secure Network</h3>
               <p>Trained professionals with verified credentials</p>
             </div>
           </div>
@@ -248,7 +264,7 @@ export default function Home({ onOpenPayment }) {
           </div>
           <div className="pricing-grid">
             {/* Silver Plan */}
-            <div className="pricing-card">
+            <div className="pricing-card glass-card">
               <div className="plan-header">
                 <div className="plan-icon"><CheckCircle size={20} /></div>
                 <div><h3>Silver</h3></div>
@@ -261,14 +277,14 @@ export default function Home({ onOpenPayment }) {
                 <li><span className="check">✓</span> 1 Vehicle Limit</li>
                 <li><span className="check">✓</span> Basic Tech Support</li>
               </ul>
-              <button className="plan-btn" onClick={() => onOpenPayment('Silver', '250')}>Subscribe Now</button>
+              <button className="plan-btn glass" onClick={() => onOpenPayment('Silver', '250')}>Subscribe Now</button>
             </div>
             {/* Gold PRO (Featured) */}
-            <div className="pricing-card featured">
-              <div className="plan-badge">⭐ Most Popular</div>
+            <div className="pricing-card featured glass-card" style={{ borderColor: 'var(--primary)' }}>
+              <div className="plan-badge">⭐ Best Value</div>
               <div className="plan-header">
                 <div className="plan-icon featured-icon"><ShieldCheck size={20} /></div>
-                <div><h3>Gold PRO</h3><span className="savings">Half Yearly</span></div>
+                <div><h3>Gold PRO</h3><span className="savings text-gradient">Most Popular</span></div>
               </div>
               <div className="plan-price"><span className="currency">₹</span><span className="amount">450</span></div>
               <span className="period">/6 months</span>
@@ -278,23 +294,23 @@ export default function Home({ onOpenPayment }) {
                 <li><span className="check featured-check">✓</span> Up to 3 Vehicles</li>
                 <li><span className="check featured-check">✓</span> Priority SOS Assistance</li>
               </ul>
-              <button className="plan-btn plan-btn-featured" onClick={() => onOpenPayment('Gold PRO', '450')}>Subscribe Now</button>
+              <button className="plan-btn-featured pulse-primary" onClick={() => onOpenPayment('Gold PRO', '450')}>Subscribe Now</button>
             </div>
             {/* Diamond PRO */}
-            <div className="pricing-card" style={{border: '2px solid #8b5cf6'}}>
+            <div className="pricing-card glass-card" style={{border: '1.5px solid #a855f7', boxShadow: '0 0 30px rgba(168, 85, 247, 0.15)'}}>
               <div className="plan-header">
-                <div className="plan-icon" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}><ShieldCheck size={20} /></div>
-                <div><h3>Diamond PRO</h3><span className="savings" style={{color: '#8b5cf6'}}>Yearly</span></div>
+                <div className="plan-icon" style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}><ShieldCheck size={20} /></div>
+                <div><h3>Diamond PRO</h3><span className="savings" style={{color: '#a855f7'}}>Elite Protection</span></div>
               </div>
-              <div className="plan-price"><span className="currency">₹</span><span className="amount">1,000</span></div>
+              <div className="plan-price"><span className="currency" style={{color: '#a855f7'}}>₹</span><span className="amount" style={{color: '#a855f7'}}>1,000</span></div>
               <span className="period">/year</span>
               <ul className="plan-features">
-                <li style={{fontWeight: 'bold', color: '#8b5cf6'}}><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Everything in Gold PRO</li>
-                <li><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Multi-Vehicle Support (Up to 5)</li>
-                <li><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Zero SOS Convenience Fees</li>
-                <li><span className="check" style={{background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6'}}>✓</span> Dedicated Analytics Log</li>
+                <li style={{fontWeight: 'bold', color: '#a855f7'}}><span className="check" style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}>✓</span> Everything in Gold PRO</li>
+                <li><span className="check" style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}>✓</span> Multi-Vehicle (Up to 5)</li>
+                <li><span className="check" style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}>✓</span> Zero Booking Fees</li>
+                <li><span className="check" style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}>✓</span> Personal Priority Line</li>
               </ul>
-              <button className="plan-btn" style={{background: '#8b5cf6', color: '#fff'}} onClick={() => onOpenPayment('Diamond PRO', '1000')}>Subscribe Now</button>
+              <button className="plan-btn" style={{background: '#a855f7', color: '#fff', borderRadius: '12px'}} onClick={() => onOpenPayment('Diamond PRO', '1000')}>Go Diamond</button>
             </div>
           </div>
           <p className="pricing-trust">

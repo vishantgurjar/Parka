@@ -16,6 +16,7 @@ import TermsOfService from './pages/TermsOfService';
 import FAQ from './pages/FAQ';
 import VehicleLandingPage from './pages/VehicleLandingPage';
 import AIAssistant from './pages/AIAssistant';
+import CommunityHelp from './pages/CommunityHelp';
 
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -119,6 +120,7 @@ function App() {
                   <Route path="/terms-of-service" element={<TermsOfService />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
+                  <Route path="/community-help" element={<CommunityHelp />} />
                   
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />
