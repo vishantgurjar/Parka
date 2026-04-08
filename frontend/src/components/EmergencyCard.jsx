@@ -26,6 +26,9 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl }, ref) => {
                 <span style={{ fontWeight: '800', fontSize: '1rem', color: '#111827' }}>PARKÉE CITY</span>
               </div>
               <span className="minimal-label">{isDiamond ? "Diamond Guard" : isGold ? "Gold Member" : "Smart Vehicle ID"}</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#111827', textTransform: 'uppercase', display: 'block', marginTop: '2px' }}>
+                {user.name.split(' ').length > 1 ? user.name.split(' ').slice(1).join(' ') : user.name}
+              </span>
             </div>
             <div className="minimal-chip"></div>
           </div>
