@@ -39,9 +39,6 @@ export default function Header({ onOpenPayment }) {
         <nav className="nav-desktop">
           <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
           <Link to="/community-help">Community</Link>
-          <Link to="/sticker-shop" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>
-            Order Sticker <span style={{ fontSize: '0.6rem', position: 'relative', top: '-8px', background: 'var(--primary)', color: 'white', padding: '2px 5px', borderRadius: '4px', marginLeft: '2px' }}>NEW</span>
-          </Link>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
