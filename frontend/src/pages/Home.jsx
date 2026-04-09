@@ -1,4 +1,4 @@
-import { Wrench, PhoneCall, CheckCircle, Smartphone, Printer, Send, ShieldCheck, MapPin, AlertTriangle, Download } from 'lucide-react';
+import { Wrench, PhoneCall, CheckCircle, Smartphone, Printer, Send, ShieldCheck, MapPin, AlertTriangle, Download, Cpu, Zap } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
 import EmergencyCard from '../components/EmergencyCard';
@@ -143,7 +143,28 @@ export default function Home({ onOpenPayment }) {
             </Link>
           </div>
 
-
+          <div className="hero-features">
+            <div className="feature-card">
+              <div className="feature-icon-box"><Cpu size={24} /></div>
+              <h4 className="feature-title">AI Health</h4>
+              <p>Gemini-powered engine diagnostics</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon-box"><ShieldCheck size={24} /></div>
+              <h4 className="feature-title">Secure call</h4>
+              <p>WebRTC Privacy-first calling</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon-box"><Zap size={24} /></div>
+              <h4 className="feature-title">Fast SOS</h4>
+              <p>1-3km mechanic matching</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon-box"><Smartphone size={24} /></div>
+              <h4 className="feature-title">Smart QR</h4>
+              <p>Instant vehicle protection</p>
+            </div>
+          </div>
         </div>
       </section>
 
