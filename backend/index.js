@@ -11,7 +11,6 @@ const Incident = require('./models/Incident');
 const Review = require('./models/Review');
 const SOSRequest = require('./models/SOSRequest');
 const CommunityHelp = require('./models/CommunityHelp');
-const StickerOrder = require('./models/StickerOrder');
 
 
 const { OAuth2Client } = require('google-auth-library');
@@ -1067,61 +1066,4 @@ app.post('/api/sos/:id/complete', async (req, res) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// --- STICKER STORE ROUTES ---
 
-// @route   POST /api/stickers/order
-// @desc    Create Razorpay order for sticker
-// @access  Public
-app.post('/api/stickers/order', checkDbConnection, async (req, res) => {
-    try {
-        const { amount } = req.body;
-        const options = {
-            amount: amount * 100, // amount in smallest currency unit
-            currency: "INR",
-            receipt: `stk_${Date.now()}`
-        };
-
-        const order = await razorpay.orders.create(options);
-        res.json(order);
-    } catch (err) {
-        console.error('Sticker Order Error:', err);
-        res.status(500).json({ message: 'Error creating sticker order' });
-    }
-});
-
-// @route   POST /api/stickers/finalize
-// @desc    Verify payment and save sticker order
-// @access  Public
-app.post('/api/stickers/finalize', checkDbConnection, async (req, res) => {
-    try {
-        const { 
-            razorpay_order_id, 
-            razorpay_payment_id, 
-            razorpay_signature,
-            orderData 
-        } = req.body;
-
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E')
-            .update(body.toString())
-            .digest("hex");
-
-        if (expectedSignature !== razorpay_signature) {
-            return res.status(400).json({ message: 'Invalid payment signature' });
-        }
-
-        const newStickerOrder = new StickerOrder({
-            ...orderData,
-            paymentStatus: 'paid',
-            razorpayOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id
-        });
-
-        await newStickerOrder.save();
-        res.json({ success: true, message: 'Sticker Order Placed Successfully', order: newStickerOrder });
-    } catch (err) {
-        console.error('Sticker Finalize Error:', err);
-        res.status(500).json({ message: 'Error finalizing sticker order' });
-    }
-});
