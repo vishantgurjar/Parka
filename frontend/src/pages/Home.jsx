@@ -114,7 +114,7 @@ export default function Home({ onOpenPayment }) {
       />
       {/* ========== HERO ========== */}
       <section id="home" className="hero" style={{ perspective: '1000px' }}>
-        <div className="hero-bg" style={{ background: 'radial-gradient(circle at top right, rgba(94, 234, 212, 0.1), transparent 40%), radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.1), transparent 40%)' }}></div>
+        <div className="hero-bg"></div>
         <div className="hero-glow hero-glow-1 animate-float" style={{ opacity: 0.15 }}></div>
         <div className="hero-glow hero-glow-2 animate-float" style={{ animationDelay: '-3s', opacity: 0.1 }}></div>
         
