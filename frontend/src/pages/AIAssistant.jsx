@@ -30,28 +30,20 @@ export default function AIAssistant() {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512; // Increased for better resolution
+      analyser.fftSize = 1024; // High resolution for engine sound nuances
       source.connect(analyser);
       
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
       dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
 
-      freqHistoryRef.current = [];
+      const spectralSnapshots = [];
       const updateVisualizer = () => {
         analyser.getByteFrequencyData(dataArrayRef.current);
         
-        // Track the dominant frequency for real analysis
-        let maxVal = 0;
-        let maxBin = 0;
-        for (let i = 0; i < dataArrayRef.current.length; i++) {
-          if (dataArrayRef.current[i] > maxVal) {
-            maxVal = dataArrayRef.current[i];
-            maxBin = i;
-          }
-        }
-        if (maxVal > 50) { // Only count if there's significant sound
-           freqHistoryRef.current.push(maxBin);
+        // Take a snapshot every ~500ms
+        if (Math.random() > 0.9) {
+           spectralSnapshots.push(Array.from(dataArrayRef.current.slice(0, 100))); // First 100 bins capture meat of the sound
         }
 
         // Normalize for our 15 bars
@@ -69,22 +61,24 @@ export default function AIAssistant() {
         if (recTimer >= 100) {
           clearInterval(recInterval);
           
-          // Calculate the final signature before stopping
-          const history = freqHistoryRef.current;
-          let signature = 'mid'; // Default
-          if (history.length > 0) {
-             const avgBin = history.reduce((a, b) => a + b, 0) / history.length;
-             // With 512 FFT and 44.1kHz, each bin is approx 86Hz
-             // High > 3000Hz (Bin > 35)
-             // Low < 500Hz (Bin < 6)
-             if (avgBin > 35) signature = 'high';
-             else if (avgBin < 6) signature = 'low';
+          // Calculate the final fingerprint
+          const finalSnapshot = dataArrayRef.current;
+          let peaks = [];
+          for(let i=1; i<finalSnapshot.length-1; i++) {
+             if(finalSnapshot[i] > finalSnapshot[i-1] && finalSnapshot[i] > finalSnapshot[i+1]) {
+                peaks.push({ bin: i, val: finalSnapshot[i] });
+             }
           }
-          setAudioSignature(signature);
+          const topPeaks = peaks.sort((a,b) => b.val - a.val).slice(0, 5);
+          
+          let signature = 'mid'; 
+          const avgPeakBin = topPeaks.reduce((acc, p) => acc + p.bin, 0) / (topPeaks.length || 1);
+          if (avgPeakBin > 40) signature = 'high';
+          else if (avgPeakBin < 10) signature = 'low';
 
           stopRecording(stream);
           setStatus('analyzing');
-          analyzeData(signature);
+          analyzeData(signature, topPeaks);
         }
       }, 200);
 
@@ -100,9 +94,8 @@ export default function AIAssistant() {
     if (audioContextRef.current) audioContextRef.current.close();
   };
 
-  const analyzeData = async (signature) => {
+  const analyzeData = async (signature, peaks) => {
     setProgress(0);
-    // Simulate some progress for UI feel
     const progressTimer = setInterval(() => {
         setProgress(prev => Math.min(prev + 5, 95));
     }, 150);
@@ -113,7 +106,8 @@ export default function AIAssistant() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             symptom: symptom, 
-            audioSignature: signature || audioSignature 
+            audioSignature: signature,
+            spectralPeaks: peaks 
         })
       });
 

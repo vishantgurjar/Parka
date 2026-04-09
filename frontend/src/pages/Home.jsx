@@ -143,22 +143,7 @@ export default function Home({ onOpenPayment }) {
             </Link>
           </div>
 
-          <div className="hero-stats glass" style={{ padding: '2rem', borderRadius: '24px', maxWidth: '800px', margin: '0 auto', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className="stat">
-              <div className="stat-value text-gradient">500+</div>
-              <div className="stat-label">Smart Spots</div>
-            </div>
-            <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-            <div className="stat">
-              <div className="stat-value text-gradient">24/7</div>
-              <div className="stat-label">Live Support</div>
-            </div>
-            <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-            <div className="stat">
-              <div className="stat-value text-gradient">50K+</div>
-              <div className="stat-label">Trusted Users</div>
-            </div>
-          </div>
+
         </div>
       </section>
 

@@ -805,71 +805,39 @@ const CAR_DIAGNOSTIC_DB = [
     { keywords: ['vibration', 'steering', 'shake', 'speed', 'bubble', 'kaanpna', 'vibrate'], issue: "Wheel Balancing/Alignment", dangerLevel: "LOW", details: "Agar steering wheel ya puri gaadi 80-100 ki speed par kaanp (vibrate) rahi hai, toh wheels ka balance bigad gaya hai.", action: "Wheel alignment aur balancing karwao, tyres ki life badh jayegi.", estimatedCost: "₹500 - ₹1,200" },
     { keywords: ['bump', 'noise', 'thud', 'suspension', 'jump', 'shocker', 'gud-gud', 'khad-khad'], issue: "Suspension/Shockers Failure", dangerLevel: "LOW", details: "Gaddhon mein 'gud-gud' ya 'thud' awaz aa rahi hai? Aapke shockers ya suspension bushes khatam ho gaye hain.", action: "Suspension repair karwao varna steering aur control kharab hoga.", estimatedCost: "₹5,000 - ₹15,000" },
     { keywords: ['misfire', 'missing', 'jerk', 'pickup', 'spark', 'jhatka', 'stop', 'missing', 'rough'], issue: "Engine Misfire / Spark Plug", dangerLevel: "MEDIUM", details: "Gaadi jhatke (jerks) le rahi hai aur pickup kam ho gaya hai? Shayad spark plug ya ignition coil kharab hai.", action: "Spark plugs clean karwao ya badal lo.", estimatedCost: "₹800 - ₹2,500" },
-    { keywords: ['noise', 'sound', 'awaz', 'shor', 'vibration', 'ajeeb', 'engine noise', 'ticking'], issue: "General Engine Noise", dangerLevel: "LOW", details: "Engine se ajeeb awaz aa rahi hai jo wear-and-tear ki wajah se ho sakti hai. Shayad koi mount ya plastic part dhila hai.", action: "Ek baar bonnet khol kar check karo koi part toh nahi hil raha.", estimatedCost: "₹200 - ₹1,000" },
-    { keywords: ['o2', 'oxygen', 'mileage', 'average', 'petrol jada', 'sensor', 'smell'], issue: "Oxygen (O2) Sensor Issue", dangerLevel: "LOW", details: "Agar mileage kam ho gayi hai aur exhaust se ajeeb smell aa rahi hai, toh O2 sensor carbon jamne ki wajah se sahi reading nahi de raha.", action: "Sensor clean karwao ya naya dalwa lo mileage sudhaarne ke liye.", estimatedCost: "₹2,500 - ₹6,000" },
-    { keywords: ['fan', 'radiator', 'heating', 'ac stop', 'fan noise', 'garam'], issue: "Radiator Fan Failure", dangerLevel: "CRITICAL", details: "Radiator fan nahi chal raha isiliye engine overheat ho raha hai aur AC bhi cooling chhod raha hai.", action: "Fan ki relay aur motor check karwao turant.", estimatedCost: "₹1,000 - ₹3,500" },
+    { keywords: ['hissing', 'steam', 'smoke', 'radiator', 'leak', 'vacuum', 'whistle'], issue: "Radiator Leak / Vacuum Leak", dangerLevel: "CRITICAL", details: "Engine se 'hissing' ya seeti jaisi awaz aa rahi hai? Ye shayad coolant leak ya vacuum pipe fatne ki wajah se hai.", action: "Turant radiator check karo aur engine overheat mat hone do.", estimatedCost: "₹2,000 - ₹8,500" },
+    { keywords: ['clunk', 'gear', 'shift', 'transmission', 'jerk'], issue: "Transmission/Gearbox Issue", dangerLevel: "CRITICAL", details: "Gear shift karte waqt 'clunk' awaz aa rahi hai? Gearbox ke synchronizers ya oil me dikkat ho sakti hai.", action: "Transmission oil level aur quality check karwayein.", estimatedCost: "₹15,000 - ₹60,000" },
     { keywords: ['humming', 'bearing', 'vroom', 'wheel noise', 'pahiya awaz', 'goonj', 'grinding'], issue: "Wheel Bearing Wear", dangerLevel: "MEDIUM", details: "Gaadi chalne par 'humm-humm' jaisi awaz pahiye se aa rahi hai? Wheel bearing ghis chuka hai.", action: "Bearing badal lo varna pahiya jam (seize) ho sakta hai.", estimatedCost: "₹1,500 - ₹3,500" },
-    { keywords: ['timing', 'ticking', 'old belt', 'engine life', 'tik-tik', 'chain'], issue: "Timing Belt/Chain Wear", dangerLevel: "CRITICAL", details: "Timing belt ghis gayi hai. Agar ye tooti, toh engine ke valves mukad (bend) ho jayenge aur lakhon ka kharcha hoga.", action: "Kilo meters ke हिसाब se timing belt badal lo.", estimatedCost: "₹4,000 - ₹12,000" },
+    { keywords: ['ticking', 'tapping', 'oil', 'valves', 'tik-tik'], issue: "Low Oil / Tappet Noise", dangerLevel: "MEDIUM", details: "Engine se 'tik-tik' awaz aa rahi hai? Shayad engine oil level low hai ya valves (tappets) loose hain.", action: "Pehle engine oil dipstick check karo. Agar oil kam hai toh turant fill karo.", estimatedCost: "₹500 - ₹2,000" },
+    { keywords: ['alternator', 'charge', 'battery', 'whine', 'electronic'], issue: "Alternator Failure", dangerLevel: "MEDIUM", details: "Engine se lagatar 'whining' (vroom-vroom) awaz aa rahi hai? Shayad alternator ki bearings khatam ho rahi hain.", action: "Battery charging light check karo aur alternator repair karwao.", estimatedCost: "₹3,000 - ₹7,500" },
     { keywords: ['exhaust', 'loud', 'noise', 'smoke', 'silencer', 'fat-fat'], issue: "Exhaust Leak / Silencer", dangerLevel: "LOW", details: "Aapki gaadi ka exhaust system (silencer) kahin se leak hai ya fat gaya hai, isiliye awaz bahut loud ho gayi hai.", action: "Silencer ki welding karwao ya naya dholki dalwa lo.", estimatedCost: "₹800 - ₹3,500" },
     { keywords: ['mount', 'vibration', 'cabin', 'shaking', 'idling'], issue: "Engine Mount Damage", dangerLevel: "MEDIUM", details: "Agar gaadi khadi (idling) par bahut zyada vibrate kar rahi hai, toh engine ke foundation mounts toot gaye hain.", action: "Mounts check karwa kar badlo.", estimatedCost: "₹2,000 - ₹6,500" },
-
 ];
 
-function getSmartDiagnosis(userInput, signature) {
+function getSmartDiagnosis(userInput, signature, peaks = []) {
     const input = (userInput || '').toLowerCase();
     
-    // 1. Array of Generic/Unknown responses to avoid repetition
     const unknownResponses = [
-        {
-            issue: "Complex Technical Issue",
-            dangerLevel: "LOW",
-            details: "Hume car mein kuch ajeeb detect hua hai par exact problem clear nahi hai. Ye sensors ya electrical system ki dikkat ho sakti hai.",
-            action: "Ek baar laptop scanning karwa lo kisi ache mechanic se.",
-            estimatedCost: "₹500 - ₹1,500"
-        },
-        {
-            issue: "Acoustic Signature Mismatch",
-            dangerLevel: "MEDIUM",
-            details: "Sound analyzer ko thodi confusion ho rahi hai. Ye engine ke kisi internal part ka noise lag raha hai.",
-            action: "Gaadi ki speed kam rakho aur engine oil level check karo.",
-            estimatedCost: "₹1,000 - ₹3,000"
-        },
-        {
-            issue: "Undetermined Mechanical Wear",
-            dangerLevel: "LOW",
-            details: "Aapki description ke hisaab se ye normal wear and tear lag raha hai. Shayad purani gaadi hone ki wajah se ye awaz hai.",
-            action: "Normal service karwane par ye theek ho sakta hai.",
-            estimatedCost: "₹2,000 - ₹4,000"
-        }
+        { issue: "Complex Technical Issue", dangerLevel: "LOW", details: "Hume car mein kuch ajeeb detect hua hai par exact problem clear nahi hai. Ye sensors ya electrical system ki dikkat ho sakti hai.", action: "Ek baar laptop scanning karwa lo kisi ache mechanic se.", estimatedCost: "₹500 - ₹1,500" },
+        { issue: "Acoustic Signature Mismatch", dangerLevel: "MEDIUM", details: "Sound analyzer ko thodi confusion ho rahi hai. Ye engine ke kisi internal part ka noise lag raha hai.", action: "Gaadi ki speed kam rakho aur engine oil level check karo.", estimatedCost: "₹1,000 - ₹3,000" },
+        { issue: "Undetermined Mechanical Wear", dangerLevel: "LOW", details: "Aapki description ke hisaab se ye normal wear and tear lag raha hai. Shayad purani gaadi hone ki wajah se ye awaz hai.", action: "Normal service karwane par ye theek ho sakta hai.", estimatedCost: "₹2,000 - ₹4,000" }
     ];
 
-    let bestResult = null;
-    let maxScore = 0;
     let candidates = [];
+    let maxScore = 0;
+
+    const maxPeakBin = peaks.length > 0 ? peaks[0].bin : 0;
+    const avgPeakVal = peaks.length > 0 ? peaks.reduce((acc, p) => acc + p.val, 0) / peaks.length : 0;
 
     CAR_DIAGNOSTIC_DB.forEach(item => {
         let score = 0;
         item.keywords.forEach(kw => {
-            if (input.includes(kw)) {
-                // Boost score for specific technical terms
-                const technicalTerms = ['abs', 'o2', 'maf', 'alternator', 'turbo', 'catalytic', 'thermostat', 'battery', 'clutch'];
-                score += technicalTerms.includes(kw) ? 5 : 2;
-            }
+            if (input.includes(kw)) score += 10;
         });
         
-        // --- REAL-TIME AUDIO SIGNATURE BOOST ---
-        if (signature === 'high' && item.keywords.some(k => ['belt', 'squeal', 'turbo', 'whistle', 'o2'].includes(k))) {
-            score += 15;
-        }
-        if (signature === 'low' && item.keywords.some(k => ['knock', 'thud', 'engine', 'suspension', 'deep', 'battery'].includes(k))) {
-            score += 15;
-        }
-        if (signature === 'mid' && item.keywords.some(k => ['brake', 'grind', 'bearing', 'clutch', 'vibration'].includes(k))) {
-            score += 15;
-        }
-
-        // Bonus for multi-keyword matches
-        if (score > 5) score += 3;
+        if (maxPeakBin > 40 && item.keywords.some(k => ['belt', 'squeal', 'whistle', 'hissing'].includes(k))) score += 20; 
+        if (maxPeakBin < 10 && item.keywords.some(k => ['knock', 'thud', 'mount', 'heavy'].includes(k))) score += 20; 
+        if (avgPeakVal > 150 && item.keywords.some(k => ['grinding', 'brake', 'bearing'].includes(k))) score += 15; 
 
         if (score > maxScore) {
             maxScore = score;
@@ -879,80 +847,26 @@ function getSmartDiagnosis(userInput, signature) {
         }
     });
 
-    // Pick a random best candidate for variety
+    let bestResult = null;
     if (candidates.length > 0) {
-        const randomIndex = Math.floor(Math.random() * candidates.length);
-        bestResult = candidates[randomIndex];
-        // Collect other possibilities (excluding the one we picked)
-        bestResult.otherPossibilities = candidates
-            .filter((_, i) => i !== randomIndex)
-            .slice(0, 3)
-            .map(c => c.issue);
-    }
-
-    if (!bestResult || maxScore === 0) {
-        // Fallback based ONLY on signature if no input matched
-        if (signature === 'high') {
-            bestResult = {
-                issue: "High-Pitch Squeal Detected",
-                dangerLevel: "MEDIUM",
-                details: "Hume ek bahut teekhi (high pitch) awaz sunayi di hai. Ye aksar dhili engine belt ya turbo leak ki nishani hoti hai.",
-                action: "Bonnet khol kar belt ki tension check karo.",
-                estimatedCost: "₹1,200 - ₹3,500",
-                confidence: 88,
-                otherPossibilities: ["Serpentine Belt Tensioner", "Turbocharger Leak"]
-            };
-        } else if (signature === 'low') {
-            bestResult = {
-                issue: "Low-Frequency Knocking Heard",
-                dangerLevel: "CRITICAL",
-                details: "Hume engine se ek bhari (thud-thud) awaz sunayi de rahi hai. Ye engine ke internal parts ya suspension ki wajah se ho sakti hai.",
-                action: "Risk mat lo, gaadi turant side mein karke engine oil check karo.",
-                estimatedCost: "₹10,000 - ₹50,000",
-                confidence: 88,
-                otherPossibilities: ["Engine Rod Knock", "Suspension Bushing Failure"]
-            };
-        } else if (signature === 'mid') {
-            bestResult = {
-                issue: "Mid-Frequency Friction Detected",
-                dangerLevel: "MEDIUM",
-                details: "Gaadi se ghisne jaisi awaz aa rahi hai. Ye brakes, wheel bearing, ya clutch ki ghisawat ho sakti hai.",
-                action: "Dhire drive kare aur brakes check karwayein.",
-                estimatedCost: "₹2,500 - ₹8,000",
-                confidence: 82,
-                otherPossibilities: ["Brake Pad Wear", "Wheel Bearing Noise", "Clutch Plate Grinding"]
-            };
-        } else {
-            // Fallback for generic 'engine' or 'car' mentions help
-            if (input.includes('car') || input.includes('engine') || input.includes('check')) {
-                bestResult = {
-                    issue: "General Engine Check Required",
-                    dangerLevel: "LOW",
-                    details: "Aapki car mein normal servicing ki zaroorat ho sakti hai. Sensors aur engine oil ek baar check karwa lo.",
-                    action: "Najdiki mechanic ke pas jaakar general checkup karwao.",
-                    estimatedCost: "₹500 - ₹1,500",
-                    confidence: 78
-                };
-            } else {
-                // Pick a random unknown response
-                const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
-                bestResult = { ...randomUnknown, confidence: 64 };
-            }
-        }
+        bestResult = candidates[Math.floor(Math.random() * candidates.length)];
+        bestResult.otherPossibilities = candidates.filter(c => c.issue !== bestResult.issue).slice(0, 3).map(c => c.issue);
     } else {
-        // High confidence for exact match
-        bestResult.confidence = Math.min(98, 82 + (maxScore * 1.2));
+        if (signature === 'high') {
+            bestResult = { issue: "High-Freq Resonance detected", dangerLevel: "MEDIUM", details: "System ne ek teekhi awaz pakdi hai. Ye aksar turbo leak ya alternator bearing ki awaz hoti hai.", action: "Ek baar belt aur turbo hoses check karwao.", estimatedCost: "₹3,000 - ₹10,000", confidence: 85 };
+        } else if (signature === 'low') {
+            bestResult = { issue: "Low-Freq Vibration", dangerLevel: "CRITICAL", details: "Ye engine ke niche se aane wali bhari awaz hai jo kafi khatarnak ho sakti hai.", action: "Gaadi abhi roko aur oil level check karo.", estimatedCost: "₹15,000 - ₹75,000", confidence: 88 };
+        } else {
+            const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
+            bestResult = { ...randomUnknown, confidence: 70 };
+        }
     }
 
-    // Add Natural Hinglish Variety (WhatsApp style)
     const prefixes = ["Bhai, ", "Aapki gaadi mein ", "System check se pata chala hai ki ", "Hume ye lagta hai: ", "Suno bhai, "];
-    const suffixes = ["", " Dhyan rakho bhai.", " Safe drive karo.", " Fikar mat karo.", " Check karwa lena jaldi."];
-    
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    
-    bestResult.details = prefix + bestResult.details + suffix;
-    bestResult.version = "4.0-PRO";
+    bestResult.details = prefix + bestResult.details;
+    bestResult.confidence = Math.min(96, 75 + (maxScore * 1.5));
+    bestResult.version = "5.5-ULTRA";
 
     return bestResult;
 }
@@ -960,55 +874,43 @@ function getSmartDiagnosis(userInput, signature) {
 // --- AI DIAGNOSTIC ROUTE ---
 app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
     try {
-        const { symptom, audioBase64, audioSignature } = req.body;
+        const { symptom, audioSignature, spectralPeaks } = req.body;
 
-        if (!symptom && !audioBase64 && !audioSignature) {
+        if (!symptom && !audioSignature && !spectralPeaks) {
             return res.status(400).json({ message: "No input provided for analysis." });
         }
 
-        let prompt = `You are a professional car mechanic and "AI Doctor" for the Parkéé City platform. 
-        A user is reporting a possible car engine/mechanical issue.
-        Symptom description: "${symptom || 'User provided audio recording'}"
+        let prompt = `You are an expert car mechanic AI. 
+        Symptom: "${symptom || 'Acoustic Scan'}"
+        Spectral Signature: "${audioSignature}"
+        Frequency Peaks: ${JSON.stringify(spectralPeaks || [])}
 
-        CRITICAL INSTRUCTIONS:
-        1. If the input (symptom or audio) does NOT seem to be related to a car or vehicle issue (e.g. they are talking about food, weather, or just nonsensical noise), respond with: "ERROR_NOT_A_CAR_ISSUE".
-        2. If it IS a car issue, provide a structured diagnostic report in JSON format exactly like this:
+        Instructions:
+        1. Analyze if this is a vehicle issue.
+        2. Provide response in RAW JSON:
         {
-          "issue": "Short title of the problem in English",
+          "issue": "Specific Problem Name",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
-          "details": "Detail explanation in informal 'WhatsApp style' Hinglish (Hindi + English mix). Use friendly tone. Example: 'Bhai, aapke engine se jo ticking awaz aa rahi hai wo oil kam hone ki wajah se ho sakti hai.'",
-          "action": "Immediate advice in Hinglish. Example: 'Pehle car side mein lagao aur oil level check karo.'",
-          "estimatedCost": "Approximate repair cost range in INR (e.g. ₹2,000 - ₹5,000)"
-        }
-        Do not include any Markdown formatting or extra text, just the raw JSON or the error string.`;
+          "details": "WhatsApp style Hinglish explanation",
+          "action": "Immediate Hinglish advice",
+          "estimatedCost": "₹X - ₹Y",
+          "confidence": 0-100
+        }`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
-
-        if (text.includes("ERROR_NOT_A_CAR_ISSUE")) {
-          return res.status(400).json({ 
-            message: "Our AI Doctor only responds to car-related issues. Please ensure you are providing engine/vehicle sounds or descriptions." 
-          });
-        }
 
         try {
           const diagnostic = JSON.parse(text);
           res.json(diagnostic);
         } catch (parseErr) {
-          console.error("AI Parse Error:", text);
-          throw new Error("Invalid AI response format");
+          throw new Error("Invalid AI response");
         }
     } catch (error) {
-        console.error('AI Diagnostic Error (Normal behavior if no key):', error.message);
-        
-        // --- SMART FALLBACK ENGINE ---
-        // Since Gemini is not available, we use our internally trained high-quality database
-        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature);
+        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature, req.body.spectralPeaks);
         res.json(diagnostic);
     }
 });
-
-
 
 // --- SMART QR SCAN ALERT (Updated with Location) ---
 app.post('/api/alerts/scan', async (req, res) => {
