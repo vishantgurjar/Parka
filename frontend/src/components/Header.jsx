@@ -42,6 +42,7 @@ export default function Header({ onOpenPayment }) {
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
+          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
           <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>
           
           {user ? (
@@ -72,6 +73,7 @@ export default function Header({ onOpenPayment }) {
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
+        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
         <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
