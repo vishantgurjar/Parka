@@ -45,6 +45,7 @@ export default function CommunityHelp() {
   const [isRequesting, setIsRequesting] = useState(false);
   const [newHelp, setNewHelp] = useState({ type: 'Flat Tire', description: '' });
   const [loading, setLoading] = useState(true);
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app';
 
@@ -78,6 +79,7 @@ export default function CommunityHelp() {
     e.preventDefault();
     if (!user) return alert("Please login to post a help request.");
     
+    setIsSubmittingRequest(true);
     try {
       const res = await fetch(`${API_BASE}/api/community-help/request`, {
         method: 'POST',
@@ -86,7 +88,7 @@ export default function CommunityHelp() {
           userId: user._id,
           userName: user.name,
           userPhone: user.phone || 'N/A',
-          type: newHelp.type,
+          type: newHelp.type === 'Fuel Needed' ? 'Fuel' : newHelp.type,
           description: newHelp.description,
           location: {
             lat: userLocation[0],
@@ -97,10 +99,16 @@ export default function CommunityHelp() {
       if (res.ok) {
         alert("Help request broadcasted to the community!");
         setIsRequesting(false);
+        setNewHelp({ type: 'Flat Tire', description: '' });
         fetchNearbyHelp();
+      } else {
+        const errorData = await res.json();
+        alert(`Failed: ${errorData.message || 'Check your internet connection'}`);
       }
     } catch (err) {
-      alert("Failed to post request.");
+      alert("Failed to post request. Please check if the server is running.");
+    } finally {
+      setIsSubmittingRequest(false);
     }
   };
 
@@ -213,7 +221,7 @@ export default function CommunityHelp() {
 
       {/* REQUEST MODAL */}
       {isRequesting && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyCenter: 'center', backdropFilter: 'blur(8px)' }}>
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
           <div className="glass" style={{ maxWidth: '450px', width: '90%', padding: '2.5rem', borderRadius: '24px', border: '1px solid var(--border)', margin: 'auto' }}>
             <h2 style={{ marginBottom: '0.5rem' }}>Ask for Help</h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '2rem' }}>Broadcasting to nearby Sathis...</p>
@@ -245,7 +253,14 @@ export default function CommunityHelp() {
               </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
                  <button type="button" onClick={() => setIsRequesting(false)} className="btn-secondary" style={{ flex: 1, padding: '12px', borderRadius: '12px' }}>Cancel</button>
-                 <button type="submit" className="btn-gradient" style={{ flex: 2, padding: '12px', borderRadius: '12px' }}>Post Request</button>
+                 <button 
+                   type="submit" 
+                   className="btn-gradient" 
+                   disabled={isSubmittingRequest}
+                   style={{ flex: 2, padding: '12px', borderRadius: '12px', opacity: isSubmittingRequest ? 0.7 : 1, cursor: isSubmittingRequest ? 'not-allowed' : 'pointer' }}
+                 >
+                   {isSubmittingRequest ? 'Broadcasting...' : 'Post Request'}
+                 </button>
               </div>
             </form>
           </div>
