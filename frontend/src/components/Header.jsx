@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Moon, Sun, Menu, X, Car, Sparkles, Package, ShieldCheck, Star } from 'lucide-react';
+import { Moon, Sun, Menu, X, Car, Package } from 'lucide-react';
 import { ThemeContext, AuthContext } from '../App';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -36,6 +36,8 @@ export default function Header({ onOpenPayment }) {
           </div>
           <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
         </Link>
+
+        {/* Desktop Nav */}
         <nav className="nav-desktop">
           <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
           <Link to="/community-help">Community</Link>
@@ -43,67 +45,63 @@ export default function Header({ onOpenPayment }) {
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
           <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
-          {!user || !['silver', 'gold', 'diamond'].includes(user.subscriptionTier) ? (
-            <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>
-          ) : null}
+          {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>}
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
-                {user.subscriptionTier && (
-                  <span className={`tier-badge tier-badge-${user.subscriptionTier}`} style={{ fontSize: '0.65rem' }}>
-                    {user.subscriptionTier.toUpperCase()}
-                  </span>
-                )}
               </div>
               <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
                 Sign Out
               </button>
             </div>
           ) : (
-            <button className="btn-gradient" onClick={() => navigate('/login')} style={{ border: 'none', cursor: 'pointer', padding: '10px 20px', borderRadius: '50px', fontWeight: 'bold' }}>Login</button>
+            <Link to="/login" className="btn-gradient" style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.85rem' }}>
+              Login
+            </Link>
           )}
-        </nav>
-        <div className="header-actions">
-          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+
+          <button onClick={toggleTheme} className="theme-toggle">
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
-          <button className={`menu-toggle ${isMenuOpen ? 'menu-open' : ''}`} onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Menu">
+        </nav>
+
+        {/* Mobile Nav Toggle */}
+        <div className="header-actions">
+           <button onClick={toggleTheme} className="theme-toggle desktop-hide" style={{ display: 'none' }}>
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle">
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
-      {/* Mobile Menu */}
-      <nav className={`nav-mobile ${isMenuOpen ? 'show' : ''}`} id="navMobile">
+
+      {/* Mobile Nav Menu */}
+      <nav className={`nav-mobile ${isMenuOpen ? 'show' : ''}`}>
         <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
-        <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency Service</a>
+        <Link to="/community-help" onClick={(e) => { setIsMenuOpen(false); }}>Community</Link>
+        <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
         <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
-        {(!user || !['silver', 'gold', 'diamond'].includes(user.subscriptionTier)) && (
-          <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>
-        )}
+        {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
         {user ? (
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>
               Hello, {user.name}
-              {user.subscriptionTier && (
-                <span className={`tier-badge tier-badge-${user.subscriptionTier}`}>
-                  {user.subscriptionTier.toUpperCase()}
-                </span>
-              )}
             </span>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out
             </button>
           </div>
         ) : (
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-            <button onClick={() => { setIsMenuOpen(false); navigate('/login'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>Login / Register</button>
-          </div>
+          <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn-gradient full-width" style={{ marginTop: '1rem', padding: '12px', borderRadius: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+            Login / Register
+          </Link>
         )}
       </nav>
     </header>
