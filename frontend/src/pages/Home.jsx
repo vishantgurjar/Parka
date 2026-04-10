@@ -142,15 +142,8 @@ export default function Home({ onOpenPayment }) {
               Community✨
             </Link>
           </div>
-
-          {isPro() && (
-            <div className="fadeIn" style={{ marginBottom: '3rem' }}>
-              <div className="tier-badge diamond-shine" style={{ padding: '10px 24px', fontSize: '0.9rem', borderRadius: '50px', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid #38bdf8', color: '#38bdf8', backdropFilter: 'blur(10px)' }}>
-                <Sparkles size={18} style={{ marginRight: '8px' }} />
-                Welcome Back, {user.subscriptionTier?.toUpperCase()} MEMBER
-              </div>
-            </div>
-          )}
+          
+          </div>
 
           <div className="hero-features">
             <div className="feature-card">
@@ -266,8 +259,8 @@ export default function Home({ onOpenPayment }) {
         </div>
       </section>
 
-      {/* ========== PRICING (Hidden for Pro) ========== */}
-      {!isPro() && (
+      {/* ========== PRICING ========== */}
+      {(!user || !['silver', 'gold', 'diamond'].includes(user.subscriptionTier)) && (
         <section id="pricing" className="pricing">
           <div className="hero-glow pricing-glow"></div>
           <div className="container pricing-content">
