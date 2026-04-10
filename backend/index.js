@@ -257,6 +257,11 @@ app.post('/api/auth/login', checkDbConnection, async (req, res) => {
         const userResponse = user.toObject();
         delete userResponse.password;
 
+        // Founder Bypass
+        if (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL) {
+            userResponse.subscriptionTier = 'diamond';
+        }
+
         res.json({ token, user: userResponse, message: 'Login successful' });
     } catch (error) {
         console.error('Login Error:', error);
@@ -300,6 +305,11 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
         const userResponse = user.toObject();
         if (userResponse.password) delete userResponse.password;
 
+        // Founder Bypass
+        if (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL) {
+            userResponse.subscriptionTier = 'diamond';
+        }
+
         res.json({ token, user: userResponse, message: 'Google Login successful' });
     } catch (error) {
         console.error('Google Auth Error:', error);
@@ -324,11 +334,17 @@ app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
                 subscriptionTier: 'diamond'
             });
         }
-        const user = await User.findById(req.params.id).select('name phone make model plateNumber color year subscriptionTier');
+        const user = await User.findById(req.params.id).select('name email phone make model plateNumber color year subscriptionTier');
 
         if (!user) {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
+
+        // Founder Bypass
+        if (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL) {
+            user.subscriptionTier = 'diamond';
+        }
+
         res.json(user);
     } catch (error) {
         console.error('Fetch Vehicle Error:', error);

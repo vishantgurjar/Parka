@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
   plateNumber: { type: String },
   
   // PRO Features
-  subscriptionTier: { type: String, enum: ['free', 'silver', 'gold'], default: 'free' },
+  subscriptionTier: { type: String, enum: ['free', 'silver', 'gold', 'diamond'], default: 'free' },
   secondaryVehicles: [{
     make: String,
     model: String,
