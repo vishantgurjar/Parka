@@ -32,9 +32,9 @@ export default function Header({ onOpenPayment }) {
       <div className="container header-inner" style={{ height: '72px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon pulse-primary">
-             <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
+             <img src="/logo.png" alt="Park├⌐├⌐ City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
+          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Park├⌐├⌐ City</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -44,16 +44,16 @@ export default function Header({ onOpenPayment }) {
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
-          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
+          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI ≡ƒ¢í∩╕Å</Link>
           {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>}
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div className="glass" style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>
+              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
                 {['silver', 'gold', 'diamond'].includes(user.subscriptionTier) && (
-                  <span className={`tier-badge tier-badge-${user.subscriptionTier}`}>
-                    {user.subscriptionTier}
+                  <span className={`tier-badge tier-badge-${user.subscriptionTier}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
+                    {user.subscriptionTier?.toUpperCase()}
                   </span>
                 )}
               </div>
@@ -90,7 +90,7 @@ export default function Header({ onOpenPayment }) {
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
+        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode ≡ƒ¢í∩╕Å</Link>
         {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
@@ -98,11 +98,6 @@ export default function Header({ onOpenPayment }) {
           <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>
               Hello, {user.name}
-              {['silver', 'gold', 'diamond'].includes(user.subscriptionTier) && (
-                <span className={`tier-badge tier-badge-${user.subscriptionTier}`}>
-                  {user.subscriptionTier}
-                </span>
-              )}
             </span>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out

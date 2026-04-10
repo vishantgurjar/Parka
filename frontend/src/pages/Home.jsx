@@ -10,7 +10,7 @@ import SEO from '../components/SEO';
 export default function Home({ onOpenPayment }) {
   const { user, isPro } = useContext(AuthContext);
   
-  // Point: QR URL Generation
+  // Point: QR URL Generation (Stable Restored)
   const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
   
   // Point 6: Voice SOS
@@ -72,8 +72,8 @@ export default function Home({ onOpenPayment }) {
   return (
     <>
       <SEO 
-        title="Parkéé City - Smart Vehicle Protection & Emergency Services"
-        description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
+        title="Park├⌐├⌐ City - Smart Vehicle Protection & Emergency Services"
+        description="Secure your vehicle with Park├⌐├⌐ City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
       />
       {/* ========== HERO ========== */}
       <section id="home" className="hero" style={{ perspective: '1000px' }}>
@@ -96,8 +96,8 @@ export default function Home({ onOpenPayment }) {
             Experience 24/7 Roadside Intelligence. From QR-based Emergency ID Cards to AI-powered Diagnostics, we've got you covered.
           </p>
           
-          <div className="hero-actions-container">
-            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '4rem' }}>
+            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px' }}>
               <MapPin size={22} />
               Find Help Now
             </Link>
@@ -107,11 +107,13 @@ export default function Home({ onOpenPayment }) {
           </div>
 
           {user?.subscriptionTier === 'diamond' && (
-            <div className="diamond-welcome-glow">
+            <div style={{ marginTop: '2rem', padding: '12px 24px', borderRadius: '50px', background: 'rgba(94, 234, 212, 0.1)', border: '1px solid var(--primary)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>
               <Sparkles size={18} />
               Welcome Back, DIAMOND MEMBER
             </div>
           )}
+          
+          </div>
 
           <div className="hero-features">
             <div className="feature-card">
@@ -135,7 +137,6 @@ export default function Home({ onOpenPayment }) {
               <p>Instant contact without logs</p>
             </div>
           </div>
-        </div>
       </section>
 
       {/* ========== EMERGENCY SERVICES ========== */}
@@ -259,8 +260,8 @@ export default function Home({ onOpenPayment }) {
             Secured by UPI · Cancel anytime · No hidden fees
           </p>
         </div>
-        </section>
-      )}
+      </section>
+    )}
 
       {/* ========== QR SECTION ========== */}
       <section id="qr" className="qr-section">
@@ -317,8 +318,6 @@ export default function Home({ onOpenPayment }) {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <EmergencyCard 
-                    user={user || { name: 'GUEST USER', subscriptionTier: 'none' }}
-                    qrUrl={qrUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://parka-frontend.vercel.app'}
                     theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
                   />
                 </div>
