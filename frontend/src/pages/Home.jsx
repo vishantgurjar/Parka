@@ -10,6 +10,9 @@ import SEO from '../components/SEO';
 export default function Home({ onOpenPayment }) {
   const { user, isPro } = useContext(AuthContext);
   
+  // Point: QR URL Generation
+  const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
+  
   // Point 6: Voice SOS
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
@@ -272,7 +275,7 @@ export default function Home({ onOpenPayment }) {
             {user ? (
                <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center' }}>
                  <div ref={qrRef} className="qr-container">
-                    <CustomerCard user={user} />
+                    <CustomerCard user={user} qrUrl={qrUrl} />
                  </div>
                  
                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -315,6 +318,8 @@ export default function Home({ onOpenPayment }) {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <EmergencyCard 
+                    user={user || { name: 'GUEST USER', subscriptionTier: 'none' }}
+                    qrUrl={qrUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://parka-frontend.vercel.app'}
                     theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
                   />
                 </div>
