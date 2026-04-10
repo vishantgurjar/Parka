@@ -257,7 +257,8 @@ export default function Home({ onOpenPayment }) {
             Secured by UPI · Cancel anytime · No hidden fees
           </p>
         </div>
-      </section>
+        </section>
+      )}
 
       {/* ========== QR SECTION ========== */}
       <section id="qr" className="qr-section">
