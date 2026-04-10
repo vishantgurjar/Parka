@@ -96,8 +96,8 @@ export default function Home({ onOpenPayment }) {
             Experience 24/7 Roadside Intelligence. From QR-based Emergency ID Cards to AI-powered Diagnostics, we've got you covered.
           </p>
           
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '4rem' }}>
-            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px' }}>
+          <div className="hero-actions-container">
+            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MapPin size={22} />
               Find Help Now
             </Link>
@@ -112,8 +112,6 @@ export default function Home({ onOpenPayment }) {
               Welcome Back, DIAMOND MEMBER
             </div>
           )}
-          
-          </div>
 
           <div className="hero-features">
             <div className="feature-card">
@@ -137,6 +135,7 @@ export default function Home({ onOpenPayment }) {
               <p>Instant contact without logs</p>
             </div>
           </div>
+        </div>
       </section>
 
       {/* ========== EMERGENCY SERVICES ========== */}
