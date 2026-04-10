@@ -1306,3 +1306,51 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
     animation: sonicWave 1.2s infinite ease-in-out;
 }
+
+/* ========== TIER BADGES (Safe Re-implementation) ========== */
+.tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tier-badge-diamond {
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6, #d946ef);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+.tier-badge-gold {
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    color: #451a03;
+}
+
+.tier-badge-silver {
+    background: linear-gradient(135deg, #9ca3af, #4b5563);
+    color: white;
+}
+
+.diamond-welcome-glow {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #a78bfa;
+    padding: 8px 16px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}

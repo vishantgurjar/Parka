@@ -102,6 +102,13 @@ export default function Home({ onOpenPayment }) {
               Community✨
             </Link>
           </div>
+
+          {user?.subscriptionTier === 'diamond' && (
+            <div className="diamond-welcome-glow">
+              <Sparkles size={18} />
+              Welcome Back, DIAMOND MEMBER
+            </div>
+          )}
           
           </div>
 
@@ -182,8 +189,9 @@ export default function Home({ onOpenPayment }) {
         </div>
       </section>
 
-      {/* ========== PRICING ========== */}
-      <section id="pricing" className="pricing">
+      {/* ========== PRICING (Hidden for Subscribed) ========== */}
+      {(!user?.subscriptionTier || !['silver', 'gold', 'diamond'].includes(user.subscriptionTier)) && (
+        <section id="pricing" className="pricing">
         <div className="hero-glow pricing-glow"></div>
         <div className="container pricing-content">
           <div className="section-header">

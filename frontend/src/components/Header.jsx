@@ -49,8 +49,13 @@ export default function Header({ onOpenPayment }) {
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
+              <div className="glass" style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
+                {['silver', 'gold', 'diamond'].includes(user.subscriptionTier) && (
+                  <span className={`tier-badge tier-badge-${user.subscriptionTier}`}>
+                    {user.subscriptionTier}
+                  </span>
+                )}
               </div>
               <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
                 Sign Out
@@ -93,6 +98,11 @@ export default function Header({ onOpenPayment }) {
           <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>
               Hello, {user.name}
+              {['silver', 'gold', 'diamond'].includes(user.subscriptionTier) && (
+                <span className={`tier-badge tier-badge-${user.subscriptionTier}`}>
+                  {user.subscriptionTier}
+                </span>
+              )}
             </span>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out
