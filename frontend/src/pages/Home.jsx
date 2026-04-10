@@ -1,4 +1,4 @@
-import { Wrench, PhoneCall, CheckCircle, Smartphone, Printer, Send, ShieldCheck, MapPin, AlertTriangle, Download, Cpu, Zap } from 'lucide-react';
+import { Wrench, PhoneCall, CheckCircle, Smartphone, Printer, Send, ShieldCheck, MapPin, AlertTriangle, Download, Cpu, Zap, Sparkles } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
 import EmergencyCard from '../components/EmergencyCard';
