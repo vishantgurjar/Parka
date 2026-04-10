@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Moon, Sun, Menu, X, Car, Sparkles, Package } from 'lucide-react';
+import { Moon, Sun, Menu, X, Car, Sparkles, Package, ShieldCheck, Star } from 'lucide-react';
 import { ThemeContext, AuthContext } from '../App';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -43,12 +43,18 @@ export default function Header({ onOpenPayment }) {
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
           <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
-          <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>
+          {!isPro() && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>}
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
+              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
+                <span className={`tier-badge tier-badge-${user.subscriptionTier || 'free'}`}>
+                  {user.subscriptionTier === 'diamond' && <Sparkles size={12} />}
+                  {user.subscriptionTier === 'gold' && <Star size={12} />}
+                  {user.subscriptionTier === 'silver' && <ShieldCheck size={12} />}
+                  {user.subscriptionTier || 'Basic'}
+                </span>
               </div>
               <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
                 Sign Out
@@ -74,13 +80,16 @@ export default function Header({ onOpenPayment }) {
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
         <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
-        <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>
+        {!isPro() && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
         {user ? (
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-            <span style={{ display: 'block', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold', textAlign: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>
               Hello, {user.name}
+              <span className={`tier-badge tier-badge-${user.subscriptionTier || 'free'}`}>
+                {user.subscriptionTier || 'Basic'}
+              </span>
             </span>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out
