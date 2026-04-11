@@ -32,9 +32,9 @@ export default function Header({ onOpenPayment }) {
       <div className="container header-inner" style={{ height: '72px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon pulse-primary">
-             <img src="/logo.png" alt="Park├⌐├⌐ City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
+             <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Park├⌐├⌐ City</span>
+          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
         </Link>
 
         {/* Desktop Nav */}

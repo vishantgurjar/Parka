@@ -76,8 +76,8 @@ export default function Home({ onOpenPayment }) {
   return (
     <>
       <SEO 
-        title="Park├⌐├⌐ City - Smart Vehicle Protection & Emergency Services"
-        description="Secure your vehicle with Park├⌐├⌐ City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
+        title="Parkéé City - Smart Vehicle Protection & Emergency Services"
+        description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
       />
       {/* ========== HERO ========== */}
       {/* ========== HERO ========== */}
