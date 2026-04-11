@@ -273,7 +273,7 @@ export default function Home({ onOpenPayment }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center', width: '100%' }}>
-            {/* Card Switcher Tabs */}
+            {/* Deploy Trigger: Card Switcher Tabs (Unified Section) */}
             <div className="card-switcher">
               <button 
                 className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
