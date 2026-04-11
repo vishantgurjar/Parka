@@ -74,13 +74,14 @@ export default function Header({ onOpenPayment }) {
 
         {/* Mobile Nav Toggle */}
         <div className="header-actions">
-           <button onClick={toggleTheme} className="theme-toggle desktop-hide" style={{ display: 'none' }}>
+           <button onClick={toggleTheme} className="theme-toggle" style={{ marginRight: '8px' }}>
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle" aria-label="Toggle Menu">
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
+
       </div>
 
       {/* Mobile Nav Menu */}

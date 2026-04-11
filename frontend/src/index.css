@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #030712;
   --fg: #f9fafb;
   --card: #111827;
@@ -1101,12 +1101,46 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 }
 .toast.show { opacity: 1; pointer-events: auto; }
 /* ========== RESPONSIVE ========== */
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
+    .container { padding: 0 2rem; }
+    .hero-title { font-size: 3.5rem; }
+}
+
+@media (max-width: 768px) {
+    .hero-bg { background-attachment: scroll !important; }
+    .hero-content { padding: 4rem 0 2rem !important; }
+    .hero-title { font-size: 2.75rem !important; letter-spacing: -1px; }
+    .hero-desc { font-size: 1rem !important; margin-bottom: 2rem !important; padding: 0 1rem; }
+    .hero-badge { margin-bottom: 1.5rem !important; }
+    .hero-features { grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; padding: 0 1rem !important; }
+    .feature-card { padding: 1.25rem !important; }
+    .feature-title { font-size: 0.85rem !important; }
+    .pricing-grid, .services-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+    .section-header { margin-bottom: 2.5rem !important; }
+    .section-title { font-size: 2.25rem !important; }
+    .footer-top { gap: 2rem !important; }
+}
+
+@media (max-width: 480px) {
+    .hero-title { font-size: 2.25rem !important; }
+    .hero-cta-buttons { flex-direction: column !important; gap: 1rem !important; width: 100% !important; max-width: 280px !important; margin: 0 auto !important; }
+    .hero-cta-buttons .btn-gradient, .hero-cta-buttons .glass { width: 100% !important; text-align: center !important; justify-content: center !important; margin: 0 !important; }
+    .hero-features { grid-template-columns: 1fr !important; max-width: 320px !important; }
+    .feature-card { flex-direction: row !important; text-align: left !important; gap: 1rem !important; padding: 1rem !important; }
+    .feature-icon-box { width: 40px !important; height: 40px !important; }
+    .feature-card p { display: none !important; }
+    .logo-text { font-size: 1.1rem !important; }
+    .header-inner { height: 64px !important; }
+    .container { padding: 0 1.25rem !important; }
+}
+
+
+
     .footer-links { flex-direction: column; gap: 2rem; }
     .hero-stats { flex-direction: row; flex-wrap: wrap; }
     .services-grid { grid-template-columns: 1fr; }
     .pricing-grid { grid-template-columns: 1fr; }
-}
+
 
 /* ========== PREMIUM ANIMATIONS ========== */
 @keyframes fadeIn {

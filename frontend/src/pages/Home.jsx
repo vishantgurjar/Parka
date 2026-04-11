@@ -95,19 +95,20 @@ export default function Home({ onOpenPayment }) {
             <span className="text-gradient">Protect Your Vehicle</span>
           </h1>
           
-          <p className="hero-desc" style={{ fontSize: '1.2rem', marginBottom: '4rem' }}>
+          <p className="hero-desc">
             Experience 24/7 Roadside Intelligence. From QR-based Emergency ID Cards to AI-powered Diagnostics, we've got you covered.
           </p>
           
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '4rem' }}>
-            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px' }}>
+          <div className="hero-cta-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '4rem' }}>
+            <Link to="/mechanics" className="btn-gradient pulse-primary" style={{ padding: '16px 32px', borderRadius: '50px' }}>
               <MapPin size={22} />
               Find Help Now
             </Link>
-            <Link to="/community-help" className="glass" style={{ padding: '16px 32px', fontSize: '1.1rem', borderRadius: '50px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link to="/community-help" className="glass" style={{ padding: '16px 32px', borderRadius: '50px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
               Community✨
             </Link>
           </div>
+
 
           {user?.subscriptionTier === 'diamond' && (
             <div style={{ marginTop: '2rem', padding: '12px 24px', borderRadius: '50px', background: 'rgba(94, 234, 212, 0.1)', border: '1px solid var(--primary)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>
