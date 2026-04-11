@@ -1,14 +1,11 @@
-import { Wrench, PhoneCall, CheckCircle, Smartphone, Printer, Send, ShieldCheck, MapPin, AlertTriangle, Download, Cpu, Zap, Sparkles } from 'lucide-react';
-import { useState, useEffect, useContext, useRef } from 'react';
+import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu } from 'lucide-react';
+import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../App';
-import EmergencyCard from '../components/EmergencyCard';
-import CustomerCard from '../components/CustomerCard';
 import { Link } from 'react-router-dom';
-import { toPng } from 'html-to-image';
 import SEO from '../components/SEO';
 
 export default function Home({ onOpenPayment }) {
-  const { user, isPro } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
 
   useEffect(() => {
@@ -25,13 +22,12 @@ export default function Home({ onOpenPayment }) {
       .catch(() => setLocationLabel('Location Detected'));
   }, []);
   
-  // Point: QR URL Generation (Stable Restored)
-  const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
-  
-  // Point 6: Voice SOS
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [activeCard, setActiveCard] = useState('profile'); // profile or emergency
+
+  // Point: QR URL Generation (Stable Restored)
+  const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
 
   useEffect(() => {
     if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {

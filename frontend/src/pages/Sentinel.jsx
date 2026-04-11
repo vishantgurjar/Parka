@@ -4,12 +4,11 @@ import { AuthContext } from '../App';
 import SEO from '../components/SEO';
 
 export default function Sentinel() {
-  const { user, isPro } = useContext(AuthContext);
+  const { isPro } = useContext(AuthContext);
   const [isActive, setIsActive] = useState(false);
   const [isImpactDetected, setIsImpactDetected] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [gForce, setGForce] = useState({ x: 0, y: 0, z: 0, total: 0 });
-  const [isRecording, setIsRecording] = useState(false);
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -17,6 +16,49 @@ export default function Sentinel() {
   // Mock logging function
   const addLog = (msg) => {
     setLogs(prev => [{ time: new Date().toLocaleTimeString(), msg }, ...prev].slice(0, 5));
+  };
+
+  const triggerImpact = () => {
+    setIsImpactDetected(true);
+    addLog("CRITICAL IMPACT DETECTED!");
+    setCountdown(10);
+  };
+
+  const sendSOS = () => {
+    addLog("SOS DISPATCHED TO EMERGENCY CLOUD.");
+    alert("SOS DISPATCHED! Evidence locked and uploaded to Parkéé Cloud.");
+    setIsImpactDetected(false);
+  };
+
+  const cancelSOS = () => {
+    setIsImpactDetected(false);
+    addLog("SOS Manually Cancelled.");
+  };
+
+  const stopSentinel = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setIsActive(false);
+    setIsImpactDetected(false);
+    setStream(null);
+  };
+
+  const startSentinel = async () => {
+    if (!isPro()) {
+      alert("Sentinel Mode is a PRO feature. Join Diamond PRO for life-saving protection.");
+      return;
+    }
+    
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setStream(mediaStream);
+      if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      setIsActive(true);
+      addLog("System Armed. Monitoring Sensors.");
+    } catch (err) {
+      alert("Camera access required for Sentinel Mode.");
+    }
   };
 
   // Sensor Logic
@@ -41,42 +83,7 @@ export default function Sentinel() {
 
     window.addEventListener('devicemotion', handleMotion);
     return () => window.removeEventListener('devicemotion', handleMotion);
-  }, [isActive, isImpactDetected]);
-
-  // Camera Logic
-  const startSentinel = async () => {
-    if (!isPro()) {
-      alert("Sentinel Mode is a PRO feature. Join Diamond PRO for life-saving protection.");
-      return;
-    }
-    
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setStream(mediaStream);
-      if (videoRef.current) videoRef.current.srcObject = mediaStream;
-      setIsActive(true);
-      setIsRecording(true);
-      addLog("System Armed. Monitoring Sensors.");
-    } catch (err) {
-      alert("Camera access required for Sentinel Mode.");
-    }
-  };
-
-  const stopSentinel = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-    setIsActive(false);
-    setIsRecording(false);
-    setIsImpactDetected(false);
-    setStream(null);
-  };
-
-  const triggerImpact = () => {
-    setIsImpactDetected(true);
-    addLog("CRITICAL IMPACT DETECTED!");
-    setCountdown(10);
-  };
+  }, [isActive, isImpactDetected, triggerImpact]);
 
   // Countdown Logic
   useEffect(() => {
@@ -87,18 +94,7 @@ export default function Sentinel() {
       sendSOS();
     }
     return () => clearInterval(timer);
-  }, [isImpactDetected, countdown]);
-
-  const sendSOS = () => {
-    addLog("SOS DISPATCHED TO EMERGENCY CLOUD.");
-    alert("SOS DISPATCHED! Evidence locked and uploaded to Parkéé Cloud.");
-    setIsImpactDetected(false);
-  };
-
-  const cancelSOS = () => {
-    setIsImpactDetected(false);
-    addLog("SOS Manually Cancelled.");
-  };
+  }, [isImpactDetected, countdown, sendSOS]);
 
   return (
     <div className="sentinel-page" style={{ background: '#0a0a0b', minHeight: '100vh', color: '#fff', paddingTop: '80px', paddingBottom: '40px' }}>
