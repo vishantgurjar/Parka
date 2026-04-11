@@ -10,8 +10,8 @@ import SEO from '../components/SEO';
 export default function Home({ onOpenPayment }) {
   const { user, isPro } = useContext(AuthContext);
   
-  // Point: QR URL Generation (Stable Restored)
-  const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
+  // Point: QR URL Generation (Stable Restored with Encoding Fix)
+  const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + "/v/" + user._id)}` : "";
   
   // Point 6: Voice SOS
   const [isVoiceListening, setIsVoiceListening] = useState(false);
@@ -46,22 +46,24 @@ export default function Home({ onOpenPayment }) {
     recognition.start();
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const emergencyRef = useRef(null);
+  const profileRef = useRef(null);
 
-  const qrRef = useRef(null);
-  const downloadQR = async () => {
-    if (qrRef.current === null) return;
+  const downloadQR = async (ref, fileName) => {
+    if (ref.current === null) return;
     try {
-      const dataUrl = await toPng(qrRef.current, { cacheBust: true });
+      const dataUrl = await toPng(ref.current, { cacheBust: true });
       const link = document.createElement('a');
-      link.download = `parkee-city-id-${user.name}.png`;
+      link.download = `${fileName}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('Error downloading QR:', err);
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleScroll = (e, targetId) => {
@@ -122,7 +124,7 @@ export default function Home({ onOpenPayment }) {
               <h4 className="feature-title">AI Health</h4>
               <p>Gemini-powered engine diagnostics</p>
             </div>
-            <div className="feature-card">
+                <div className="feature-card">
               <div className="feature-icon-box"><ShieldCheck size={24} /></div>
               <h4 className="feature-title">Secure call</h4>
               <p>WebRTC Privacy-first calling</p>
@@ -273,46 +275,80 @@ export default function Home({ onOpenPayment }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center', width: '100%' }}>
-            {/* Deploy Trigger: Card Switcher Tabs (Unified Section) */}
-            <div className="card-switcher">
-              <button 
-                className={`switcher-btn ${activeCard === 'emergency' ? 'active' : ''}`}
-                onClick={() => setActiveCard('emergency')}
-              >
-                Emergency Card
-              </button>
-              <button 
-                className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveCard('profile')}
-              >
-                Parkee Card
-              </button>
-            </div>
-
             {user ? (
-               <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center' }}>
-                 <div ref={qrRef} className="qr-container">
-                    {activeCard === 'profile' ? (
-                      <CustomerCard user={user} qrUrl={qrUrl} />
-                    ) : (
-                      <EmergencyCard 
-                        user={user}
-                        qrUrl={qrUrl}
-                        theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
-                      />
-                    )}
-                 </div>
-                 
-                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button onClick={downloadQR} className="btn-gradient" style={{ padding: '12px 24px' }}>
-                      <Download size={18} />
-                      Download Image
+               <div className="fadeIn" style={{ width: '100%', maxWidth: '480px' }}>
+                  {/* Switcher Tabs */}
+                  <div className="glass-premium" style={{ display: 'flex', padding: '6px', borderRadius: '50px', marginBottom: '2rem', border: '1px solid var(--border)' }}>
+                    <button 
+                      onClick={() => setActiveCard('profile')}
+                      className={activeCard === 'profile' ? 'btn-gradient' : ''}
+                      style={{ 
+                        flex: 1, 
+                        padding: '12px', 
+                        borderRadius: '40px', 
+                        fontSize: '0.9rem', 
+                        fontWeight: 'bold',
+                        background: activeCard === 'profile' ? 'var(--gradient-primary)' : 'transparent',
+                        color: activeCard === 'profile' ? 'var(--primary-fg)' : 'var(--muted)',
+                        transition: 'all 0.3s'
+                      }}
+                    >
+                      Parkéé User
                     </button>
-                    <button onClick={handlePrint} className="btn-secondary" style={{ padding: '12px 24px' }}>
-                      <Printer size={18} />
-                      Print Card
+                    <button 
+                      onClick={() => setActiveCard('emergency')}
+                      className={activeCard === 'emergency' ? 'btn-gradient' : ''}
+                      style={{ 
+                        flex: 1, 
+                        padding: '12px', 
+                        borderRadius: '40px', 
+                        fontSize: '0.9rem', 
+                        fontWeight: 'bold',
+                        background: activeCard === 'emergency' ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'transparent',
+                        color: activeCard === 'emergency' ? '#fff' : 'var(--muted)',
+                        transition: 'all 0.3s'
+                      }}
+                    >
+                      🚨 Emergency Card
                     </button>
-                 </div>
+                  </div>
+
+                  {/* Rendering based on activeCard */}
+                  <div className="qr-display-area" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                     {activeCard === 'profile' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', width: '100%' }}>
+                           <div ref={profileRef} className="qr-container">
+                              <CustomerCard user={user} qrUrl={qrUrl} />
+                           </div>
+                           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                              <button onClick={() => downloadQR(profileRef, 'parkee-user-card')} className="btn-gradient" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>
+                                <Download size={16} /> Download Image
+                              </button>
+                              <button onClick={handlePrint} className="btn-secondary" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>
+                                <Printer size={16} /> Print Card
+                              </button>
+                           </div>
+                        </div>
+                     ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', width: '100%' }}>
+                           <div ref={emergencyRef} className="qr-container">
+                              <EmergencyCard 
+                                user={user}
+                                qrUrl={qrUrl}
+                                theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
+                              />
+                           </div>
+                           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                              <button onClick={() => downloadQR(emergencyRef, 'emergency-card')} className="btn-gradient" style={{ padding: '10px 20px', fontSize: '0.9rem', background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' }}>
+                                <Download size={16} /> Download Image
+                              </button>
+                              <button onClick={handlePrint} className="btn-secondary" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>
+                                <Printer size={16} /> Print Card
+                              </button>
+                           </div>
+                        </div>
+                     )}
+                  </div>
                </div>
             ) : (
               <div className="qr-card glass-card">
@@ -326,7 +362,7 @@ export default function Home({ onOpenPayment }) {
                   <span className="qr-tag tag-danger">SOS Alerts</span>
                 </div>
                 <div className="qr-image-wrap pulse-primary">
-                  <img src="/qr-preview.png" alt="QR Preview" style={{ width: '120px', height: '120px', borderRadius: '8px' }} />
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin)}`} alt="QR Preview" style={{ width: '120px', height: '120px', borderRadius: '8px' }} />
                 </div>
                 <p className="qr-scan-text">Scan for a live preview of our dashboard</p>
                 <div className="qr-actions">

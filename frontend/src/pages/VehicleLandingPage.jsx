@@ -18,6 +18,19 @@ export default function VehicleLandingPage() {
 
   useEffect(() => {
     const fetchVehicle = async () => {
+      if (id === 'test') {
+        setVehicle({
+          _id: 'test',
+          name: 'VISHANT PANWAR',
+          phone: '7895039922',
+          plateNumber: 'HAWJQIO',
+          make: 'Test',
+          model: 'Vehicle',
+          subscriptionTier: 'diamond'
+        });
+        setLoading(false);
+        return;
+      }
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/auth/vehicle/${id}`);
         const data = await res.json();
@@ -163,28 +176,33 @@ export default function VehicleLandingPage() {
           </div>
         </div>
 
-        {/* Vehicle Details Card */}
+        {/* Vehicle Details & QR Card */}
         <div className="electric-border" style={{ marginBottom: '2rem' }}>
           <div className="glass-premium" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div className="shimmer-shimmer"></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
+            
+            {/* Top Info */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', position: 'relative', zIndex: 1, marginBottom: '1.5rem' }}>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Owner</p>
                 <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#fff' }}>{vehicle.name}</p>
               </div>
               <div>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Mobile Number</p>
-                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>{vehicle.phone || 'N/A'}</p>
-              </div>
-              <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Plate</p>
                 <p style={{ fontSize: '1rem', fontWeight: '700', color: '#fff' }}>{vehicle.plateNumber || 'N/A'}</p>
               </div>
-              <div>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Model</p>
-                <p style={{ fontSize: '1rem', fontWeight: '700', color: '#fff' }}>{vehicle.make} {vehicle.model}</p>
-              </div>
             </div>
+
+            {/* QR Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <img 
+                 src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + "/v/" + (vehicle._id || 'guest'))}`} 
+                 alt="Vehicle QR" 
+                 style={{ width: '150px', height: '150px', borderRadius: '10px', padding: '10px', background: '#fff' }} 
+               />
+               <span style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--primary)', letterSpacing: '1px' }}>DIGITAL PROTECTION TAG</span>
+            </div>
+
             <div className="card-chip" style={{ position: 'absolute', top: '15px', right: '15px', opacity: 0.5 }}></div>
           </div>
         </div>
@@ -241,7 +259,7 @@ export default function VehicleLandingPage() {
               <ChevronRight size={20} />
             </button>
           )}
-          
+
           {/* 3. Highway Emergency Help (Critical) */}
           <a href={`tel:${nearestMechanic.phone}`} style={{ 
             textDecoration: 'none', 

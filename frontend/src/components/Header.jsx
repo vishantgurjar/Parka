@@ -32,9 +32,9 @@ export default function Header({ onOpenPayment }) {
       <div className="container header-inner" style={{ height: '72px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon pulse-primary">
-             <img src="/logo.png" alt="Park├⌐├⌐ City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
+             <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Park├⌐├⌐ City</span>
+          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -44,7 +44,7 @@ export default function Header({ onOpenPayment }) {
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
-          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI ≡ƒ¢í∩╕Å</Link>
+          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
           {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>}
           
           {user ? (
@@ -90,7 +90,7 @@ export default function Header({ onOpenPayment }) {
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode ≡ƒ¢í∩╕Å</Link>
+        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
         {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>

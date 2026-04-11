@@ -43,23 +43,42 @@ function App() {
 
   // Auth State
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('parkeActiveUser');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('parkeActiveUser');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error("Error reading from localStorage:", e);
+      return null;
+    }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('parkeToken') || null);
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('parkeToken') || null;
+    } catch (e) {
+      return null;
+    }
+  });
 
   const login = (userData, jwtToken) => {
     setUser(userData);
     setToken(jwtToken);
-    localStorage.setItem('parkeActiveUser', JSON.stringify(userData));
-    localStorage.setItem('parkeToken', jwtToken);
+    try {
+      localStorage.setItem('parkeActiveUser', JSON.stringify(userData));
+      localStorage.setItem('parkeToken', jwtToken);
+    } catch (e) {
+      console.error("Error writing to localStorage:", e);
+    }
   };
   
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('parkeActiveUser');
-    localStorage.removeItem('parkeToken');
+    try {
+      localStorage.removeItem('parkeActiveUser');
+      localStorage.removeItem('parkeToken');
+    } catch (e) {
+      console.error("Error clearing localStorage:", e);
+    }
   };
 
   const isPro = (u = user) => {
@@ -80,6 +99,7 @@ function App() {
   };
 
   const handlePaymentSuccess = async () => {
+    if (!paymentPlan || !user) return;
     try {
       const tier = paymentPlan.name.includes('Diamond') ? 'diamond' : (paymentPlan.name.includes('Gold') ? 'gold' : 'silver');
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/user/upgrade`, {
@@ -87,8 +107,9 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id, tier })
       });
+      if (!res.ok) throw new Error('Upgrade failed');
       const data = await res.json();
-      if (res.ok) {
+      if (data && data.user) {
         login(data.user, localStorage.getItem('parkeToken')); // Update AuthContext user
         alert(`Congratulations! You are now a ${paymentPlan.name} member.`);
         setPaymentPlan(null);
