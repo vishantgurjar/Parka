@@ -347,7 +347,20 @@ export default function Home({ onOpenPayment }) {
                   <span className="qr-tag tag-danger">SOS Alerts</span>
                 </div>
                 <div className="qr-image-wrap pulse-primary">
-                  <img src="/qr-preview.png" alt="QR Preview" style={{ width: '120px', height: '120px', borderRadius: '8px' }} />
+                  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: '8px' }}>
+                    <rect width="120" height="120" rx="8" fill="#0f172a"/>
+                    <rect x="15" y="15" width="35" height="35" rx="4" stroke="#2dd4bf" strokeWidth="3" fill="none"/>
+                    <rect x="22" y="22" width="21" height="21" rx="2" fill="#2dd4bf"/>
+                    <rect x="70" y="15" width="35" height="35" rx="4" stroke="#2dd4bf" strokeWidth="3" fill="none"/>
+                    <rect x="77" y="22" width="21" height="21" rx="2" fill="#2dd4bf"/>
+                    <rect x="15" y="70" width="35" height="35" rx="4" stroke="#2dd4bf" strokeWidth="3" fill="none"/>
+                    <rect x="22" y="77" width="21" height="21" rx="2" fill="#2dd4bf"/>
+                    <rect x="70" y="70" width="14" height="14" fill="#2dd4bf"/>
+                    <rect x="88" y="70" width="14" height="14" fill="#2dd4bf"/>
+                    <rect x="70" y="88" width="14" height="14" fill="#2dd4bf"/>
+                    <rect x="88" y="88" width="14" height="14" fill="#2dd4bf"/>
+                    <rect x="55" y="55" width="10" height="10" fill="#2dd4bf"/>
+                  </svg>
                 </div>
                 <p className="qr-scan-text">Scan for a live preview of our dashboard</p>
                 <div className="qr-actions">

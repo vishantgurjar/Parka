@@ -1438,7 +1438,7 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
         width: 100% !important; 
         max-width: 300px !important;
         padding: 14px 24px !important;
-        border-radius: 12px !important; /* Uniform rectangular rounded corners for stability */
+        border-radius: 12px !important;
     }
 
     .hero-features { 
@@ -1447,6 +1447,51 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
         padding: 0 1rem;
         margin-top: 2rem;
     }
+
+    /* QR Card Mobile Responsive */
+    .qr-card-v2 {
+        width: 100% !important;
+        max-width: 360px !important;
+        height: auto !important;
+        flex-direction: column !important;
+    }
+    .qr-sidebar-v2 {
+        width: 100% !important;
+        height: 40px !important;
+        flex-direction: row !important;
+    }
+    .qr-sidebar-v2 span {
+        transform: none !important;
+        font-size: 1rem !important;
+        letter-spacing: 4px !important;
+    }
+    .qr-content-v2 {
+        padding: 16px !important;
+    }
+    .qr-footer-v2 {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 16px !important;
+    }
+    .qr-helpline-v2 {
+        font-size: 1.25rem !important;
+    }
+    .qr-frame-v2 img {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    .minimal-card {
+        width: 100% !important;
+        max-width: 360px !important;
+        height: auto !important;
+        min-height: 200px !important;
+    }
+    .customer-card-container,
+    .emergency-card-container {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1454,6 +1499,6 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     .hero-features { grid-template-columns: 1fr !important; gap: 0.75rem; }
     .feature-card { flex-direction: row; text-align: left; padding: 1.25rem; gap: 1rem; width: 100%; }
     .feature-icon-box { width: 40px; height: 40px; flex-shrink: 0; }
-    .feature-card p { display: block; font-size: 0.7rem; } /* Restore description but smaller */
+    .feature-card p { display: block; font-size: 0.7rem; }
 }
 
