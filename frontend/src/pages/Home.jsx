@@ -117,8 +117,6 @@ export default function Home({ onOpenPayment }) {
               Welcome Back, DIAMOND MEMBER
             </div>
           )}
-          
-          </div>
 
           <div className="hero-features">
             <div className="feature-card">
@@ -142,7 +140,10 @@ export default function Home({ onOpenPayment }) {
               <p>Instant contact without logs</p>
             </div>
           </div>
+          
+        </div>
       </section>
+
 
 
       {/* ========== EMERGENCY SERVICES ========== */}
