@@ -257,8 +257,8 @@ app.post('/api/auth/login', checkDbConnection, async (req, res) => {
         const userResponse = user.toObject();
         delete userResponse.password;
 
-        // Founder Bypass
-        if (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL) {
+        // Founder Bypass (Hardcoded for stability)
+        if (user.email === 'panwarvishant9@gmail.com' || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
             userResponse.subscriptionTier = 'diamond';
         }
 
@@ -305,8 +305,8 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
         const userResponse = user.toObject();
         if (userResponse.password) delete userResponse.password;
 
-        // Founder Bypass
-        if (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL) {
+        // Founder Bypass (Hardcoded for stability)
+        if (user.email === 'panwarvishant9@gmail.com' || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
             userResponse.subscriptionTier = 'diamond';
         }
 
@@ -340,8 +340,8 @@ app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
 
-        // Founder Bypass
-        if (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL) {
+        // Founder Bypass (Hardcoded for stability)
+        if (user.email === 'panwarvishant9@gmail.com' || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
             user.subscriptionTier = 'diamond';
         }
 

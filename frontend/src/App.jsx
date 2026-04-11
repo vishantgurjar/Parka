@@ -77,7 +77,10 @@ function App() {
   };
 
   const isPro = (u = user) => {
-    if (!u || !u.subscriptionTier) return false;
+    if (!u) return false;
+    // Hardcoded bypass for owner for absolute reliability
+    if (u.email === 'panwarvishant9@gmail.com') return true;
+    if (!u.subscriptionTier) return false;
     return ['silver', 'gold', 'diamond'].includes(u.subscriptionTier.toLowerCase());
   };
 
