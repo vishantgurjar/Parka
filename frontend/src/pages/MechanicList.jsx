@@ -109,7 +109,6 @@ export default function MechanicList() {
   const [bids, setBids] = useState([]);
   const [activeSosId, setActiveSosId] = useState(null);
   const [assignedMechanic, setAssignedMechanic] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedBid, setSelectedBid] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(5);
