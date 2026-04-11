@@ -193,54 +193,82 @@ export default function VehicleLandingPage() {
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
-          {/* 1. Contact Owner (Phone) */}
-          <a href={`tel:${vehicle.phone || '7895039922'}`} className="btn-gradient" style={{ 
-            textDecoration: 'none', 
-            padding: '18px', 
-            borderRadius: '20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            fontSize: '1.2rem',
-            fontWeight: '800',
-            background: 'var(--gradient-primary)',
-            color: '#fff',
-            boxShadow: '0 10px 25px rgba(13, 148, 136, 0.3)',
-            border: 'none',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
-                <PhoneCall size={24} />
-              </div>
-              Call Owner Now
-            </div>
-            <ChevronRight size={24} />
-          </a>
-
-          {/* 2. Secure Call (GOLD/DIAMOND only) */}
-          {(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') && (
-            <button onClick={() => setShowSecureCall(true)} style={{ 
-              border: '1px solid #eab308',
+          {/* 1. Primary Action: Secure Privacy Call (PRO) OR Direct Call (Standard) */}
+          {(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') ? (
+            <button onClick={() => setShowSecureCall(true)} className="btn-gradient" style={{ 
+              border: 'none',
               cursor: 'pointer',
               padding: '18px', 
               borderRadius: '20px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              fontSize: '1.1rem',
-              fontWeight: '700',
-              background: 'rgba(234, 179, 8, 0.1)',
-              color: '#eab308',
-              boxShadow: '0 5px 15px rgba(234, 179, 8, 0.1)'
+              fontSize: '1.2rem',
+              fontWeight: '800',
+              background: 'var(--gradient-primary)',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(13, 148, 136, 0.4)',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Lock size={20} />
-                Secure Privacy Call (WebRTC)
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
+                  <ShieldCheck size={24} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '1.2rem' }}>Secure Privacy Call</div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>IDENTITY HIDDEN • ENCRYPTED</div>
+                </div>
               </div>
-              <ChevronRight size={20} />
+              <ChevronRight size={24} />
             </button>
+          ) : (
+            <a href={`tel:${vehicle.phone || '7895039922'}`} className="btn-gradient" style={{ 
+              textDecoration: 'none', 
+              padding: '18px', 
+              borderRadius: '20px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              fontSize: '1.2rem',
+              fontWeight: '800',
+              background: 'var(--gradient-primary)',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(13, 148, 136, 0.3)',
+              border: 'none',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
+                  <PhoneCall size={24} />
+                </div>
+                Call Owner Now
+              </div>
+              <ChevronRight size={24} />
+            </a>
+          )}
+
+          {/* 2. Secondary Action: Fallback or Direct (Only show if WebRTC is available) */}
+          {(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') && (
+            <a href={`tel:${vehicle.phone}`} style={{ 
+              textDecoration: 'none',
+              cursor: 'pointer',
+              padding: '14px 18px', 
+              borderRadius: '16px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: 'var(--muted)',
+              border: '1px solid var(--border)',
+              marginTop: '-5px'
+            }}>
+              <PhoneCall size={16} style={{ marginRight: '8px' }} />
+              Use Standard Phone Call (No Privacy)
+            </a>
           )}
           
           {/* 3. Highway Emergency Help (Critical) */}

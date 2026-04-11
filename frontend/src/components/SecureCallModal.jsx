@@ -1,53 +1,112 @@
 import { useState, useEffect, useRef } from 'react';
-import { Phone, PhoneOff, Mic, MicOff, Shield } from 'lucide-react';
+import { Phone, PhoneOff, Mic, MicOff, Shield, AlertCircle } from 'lucide-react';
 import io from 'socket.io-client';
+import Peer from 'simple-peer';
 
-export default function SecureCallModal({ vehicleId, onClose }) {
-  const [callStatus, setCallStatus] = useState('connecting'); // connecting, calling, connected, ended
+export default function SecureCallModal({ vehicleId, onClose, incomingSignal, callerSocketId, isOwner = false }) {
+  const [callStatus, setCallStatus] = useState('connecting'); // connecting, calling, connected, ended, failed
   const [isMuted, setIsMuted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  
   const socketRef = useRef();
+  const peerRef = useRef();
+  const streamRef = useRef();
+  const audioRemoteRef = useRef(new Audio());
 
   useEffect(() => {
-    // Connect to Socket server
-    const socket = io(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000');
+    // 1. Setup Socket
+    const socket = io(import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app');
     socketRef.current = socket;
 
-    socket.on('connect', () => {
-      // Setup WebRTC mock state for visual UI feeling initially
-      setTimeout(() => {
-        setCallStatus('calling');
-        socket.emit('join-room', vehicleId);
-        
-        // Simulating the owner picking up after 3 seconds for demo purposes
-        setTimeout(() => {
+    const startConnection = async () => {
+      try {
+        // 2. Get Media
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        streamRef.current = stream;
+
+        // 3. Initialize Peer
+        const peer = new Peer({
+          initiator: !isOwner,
+          trickle: false,
+          stream: stream
+        });
+
+        peer.on('signal', (data) => {
+          if (!isOwner) {
+            // Caller: Send offer to Owner
+            socket.emit('call-user', {
+              userToCall: vehicleId,
+              signalData: data,
+              from: socket.id,
+              fromName: 'Guest Scanner'
+            });
+            setCallStatus('calling');
+          } else {
+            // Owner: Send answer back to Caller
+            socket.emit('answer-call', {
+              signal: data,
+              to: callerSocketId
+            });
+          }
+        });
+
+        peer.on('stream', (remoteStream) => {
+          audioRemoteRef.current.srcObject = remoteStream;
+          audioRemoteRef.current.play();
           setCallStatus('connected');
-        }, 3000);
-      }, 1000);
-    });
-    
-    // In actual WebRTC, we would capture microphone navigator.mediaDevices.getUserMedia
-    // and pipe the stream via simple-peer or RTCPeerConnection to the socket events.
+        });
+
+        socket.on('call-answered', (signal) => {
+          if (!isOwner) {
+            peer.signal(signal);
+            setCallStatus('connected');
+          }
+        });
+
+        socket.on('call-error', (err) => {
+          setErrorMessage(err.message);
+          setCallStatus('failed');
+        });
+
+        if (isOwner && incomingSignal) {
+          peer.signal(incomingSignal);
+        }
+
+        peerRef.current = peer;
+
+      } catch (err) {
+        console.error('WebRTC Error:', err);
+        setErrorMessage('Microphone access denied or connection failed.');
+        setCallStatus('failed');
+      }
+    };
+
+    startConnection();
 
     return () => {
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+      if (peerRef.current) peerRef.current.destroy();
       socket.disconnect();
     };
-  }, [vehicleId]);
+  }, [vehicleId, isOwner, incomingSignal, callerSocketId]);
 
   const handleEndCall = () => {
     setCallStatus('ended');
-    setTimeout(() => {
-      onClose();
-    }, 1500);
+    setTimeout(() => onClose(), 1000);
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    if (streamRef.current) {
+      const audioTrack = streamRef.current.getAudioTracks()[0];
+      audioTrack.enabled = isMuted;
+      setIsMuted(!isMuted);
+    }
   };
 
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-      background: 'rgba(0,0,0,0.85)', zIndex: 9999,
+      background: 'rgba(0,0,0,0.85)', zIndex: 99999,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       backdropFilter: 'blur(10px)'
     }}>
@@ -64,15 +123,18 @@ export default function SecureCallModal({ vehicleId, onClose }) {
           </div>
           
           <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.1)' }}>
-            <Phone size={40} color="var(--primary)" style={{ opacity: callStatus === 'calling' ? 0.5 : 1 }} className={callStatus === 'calling' ? 'pulse-anim' : ''} />
+            <Phone size={40} color={callStatus === 'failed' ? '#ef4444' : 'var(--primary)'} className={callStatus === 'calling' || callStatus === 'connecting' ? 'pulse-anim' : ''} />
           </div>
           
-          <h3 style={{ fontSize: '1.5rem', color: '#fff', margin: '0 0 0.5rem' }}>Vehicle Owner</h3>
+          <h3 style={{ fontSize: '1.5rem', color: '#fff', margin: '0 0 0.5rem' }}>
+            {isOwner ? 'Incoming Call' : 'Vehicle Owner'}
+          </h3>
           
-          <p style={{ color: callStatus === 'connected' ? '#10b981' : 'var(--muted)', fontSize: '1rem', margin: 0, fontWeight: '500' }}>
-            {callStatus === 'connecting' && 'Establishing secure connection...'}
-            {callStatus === 'calling' && 'Calling (Hidden Number)...'}
-            {callStatus === 'connected' && '00:01 • Connected'}
+          <p style={{ color: callStatus === 'connected' ? '#10b981' : (callStatus === 'failed' ? '#ef4444' : 'var(--muted)'), fontSize: '1rem', margin: 0, fontWeight: '500' }}>
+            {callStatus === 'connecting' && 'Establishing line...'}
+            {callStatus === 'calling' && 'Ringing...'}
+            {callStatus === 'connected' && 'Connected • Secure'}
+            {callStatus === 'failed' && (errorMessage || 'Connection Failed')}
             {callStatus === 'ended' && 'Call Ended'}
           </p>
         </div>
@@ -83,7 +145,7 @@ export default function SecureCallModal({ vehicleId, onClose }) {
             disabled={callStatus !== 'connected'}
             style={{ 
               width: '60px', height: '60px', borderRadius: '50%', border: 'none', cursor: callStatus === 'connected' ? 'pointer' : 'not-allowed',
-              background: isMuted ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)', color: '#fff',
+              background: isMuted ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
             }}
           >
@@ -104,6 +166,11 @@ export default function SecureCallModal({ vehicleId, onClose }) {
           </button>
         </div>
 
+        {callStatus === 'failed' && (
+          <p style={{ marginTop: '1.5rem', color: '#ef4444', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+            <AlertCircle size={14} /> Try refreshing the page.
+          </p>
+        )}
       </div>
     </div>
   );

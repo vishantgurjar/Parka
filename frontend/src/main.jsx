@@ -1,4 +1,5 @@
 import React from 'react';
+window.global = window;
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';

@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Header from './components/Header'; // Redeploy trigger: 1775923200
 import Footer from './components/Footer';
 import PaymentModal from './components/PaymentModal';
+import IncomingCallModal from './components/IncomingCallModal';
+import SecureCallModal from './components/SecureCallModal';
+import io from 'socket.io-client';
 import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
 import LoginPage from './pages/LoginPage';
@@ -96,8 +99,35 @@ function App() {
   };
 
 
-  // Modals State
+  // Modals & Call State
   const [paymentPlan, setPaymentPlan] = useState(null); // { name, amount }
+  const [incomingCall, setIncomingCall] = useState(null); // { from, signal, fromName }
+  const [activeCall, setActiveCall] = useState(false);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app');
+    setSocket(newSocket);
+
+    if (user) {
+      newSocket.emit('register-user', user._id);
+    }
+
+    newSocket.on('incoming-call', (data) => {
+      setIncomingCall(data);
+    });
+
+    return () => newSocket.disconnect();
+  }, [user?._id]);
+
+  const handleAcceptCall = () => {
+    setActiveCall(true);
+    // Modal will handle the Peer connection once opened via state
+  };
+
+  const handleRejectCall = () => {
+    setIncomingCall(null);
+  };
 
   const handleOpenPayment = (name, amount) => {
     if (!user) {
@@ -167,6 +197,27 @@ function App() {
                   entityType="user" 
                   onClose={() => setPaymentPlan(null)} 
                   onSuccess={handlePaymentSuccess}
+                />
+              )}
+
+              {incomingCall && (
+                <IncomingCallModal 
+                  fromName={incomingCall.fromName}
+                  onAccept={handleAcceptCall}
+                  onReject={handleRejectCall}
+                />
+              )}
+
+              {activeCall && incomingCall && (
+                <SecureCallModal 
+                  vehicleId={user?._id}
+                  incomingSignal={incomingCall.signal}
+                  callerSocketId={incomingCall.from}
+                  isOwner={true}
+                  onClose={() => {
+                    setActiveCall(false);
+                    setIncomingCall(null);
+                  }}
                 />
               )}
             </Router>

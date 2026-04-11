@@ -41,10 +41,16 @@ const io = new Server(server, {
 });
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const userSocketMap = new Map(); // userId -> socketId
 
 // Socket.io WebRTC Signaling Logic
 io.on("connection", (socket) => {
-  console.log("Socket connected for WebRTC:", socket.id);
+  console.log("Socket connected:", socket.id);
+
+  socket.on("register-user", (userId) => {
+    userSocketMap.set(userId, socket.id);
+    console.log(`User ${userId} registered with socket ${socket.id}`);
+  });
 
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
@@ -52,10 +58,21 @@ io.on("connection", (socket) => {
   });
 
   socket.on("call-user", (data) => {
-    io.to(data.userToCall).emit("call-made", { signal: data.signalData, from: data.from });
+    // data: { userToCall, signalData, from, fromName }
+    const targetSocketId = userSocketMap.get(data.userToCall);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit("incoming-call", { 
+        signal: data.signalData, 
+        from: data.from,
+        fromName: data.fromName || "Scanner"
+      });
+    } else {
+      socket.emit("call-error", { message: "Owner is currently offline." });
+    }
   });
 
   socket.on("answer-call", (data) => {
+    // data: { to, signal }
     io.to(data.to).emit("call-answered", data.signal);
   });
   
@@ -133,6 +150,13 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
+    // Cleanup userSocketMap
+    for (let [userId, socketId] of userSocketMap.entries()) {
+      if (socketId === socket.id) {
+        userSocketMap.delete(userId);
+        break;
+      }
+    }
   });
 });
 
