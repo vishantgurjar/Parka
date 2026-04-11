@@ -26,19 +26,8 @@
     <meta property="twitter:title" content="Parkéé City - Smart Vehicle Protection" />
     <meta property="twitter:description" content="Smart solutions for every vehicle. Get your QR-based Emergency Card today." />
     <meta property="twitter:image" content="https://parka-frontend.vercel.app/og-image.png" />
-    
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-    <!-- WebRTC Polyfills -->
-    <script>
-      window.global = window;
-      window.process = { env: { DEBUG: undefined }, nextTick: function() {} };
-      // Lightweight Buffer Polyfill
-      var Buffer = Buffer || [];
-      Buffer.isBuffer = Buffer.isBuffer || function() { return false; };
-      window.Buffer = Buffer;
-    </script>
   </head>
   <body>
     <div id="root"></div>
