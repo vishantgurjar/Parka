@@ -1,5 +1,7 @@
 import React from 'react';
 window.global = window;
+window.process = { env: {} };
+window.Buffer = window.Buffer || { isBuffer: () => false };
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';

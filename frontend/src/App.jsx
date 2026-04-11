@@ -103,12 +103,9 @@ function App() {
   const [paymentPlan, setPaymentPlan] = useState(null); // { name, amount }
   const [incomingCall, setIncomingCall] = useState(null); // { from, signal, fromName }
   const [activeCall, setActiveCall] = useState(false);
-  const [socket, setSocket] = useState(null);
-
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app');
-    setSocket(newSocket);
-
+    
     if (user) {
       newSocket.emit('register-user', user._id);
     }
