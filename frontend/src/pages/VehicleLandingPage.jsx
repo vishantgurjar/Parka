@@ -113,31 +113,32 @@ export default function VehicleLandingPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-        <div className="loader">Loading...</div>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#030712' }}>
+        <div style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Scanning Security Grid...</div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !vehicle) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '2rem', textAlign: 'center' }}>
-        <AlertTriangle size={64} color="var(--primary)" style={{ marginBottom: '1.5rem' }} />
-        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Oops!</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>{error}</p>
-        <Link to="/" className="btn-gradient" style={{ textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>Go Back Home</Link>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#030712', padding: '2rem', textAlign: 'center' }}>
+        <AlertTriangle size={64} color="#ef4444" style={{ marginBottom: '1.5rem' }} />
+        <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#fff' }}>Security ID Invalid</h2>
+        <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>{error || "We could not find a verified vehicle linked to this ID."}</p>
+        <Link to="/" className="btn-gradient" style={{ textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>Register Your Own Vehicle</Link>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '80px 1rem 40px' }}>
+    <div style={{ minHeight: '100vh', background: '#030712', padding: '80px 1rem 40px' }}>
       <SEO 
-        title={`${vehicle.name}'s Vehicle - Parkéé City`}
-        description={`Safety landing page for ${vehicle.name}'s ${vehicle.make} ${vehicle.model}. Instant emergency contact and roadside assistance.`}
+        title={`${vehicle?.name || 'Vehicle'}'s Protected Identity - Parkéé City`}
+        description={`Safety landing page for ${vehicle?.name || 'Owner'}'s ${vehicle?.make || ''} ${vehicle?.model || 'Vehicle'}. Instant emergency contact access.`}
       />
       
       <div className="container" style={{ maxWidth: '500px' }}>
+
         {/* Header Section */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{ 

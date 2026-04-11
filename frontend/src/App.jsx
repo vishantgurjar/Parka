@@ -43,12 +43,25 @@ function App() {
 
   // Auth State
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('parkeActiveUser');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('parkeActiveUser');
+      return (saved && saved !== 'undefined') ? JSON.parse(saved) : null;
+    } catch (err) {
+      console.error("Corrupted LocalStorage User data:", err);
+      localStorage.removeItem('parkeActiveUser');
+      return null;
+    }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('parkeToken') || null);
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('parkeToken') || null;
+    } catch (err) {
+      return null;
+    }
+  });
 
   const login = (userData, jwtToken) => {
+    if (!userData) return;
     setUser(userData);
     setToken(jwtToken);
     localStorage.setItem('parkeActiveUser', JSON.stringify(userData));
@@ -60,12 +73,14 @@ function App() {
     setToken(null);
     localStorage.removeItem('parkeActiveUser');
     localStorage.removeItem('parkeToken');
+    localStorage.removeItem('active_order_id'); // Cleanup any stale payment data
   };
 
   const isPro = (u = user) => {
-    if (!u) return false;
-    return ['silver', 'gold', 'diamond'].includes(u.subscriptionTier);
+    if (!u || !u.subscriptionTier) return false;
+    return ['silver', 'gold', 'diamond'].includes(u.subscriptionTier.toLowerCase());
   };
+
 
   // Modals State
   const [paymentPlan, setPaymentPlan] = useState(null); // { name, amount }

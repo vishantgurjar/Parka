@@ -44,15 +44,16 @@ export default function Header({ onOpenPayment }) {
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
           <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
           <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
-          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI ≡ƒ¢í∩╕Å</Link>
+          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
           {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>}
+
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
-                {['silver', 'gold', 'diamond'].includes(user.subscriptionTier) && (
-                  <span className={`tier-badge tier-badge-${user.subscriptionTier}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
+                {['silver', 'gold', 'diamond'].includes(user.subscriptionTier?.toLowerCase()) && (
+                  <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
                     {user.subscriptionTier?.toUpperCase()}
                   </span>
                 )}
@@ -67,14 +68,15 @@ export default function Header({ onOpenPayment }) {
             </Link>
           )}
 
-          <button onClick={toggleTheme} className="theme-toggle">
+          <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
         </nav>
 
         {/* Mobile Nav Toggle */}
         <div className="header-actions">
-           <button onClick={toggleTheme} className="theme-toggle desktop-hide" style={{ display: 'none' }}>
+           {/* Dark Mode toggle for mobile */}
+           <button onClick={toggleTheme} className="theme-toggle" style={{ border: 'none', background: 'transparent' }}>
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle">
@@ -90,14 +92,15 @@ export default function Header({ onOpenPayment }) {
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode ≡ƒ¢í∩╕Å</Link>
+        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
         {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
+
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
         {user ? (
           <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>
-              Hello, {user.name}
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>
+              Hello, {user?.name || 'User'}
             </span>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out
@@ -108,6 +111,7 @@ export default function Header({ onOpenPayment }) {
             Login / Register
           </Link>
         )}
+
       </nav>
     </header>
   );

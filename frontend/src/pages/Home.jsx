@@ -54,15 +54,18 @@ export default function Home({ onOpenPayment }) {
   const downloadQR = async () => {
     if (qrRef.current === null) return;
     try {
+      const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
       const dataUrl = await toPng(qrRef.current, { cacheBust: true });
       const link = document.createElement('a');
-      link.download = `parkee-city-id-${user.name}.png`;
+      link.download = `parkee-city-${name}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('Error downloading QR:', err);
+      alert("Could not generate image. Please try taking a screenshot instead.");
     }
   };
+
 
   const handleScroll = (e, targetId) => {
     e.preventDefault();
@@ -300,7 +303,7 @@ export default function Home({ onOpenPayment }) {
                       <EmergencyCard 
                         user={user}
                         qrUrl={qrUrl}
-                        theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
+                        theme={user?.subscriptionTier?.toLowerCase() === 'diamond' ? 'diamond' : (user?.subscriptionTier?.toLowerCase() === 'gold' ? 'gold' : 'standard')} 
                       />
                     )}
                  </div>
@@ -316,6 +319,7 @@ export default function Home({ onOpenPayment }) {
                     </button>
                  </div>
                </div>
+
             ) : (
               <div className="qr-card glass-card">
                 <div className="qr-icon-wrap">
