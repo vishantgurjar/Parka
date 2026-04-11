@@ -1,8 +1,11 @@
-import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu } from 'lucide-react';
+import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu, Send, Download, Printer } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import EmergencyCard from '../components/EmergencyCard';
+import CustomerCard from '../components/CustomerCard';
+import { toPng } from 'html-to-image';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
