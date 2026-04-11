@@ -9,6 +9,21 @@ import SEO from '../components/SEO';
 
 export default function Home({ onOpenPayment }) {
   const { user, isPro } = useContext(AuthContext);
+  const [locationLabel, setLocationLabel] = useState('Detecting location...');
+
+  useEffect(() => {
+    // Attempt dynamic location detection via IP service (free & fast)
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.city) {
+          setLocationLabel(`${data.city}, ${data.country_code}`);
+        } else {
+          setLocationLabel('Location Available');
+        }
+      })
+      .catch(() => setLocationLabel('Location Detected'));
+  }, []);
   
   // Point: QR URL Generation (Stable Restored)
   const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
@@ -193,7 +208,7 @@ export default function Home({ onOpenPayment }) {
             <p>Running into trouble on a dark highway? Our network is active 24/7 across major cities.</p>
             <a href="tel:+917895039922" className="emergency-call-btn">Call Emergency Mechanic</a>
             <p className="emergency-location">
-              <MapPin size={14} /> Detect Location: New Delhi, IN
+              <MapPin size={14} /> Detect Location: {locationLabel}
             </p>
           </div>
         </div>
