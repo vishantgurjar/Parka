@@ -16,6 +16,7 @@ export default function Home({ onOpenPayment }) {
   // Point 6: Voice SOS
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
+  const [activeCard, setActiveCard] = useState('profile'); // profile or emergency
 
   useEffect(() => {
     if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -271,11 +272,35 @@ export default function Home({ onOpenPayment }) {
             <p className="section-desc">Manage your emergency card details and digital identity.</p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center', width: '100%' }}>
+            {/* Card Switcher Tabs */}
+            <div className="card-switcher">
+              <button 
+                className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveCard('profile')}
+              >
+                Personal QR Profile
+              </button>
+              <button 
+                className={`switcher-btn ${activeCard === 'emergency' ? 'active' : ''}`}
+                onClick={() => setActiveCard('emergency')}
+              >
+                Emergency SOS Card
+              </button>
+            </div>
+
             {user ? (
                <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center' }}>
                  <div ref={qrRef} className="qr-container">
-                    <CustomerCard user={user} qrUrl={qrUrl} />
+                    {activeCard === 'profile' ? (
+                      <CustomerCard user={user} qrUrl={qrUrl} />
+                    ) : (
+                      <EmergencyCard 
+                        user={user}
+                        qrUrl={qrUrl}
+                        theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
+                      />
+                    )}
                  </div>
                  
                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -310,18 +335,6 @@ export default function Home({ onOpenPayment }) {
                 </div>
               </div>
             )}
-
-            <div style={{ width: '100%', maxWidth: '800px' }}>
-                <div className="section-header" style={{ marginBottom: '2rem', textAlign: 'left' }}>
-                  <h3 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>Vehicle <span className="text-gradient">Protection Demo</span></h3>
-                  <p style={{ color: 'var(--muted)' }}>This is how your emergency card will look in Sentinel mode.</p>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <EmergencyCard 
-                    theme={user?.subscriptionTier === 'diamond' ? 'diamond' : (user?.subscriptionTier === 'gold' ? 'gold' : 'standard')} 
-                  />
-                </div>
-            </div>
           </div>
         </div>
       </section>
