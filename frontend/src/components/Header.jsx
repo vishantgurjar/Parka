@@ -99,8 +99,13 @@ export default function Header({ onOpenPayment }) {
         <a href="#contact" onClick={(e) => handleScroll(e, 'contact')}>Contact</a>
         {user ? (
           <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '1rem', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>
               Hello, {user?.name || 'User'}
+              {['silver', 'gold', 'diamond'].includes(user.subscriptionTier?.toLowerCase()) && (
+                <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
+                  {user.subscriptionTier?.toUpperCase()}
+                </span>
+              )}
             </span>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out
