@@ -1,5 +1,5 @@
 import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu } from 'lucide-react';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
