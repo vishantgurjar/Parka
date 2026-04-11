@@ -191,7 +191,7 @@ export default function Home({ onOpenPayment }) {
             </div>
             <h3>Immediate Roadside Help?</h3>
             <p>Running into trouble on a dark highway? Our network is active 24/7 across major cities.</p>
-            <a href="tel:108" className="emergency-call-btn">Call National Help</a>
+            <a href="tel:+917895039922" className="emergency-call-btn">Call Emergency Mechanic</a>
             <p className="emergency-location">
               <MapPin size={14} /> Detect Location: New Delhi, IN
             </p>
