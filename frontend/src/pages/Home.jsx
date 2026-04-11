@@ -276,16 +276,16 @@ export default function Home({ onOpenPayment }) {
             {/* Deploy Trigger: Card Switcher Tabs (Unified Section) */}
             <div className="card-switcher">
               <button 
-                className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveCard('profile')}
-              >
-                Personal QR Profile
-              </button>
-              <button 
                 className={`switcher-btn ${activeCard === 'emergency' ? 'active' : ''}`}
                 onClick={() => setActiveCard('emergency')}
               >
-                Emergency SOS Card
+                Emergency Card
+              </button>
+              <button 
+                className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveCard('profile')}
+              >
+                Parkee Card
               </button>
             </div>
 
