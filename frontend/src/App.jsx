@@ -45,13 +45,19 @@ function App() {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('parkeActiveUser');
-      return (saved && saved !== 'undefined') ? JSON.parse(saved) : null;
+      let u = (saved && saved !== 'undefined') ? JSON.parse(saved) : null;
+      // Force Diamond status for owner on startup/refresh
+      if (u && u.email === 'panwarvishant9@gmail.com') {
+        u.subscriptionTier = 'diamond';
+      }
+      return u;
     } catch (err) {
       console.error("Corrupted LocalStorage User data:", err);
       localStorage.removeItem('parkeActiveUser');
       return null;
     }
   });
+
   const [token, setToken] = useState(() => {
     try {
       return localStorage.getItem('parkeToken') || null;
@@ -62,11 +68,16 @@ function App() {
 
   const login = (userData, jwtToken) => {
     if (!userData) return;
+    // Force Diamond status for owner upon login
+    if (userData.email === 'panwarvishant9@gmail.com') {
+      userData.subscriptionTier = 'diamond';
+    }
     setUser(userData);
     setToken(jwtToken);
     localStorage.setItem('parkeActiveUser', JSON.stringify(userData));
     localStorage.setItem('parkeToken', jwtToken);
   };
+
   
   const logout = () => {
     setUser(null);
