@@ -106,8 +106,8 @@ export default function MechanicDashboard() {
       } else {
         alert("Failed to update status");
       }
-    } catch (err) {
-      alert("Network error.");
+    } catch (error) {
+      console.error(error);
     } finally {
       setUpdating(false);
     }

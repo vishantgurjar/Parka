@@ -28,8 +28,8 @@ export default function MechanicLogin() {
       } else {
         setError(data.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Network error connecting to the server.');
+    } catch (e) {
+      setError('Network error.');
     } finally {
       setLoading(false);
     }

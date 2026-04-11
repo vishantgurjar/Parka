@@ -29,6 +29,16 @@
     
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- WebRTC Polyfills -->
+    <script>
+      window.global = window;
+      window.process = { env: { DEBUG: undefined }, nextTick: function() {} };
+      // Lightweight Buffer Polyfill
+      var Buffer = Buffer || [];
+      Buffer.isBuffer = Buffer.isBuffer || function() { return false; };
+      window.Buffer = Buffer;
+    </script>
   </head>
   <body>
     <div id="root"></div>

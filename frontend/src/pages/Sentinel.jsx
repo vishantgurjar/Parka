@@ -56,7 +56,7 @@ export default function Sentinel() {
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setIsActive(true);
       addLog("System Armed. Monitoring Sensors.");
-    } catch (err) {
+    } catch (e) {
       alert("Camera access required for Sentinel Mode.");
     }
   };
@@ -83,6 +83,7 @@ export default function Sentinel() {
 
     window.addEventListener('devicemotion', handleMotion);
     return () => window.removeEventListener('devicemotion', handleMotion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, isImpactDetected, triggerImpact]);
 
   // Countdown Logic
@@ -91,9 +92,10 @@ export default function Sentinel() {
     if (isImpactDetected && countdown > 0) {
       timer = setInterval(() => setCountdown(c => c - 1), 1000);
     } else if (isImpactDetected && countdown === 0) {
-      sendSOS();
+      setTimeout(() => sendSOS(), 0);
     }
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isImpactDetected, countdown, sendSOS]);
 
   return (
