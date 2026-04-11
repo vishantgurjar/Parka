@@ -364,12 +364,14 @@ app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
 
-        // Founder Bypass (Hardcoded for stability)
-        if (user.email === 'panwarvishant9@gmail.com' || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
-            user.subscriptionTier = 'diamond';
+        // Data Privacy Masking for PRO users
+        const userObj = user.toObject();
+        if (userObj.subscriptionTier === 'diamond' || userObj.subscriptionTier === 'gold') {
+            userObj.phone = 'HIDDEN (Privacy Active)';
+            userObj.email = 'PROTECTED';
         }
 
-        res.json(user);
+        res.json(userObj);
     } catch (error) {
         console.error('Fetch Vehicle Error:', error);
         res.status(500).json({ message: 'Server error' });

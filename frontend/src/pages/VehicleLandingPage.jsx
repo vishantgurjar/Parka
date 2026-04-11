@@ -175,7 +175,9 @@ export default function VehicleLandingPage() {
               </div>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Mobile Number</p>
-                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>{vehicle.phone || 'N/A'}</p>
+                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
+                  {vehicle.subscriptionTier === 'diamond' || vehicle.subscriptionTier === 'gold' ? '🔒 SECURE (PRO)' : (vehicle.phone || 'N/A')}
+                </p>
               </div>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Plate</p>
@@ -249,26 +251,11 @@ export default function VehicleLandingPage() {
             </a>
           )}
 
-          {/* 2. Secondary Action: Fallback or Direct (Only show if WebRTC is available) */}
-          {(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') && (
-            <a href={`tel:${vehicle.phone}`} style={{ 
-              textDecoration: 'none',
-              cursor: 'pointer',
-              padding: '14px 18px', 
-              borderRadius: '16px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: 'var(--muted)',
-              border: '1px solid var(--border)',
-              marginTop: '-5px'
-            }}>
-              <PhoneCall size={16} style={{ marginRight: '8px' }} />
-              Use Standard Phone Call (No Privacy)
-            </a>
+          {/* 2. No Fallback for PRO (Strict Privacy) */}
+          {!(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') && (
+            <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '0.8rem', marginTop: '-5px' }}>
+               Standard Network call will be initiated.
+            </div>
           )}
           
           {/* 3. Highway Emergency Help (Critical) */}
