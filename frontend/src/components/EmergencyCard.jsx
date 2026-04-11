@@ -1,64 +1,67 @@
 import React from 'react';
-import { Smartphone, AlertCircle, Shield } from 'lucide-react';
 
 const EmergencyCard = React.forwardRef(({ user, qrUrl }, ref) => {
   if (!user) return null;
 
-  const isDiamond = user.subscriptionTier === 'diamond';
-  const isGold = user.subscriptionTier === 'gold';
-  
-  const vipClass = isDiamond ? 'minimal-card-vip-diamond' : (isGold ? 'minimal-card-vip-gold' : '');
+  // Dynamic helper for owner name display
+  // Using split/pop to get the last name/surname as shown in the mockup "PANWAR"
+  const ownerName = user.name || 'VEHICLE OWNER';
+  const nameParts = ownerName.trim().split(' ');
+  const displayName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ownerName;
 
   return (
     <div className="emergency-card-container" ref={ref} style={{ padding: '0' }}>
-      <div className={`minimal-card ${vipClass}`} style={{ width: '450px', height: '260px', display: 'flex' }}>
-        {/* Left Side: SOS Bar */}
-        <div style={{ width: '50px', background: '#ef4444', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-           <span style={{ transform: 'rotate(-90deg)', whiteSpace: 'nowrap', fontWeight: '900', fontSize: '1.5rem', letterSpacing: '4px' }}>EMERGENCY</span>
+      <div className="qr-card-v2">
+        {/* Left Sidebar: Red bar with rotated text */}
+        <div className="qr-sidebar-v2">
+           <span>EMERGENCY</span>
         </div>
 
-        {/* Right Side: Content */}
-        <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <img src="/logo.png" alt="Card Logo" style={{ width: '20px', height: '20px' }} />
-                <span style={{ fontWeight: '800', fontSize: '1rem', color: '#111827' }}>PARKÉE CITY</span>
-              </div>
-              <span className="minimal-label">{isDiamond ? "Diamond Guard" : isGold ? "Gold Member" : "Smart Vehicle ID"}</span>
-              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#111827', textTransform: 'uppercase', display: 'block', marginTop: '2px' }}>
-                {user.name.split(' ').length > 1 ? user.name.split(' ').slice(1).join(' ') : user.name}
-              </span>
+        {/* Right Content Area */}
+        <div className="qr-content-v2">
+          {/* Top Row: Logo and Branding + Silver Chip */}
+          <div className="qr-header-v2">
+            <div className="qr-brand-v2">
+               <img src="/logo.png" alt="Logo" />
+               <span>PARKÉÉ CITY</span>
             </div>
-            <div className="minimal-chip"></div>
+            <div className="qr-chip-v2"></div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          {/* Middle Row: Primary ID (The Surname/Name matching PANWAR in mockup) */}
+          <div style={{ margin: '20px 0' }}>
+            <span className="qr-label-v2">SMART VEHICLE ID</span>
+            <span className="qr-value-v2" style={{ fontSize: '1.75rem' }}>{displayName}</span>
+          </div>
+
+          {/* Bottom Row: Helpline, Plate and QR Code */}
+          <div className="qr-footer-v2">
             <div style={{ flex: 1 }}>
-              <div style={{ marginBottom: '16px' }}>
-                <span className="minimal-label">Emergency Helpline</span>
-                <span className="minimal-value" style={{ fontSize: '1.25rem', color: '#ef4444' }}>+91 78950 39922</span>
+              <div style={{ marginBottom: '20px' }}>
+                <span className="qr-label-v2">EMERGENCY HELPLINE</span>
+                <span className="qr-helpline-v2">+91 78950 39922</span>
               </div>
               
-              <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ display: 'flex', gap: '40px' }}>
                 <div>
-                   <span className="minimal-label">Vehicle Plate</span>
-                   <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#111827', textTransform: 'uppercase' }}>{user.plateNumber || 'HR-51-AA-0001'}</span>
+                   <span className="qr-label-v2">VEHICLE PLATE</span>
+                   <span className="qr-value-v2" style={{ fontSize: '1.1rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
                 </div>
                 <div>
-                   <span className="minimal-label">Access</span>
-                   <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>24/7 Global</span>
+                   <span className="qr-label-v2">ACCESS</span>
+                   <span className="qr-value-v2" style={{ fontSize: '1.1rem', color: '#64748b' }}>24/7 Global</span>
                 </div>
               </div>
             </div>
 
-            <div className="minimal-qr-frame">
+            {/* QR Code Container with "SCAN FOR HELP" label */}
+            <div className="qr-frame-v2">
               {qrUrl ? (
-                <img src={qrUrl} alt="QR" style={{ width: '100px', height: '100px', display: 'block' }} />
+                <img src={qrUrl} alt="QR Code" />
               ) : (
-                <div style={{ width: '100px', height: '100px', background: '#f3f4f6' }}></div>
+                <div style={{ width: '140px', height: '140px', background: '#e2e8f0', borderRadius: '4px' }}></div>
               )}
-              <div style={{ textAlign: 'center', fontSize: '0.55rem', fontWeight: '800', marginTop: '4px', letterSpacing: '1px' }}>SCAN FOR HELP</div>
+              <div className="qr-scan-text-v2">SCAN FOR HELP</div>
             </div>
           </div>
         </div>
