@@ -27,7 +27,7 @@ export default function Home({ onOpenPayment }) {
   
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
-  const [activeCard, setActiveCard] = useState('profile'); // profile or emergency
+  const [activeCard, setActiveCard] = useState('emergency'); // profile or emergency (Changed to emergency by default)
 
   // Point: QR URL Generation (Stable Restored)
   const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
@@ -213,7 +213,6 @@ export default function Home({ onOpenPayment }) {
         </div>
       </section>
 
-      {/* ========== PRICING (Hidden for Subscribed) ========== */}
       {(!user?.subscriptionTier || !['silver', 'gold', 'diamond'].includes(user.subscriptionTier)) && (
         <section id="pricing" className="pricing">
         <div className="hero-glow pricing-glow"></div>
@@ -226,7 +225,6 @@ export default function Home({ onOpenPayment }) {
             <p className="section-desc">Subscribe to a plan that works for you. Cancel anytime. Pay securely via UPI.</p>
           </div>
           <div className="pricing-grid">
-            {/* Silver Plan */}
             <div className="pricing-card glass-card">
               <div className="plan-header">
                 <div className="plan-icon"><CheckCircle size={20} /></div>
@@ -242,7 +240,6 @@ export default function Home({ onOpenPayment }) {
               </ul>
               <button className="plan-btn glass" onClick={() => onOpenPayment('Silver', '250')}>Subscribe Now</button>
             </div>
-            {/* Gold PRO (Featured) */}
             <div className="pricing-card featured glass-card" style={{ borderColor: 'var(--primary)' }}>
               <div className="plan-badge">⭐ Best Value</div>
               <div className="plan-header">
@@ -259,7 +256,6 @@ export default function Home({ onOpenPayment }) {
               </ul>
               <button className="plan-btn-featured pulse-primary" onClick={() => onOpenPayment('Gold PRO', '450')}>Subscribe Now</button>
             </div>
-            {/* Diamond PRO */}
             <div className="pricing-card glass-card" style={{border: '1.5px solid #a855f7', boxShadow: '0 0 30px rgba(168, 85, 247, 0.15)'}}>
               <div className="plan-header">
                 <div className="plan-icon" style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}><ShieldCheck size={20} /></div>
@@ -284,7 +280,6 @@ export default function Home({ onOpenPayment }) {
       </section>
     )}
 
-      {/* ========== QR SECTION ========== */}
       <section id="qr" className="qr-section">
         <div className="container">
           <div className="section-header">
@@ -293,7 +288,6 @@ export default function Home({ onOpenPayment }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center', width: '100%' }}>
-            {/* Deploy Trigger: Card Switcher Tabs (Unified Section) */}
             <div className="card-switcher">
               <button 
                 className={`switcher-btn ${activeCard === 'emergency' ? 'active' : ''}`}
@@ -316,9 +310,9 @@ export default function Home({ onOpenPayment }) {
                       <CustomerCard user={user} qrUrl={qrUrl} />
                     ) : (
                       <EmergencyCard 
-                        user={user}
-                        qrUrl={qrUrl}
-                        theme={user?.subscriptionTier?.toLowerCase() === 'diamond' ? 'diamond' : (user?.subscriptionTier?.toLowerCase() === 'gold' ? 'gold' : 'standard')} 
+                        user={user || { name: 'VISHANT PANWAR', plateNumber: 'HAWJQIO', subscriptionTier: 'diamond' }}
+                        qrUrl={qrUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DEMO'}
+                        theme='diamond' 
                       />
                     )}
                  </div>

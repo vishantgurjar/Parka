@@ -28,6 +28,12 @@
     <meta property="twitter:image" content="https://parka-frontend.vercel.app/og-image.png" />
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        alert("CRITICAL ERROR: " + msg + "\nAt: " + url + ":" + line);
+        return false;
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

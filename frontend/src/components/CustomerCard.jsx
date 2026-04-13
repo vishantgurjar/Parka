@@ -1,73 +1,73 @@
 import React from 'react';
-import { ShieldCheck, User, Car, Clock } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 const CustomerCard = React.forwardRef(({ user, qrUrl }, ref) => {
   if (!user) return null;
 
-  const isDiamond = user.subscriptionTier === 'diamond';
-  const isGold = user.subscriptionTier === 'gold';
+  const subscriptionTier = user.subscriptionTier?.toLowerCase() || 'standard';
+  const isDiamond = subscriptionTier === 'diamond';
+  const isGold = subscriptionTier === 'gold';
+  
+  // Custom class for the specific look from the photo
   const vipClass = isDiamond ? 'minimal-card-vip-diamond' : (isGold ? 'minimal-card-vip-gold' : '');
 
   return (
     <div className="customer-card-container" ref={ref} style={{ padding: '0' }}>
-      <div className={`minimal-card ${vipClass}`} style={{ width: '480px', height: '240px', padding: '0', display: 'flex', flexDirection: 'column' }}>
+      <div className={`minimal-card ${vipClass}`}>
         
-        {/* Top Header Bar */}
-        <div style={{ padding: '12px 24px', background: '#111827', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-             <img src="/logo.png" alt="Logo" style={{ width: '18px', height: '18px' }} />
-             <span style={{ color: '#fff', fontWeight: '800', fontSize: '0.9rem', letterSpacing: '1px' }}>PARKÉE CITY</span>
+        {/* Top Header Bar from Photo */}
+        <div className="minimal-card-header">
+          <div className="minimal-card-brand">
+             <img src="/logo.png" alt="Logo" />
+             <span>PARKÉÉ CITY</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2dd4bf', fontSize: '0.6rem', fontWeight: '900', letterSpacing: '1px' }}>
-             <ShieldCheck size={10} /> VERIFIED CUSTOMER
+          <div className="minimal-card-badge">
+             <ShieldCheck size={12} /> VERIFIED CUSTOMER
           </div>
         </div>
 
-        {/* Main Content */}
-        <div style={{ flex: 1, padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Main Content Area */}
+        <div className="minimal-card-body">
           
-          {/* Info Section */}
-          <div style={{ flex: 1 }}>
-            <div style={{ marginBottom: '16px' }}>
-               <span className="minimal-label">Vehicle Owner</span>
-               <span className="minimal-value" style={{ textTransform: 'uppercase' }}>{user.name}</span>
-            </div>
-            
-            <div style={{ marginBottom: '16px' }}>
-               <span className="minimal-label">Registration Plate</span>
-               <span className="minimal-value" style={{ fontSize: '1.2rem', color: '#111827', textTransform: 'uppercase', letterSpacing: '1px' }}>{user.plateNumber || 'HR-51-AA-0001'}</span>
-            </div>
+          {/* Info Section (Left) */}
+          <div className="minimal-card-info">
+             <div className="minimal-info-group">
+                <span className="minimal-label">VEHICLE OWNER</span>
+                <span className="minimal-value">{user.name || 'VISHANT PANWAR'}</span>
+             </div>
+             
+             <div className="minimal-info-group">
+                <span className="minimal-label">REGISTRATION PLATE</span>
+                <span className="minimal-value" style={{ fontSize: '1.4rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
+             </div>
 
-            <div style={{ display: 'flex', gap: '20px' }}>
-               <div>
-                  <span className="minimal-label">Membership</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: isDiamond ? '#8b5cf6' : (isGold ? '#ca8a04' : '#6b7280') }}>
-                    {user.subscriptionTier?.toUpperCase() || 'STANDARD'}
-                  </span>
-               </div>
-               <div>
-                  <span className="minimal-label">Validity</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700' }}>Lifetime Access</span>
-               </div>
-            </div>
+             <div className="minimal-info-footer">
+                <div className="minimal-info-group">
+                   <span className="minimal-label">MEMBERSHIP</span>
+                   <span className="minimal-value-small" style={{ color: isDiamond ? '#8b5cf6' : (isGold ? '#ca8a04' : '#1e293b') }}>
+                     {user.subscriptionTier?.toUpperCase() || 'STANDARD'}
+                   </span>
+                </div>
+                <div className="minimal-info-group">
+                   <span className="minimal-label">VALIDITY</span>
+                   <span className="minimal-value-small">Lifetime Access</span>
+                </div>
+             </div>
           </div>
 
-          {/* QR Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-             <div className="minimal-qr-frame">
+          {/* QR Section (Right) */}
+          <div className="minimal-card-qr-section">
+             <div className="minimal-qr-white-frame">
                {qrUrl ? (
-                 <img src={qrUrl} alt="QR" style={{ width: '90px', height: '90px', display: 'block' }} />
+                 <img src={qrUrl} alt="QR Code" />
                ) : (
-                 <div style={{ width: '90px', height: '90px', background: '#f3f4f6' }}></div>
+                 <div className="qr-placeholder"></div>
                )}
              </div>
-             <span className="minimal-label" style={{ fontSize: '0.5rem' }}>SCAN TO CONTACT</span>
+             <span className="minimal-qr-caption">SCAN TO CONTACT</span>
           </div>
 
         </div>
-
-        {/* Subtle Footer Divider */}
-        <div style={{ height: '4px', background: isDiamond ? 'linear-gradient(90deg, #8b5cf6, #3b82f6)' : (isGold ? 'linear-gradient(90deg, #eab308, #ca8a04)' : '#f3f4f6') }}></div>
       </div>
     </div>
   );

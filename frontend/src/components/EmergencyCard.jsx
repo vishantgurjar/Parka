@@ -1,69 +1,73 @@
 import React from 'react';
+import { ShieldCheck } from 'lucide-react';
 
-const EmergencyCard = React.forwardRef(({ user, qrUrl }, ref) => {
+const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref) => {
   if (!user) return null;
 
-  // Dynamic helper for owner name display
-  // Using split/pop to get the last name/surname as shown in the mockup "PANWAR"
-  const ownerName = user.name || 'VEHICLE OWNER';
-  const nameParts = ownerName.trim().split(' ');
-  const displayName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ownerName;
+  const subscriptionTier = user.subscriptionTier?.toLowerCase() || 'standard';
+  const isDiamond = subscriptionTier === 'diamond';
+  const isGold = subscriptionTier === 'gold';
+  const vipClass = isDiamond ? 'minimal-card-vip-diamond' : (isGold ? 'minimal-card-vip-gold' : '');
+
+  // Main emergency name from photo style (e.g. surname)
+  const displayName = (user && user.name) 
+    ? user.name.split(' ').pop()
+    : 'PANWAR';
 
   return (
     <div className="emergency-card-container" ref={ref} style={{ padding: '0' }}>
-      <div className="qr-card-v2">
-        {/* Left Sidebar: Red bar with rotated text */}
-        <div className="qr-sidebar-v2">
-           <span>EMERGENCY</span>
+      <div className={`minimal-card ${vipClass}`}>
+        
+        {/* Top Header Bar from Photo */}
+        <div className="minimal-card-header" style={{ background: '#0f172a' }}>
+          <div className="minimal-card-brand">
+             <img src="/logo.png" alt="Logo" />
+             <span>PARKÉÉ CITY</span>
+          </div>
+          <div className="minimal-card-badge" style={{ color: '#f43f5e', background: 'rgba(244, 63, 94, 0.1)', borderColor: 'rgba(244, 63, 94, 0.3)' }}>
+             <ShieldCheck size={12} /> EMERGENCY SERVICES
+          </div>
         </div>
 
-        {/* Right Content Area */}
-        <div className="qr-content-v2">
-          {/* Top Row: Logo and Branding + Silver Chip */}
-          <div className="qr-header-v2">
-            <div className="qr-brand-v2">
-               <img src="/logo.png" alt="Logo" />
-               <span>PARKÉÉ CITY</span>
-            </div>
-            <div className="qr-chip-v2"></div>
-          </div>
+        {/* Main Content Area */}
+        <div className="minimal-card-body">
+          
+          {/* Info Section (Left) */}
+          <div className="minimal-card-info">
+             <div className="minimal-info-group">
+                <span className="minimal-label">SMART VEHICLE ID</span>
+                <span className="minimal-value">{displayName}</span>
+             </div>
+             
+             <div className="minimal-info-group">
+                <span className="minimal-label">EMERGENCY HELPLINE</span>
+                <span className="minimal-value" style={{ fontSize: '1.6rem', color: '#f43f5e' }}>+91 78950 39922</span>
+             </div>
 
-          {/* Middle Row: Primary ID (The Surname/Name matching PANWAR in mockup) */}
-          <div style={{ margin: '20px 0' }}>
-            <span className="qr-label-v2">SMART VEHICLE ID</span>
-            <span className="qr-value-v2" style={{ fontSize: '1.75rem' }}>{displayName}</span>
-          </div>
-
-          {/* Bottom Row: Helpline, Plate and QR Code */}
-          <div className="qr-footer-v2">
-            <div style={{ flex: 1 }}>
-              <div style={{ marginBottom: '20px' }}>
-                <span className="qr-label-v2">EMERGENCY HELPLINE</span>
-                <span className="qr-helpline-v2">+91 78950 39922</span>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '40px' }}>
-                <div>
-                   <span className="qr-label-v2">VEHICLE PLATE</span>
-                   <span className="qr-value-v2" style={{ fontSize: '1.1rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
+             <div className="minimal-info-footer">
+                <div className="minimal-info-group">
+                   <span className="minimal-label">VEHICLE PLATE</span>
+                   <span className="minimal-value-small">{user.plateNumber || 'HAWJQIO'}</span>
                 </div>
-                <div>
-                   <span className="qr-label-v2">ACCESS</span>
-                   <span className="qr-value-v2" style={{ fontSize: '1.1rem', color: '#64748b' }}>24/7 Global</span>
+                <div className="minimal-info-group">
+                   <span className="minimal-label">ACCESS</span>
+                   <span className="minimal-value-small">24/7 GLOBAL</span>
                 </div>
-              </div>
-            </div>
-
-            {/* QR Code Container with "SCAN FOR HELP" label */}
-            <div className="qr-frame-v2">
-              {qrUrl ? (
-                <img src={qrUrl} alt="QR Code" />
-              ) : (
-                <div style={{ width: '140px', height: '140px', background: '#e2e8f0', borderRadius: '4px' }}></div>
-              )}
-              <div className="qr-scan-text-v2">SCAN FOR HELP</div>
-            </div>
+             </div>
           </div>
+
+          {/* QR Section (Right) */}
+          <div className="minimal-card-qr-section">
+             <div className="minimal-qr-white-frame">
+               {qrUrl ? (
+                 <img src={qrUrl} alt="QR Code" />
+               ) : (
+                 <div className="qr-placeholder"></div>
+               )}
+             </div>
+             <span className="minimal-qr-caption">SCAN FOR HELP</span>
+          </div>
+
         </div>
       </div>
     </div>

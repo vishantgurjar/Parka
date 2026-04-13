@@ -34,7 +34,7 @@ export default function Header({ onOpenPayment }) {
           <div className="logo-icon pulse-primary">
              <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
+          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City (LOCAL)</span>
         </Link>
 
         {/* Desktop Nav */}
