@@ -21,6 +21,7 @@ import VehicleLandingPage from './pages/VehicleLandingPage';
 import AIAssistant from './pages/AIAssistant';
 import CommunityHelp from './pages/CommunityHelp';
 import Sentinel from './pages/Sentinel';
+import Profile from './pages/Profile';
 
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -179,6 +180,7 @@ function App() {
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
                   <Route path="/community-help" element={<CommunityHelp />} />
                   <Route path="/sentinel" element={<Sentinel />} />
+                  <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />

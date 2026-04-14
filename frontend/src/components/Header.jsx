@@ -50,14 +50,14 @@ export default function Header({ onOpenPayment }) {
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem' }}>
+              <Link to="/profile" className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', color: 'var(--fg)', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
                 {['silver', 'gold', 'diamond'].includes(user.subscriptionTier?.toLowerCase()) && (
                   <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
                     {user.subscriptionTier?.toUpperCase()}
                   </span>
                 )}
-              </div>
+              </Link>
               <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
                 Sign Out
               </button>
@@ -107,6 +107,9 @@ export default function Header({ onOpenPayment }) {
                 </span>
               )}
             </span>
+            <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="btn-secondary full-width" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px', textAlign: 'center', fontWeight: 'bold', display: 'block' }}>
+              My Profile
+            </Link>
             <button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} className="btn-gradient full-width" style={{ padding: '12px', borderRadius: '6px', border: 'none', fontWeight: 'bold' }}>
               Sign Out
             </button>
