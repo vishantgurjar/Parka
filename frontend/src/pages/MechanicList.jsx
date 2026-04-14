@@ -494,7 +494,23 @@ export default function MechanicList() {
         </div>
 
         {loading ? (
-             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>Loading mechanics directory...</div>
+             <div className="loading-grid">
+               {[1,2,3,4,5,6].map(i => (
+                 <div key={i} className="skeleton-card glass-card">
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                     <div className="skeleton skeleton-title"></div>
+                     <div className="skeleton skeleton-circle" style={{ width: '40px', height: '40px' }}></div>
+                   </div>
+                   <div className="skeleton skeleton-text" style={{ width: '40%', marginBottom: '20px' }}></div>
+                   <div className="skeleton skeleton-text"></div>
+                   <div className="skeleton skeleton-text"></div>
+                   <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                     <div className="skeleton" style={{ flex: 1, height: '40px', borderRadius: '8px' }}></div>
+                     <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '8px' }}></div>
+                   </div>
+                 </div>
+               ))}
+             </div>
               ) : error ? (
              <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>
         ) : (

@@ -50,37 +50,32 @@ export default function Header({ onOpenPayment }) {
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Link to="/profile" className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', color: 'var(--fg)', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}>
+              <Link to="/profile" className="glass" style={{ padding: '6px 14px', borderRadius: '30px', fontSize: '0.85rem', color: 'var(--fg)', display: 'flex', alignItems: 'center', transition: 'all 0.3s', border: '1px solid rgba(255,255,255,0.08)' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
                 {['silver', 'gold', 'diamond'].includes(user.subscriptionTier?.toLowerCase()) && (
-                  <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
+                  <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: '900', background: 'var(--primary)', color: 'var(--primary-fg)', letterSpacing: '0.5px' }}>
                     {user.subscriptionTier?.toUpperCase()}
                   </span>
                 )}
               </Link>
-              <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
+              <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 18px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '600' }}>
                 Sign Out
               </button>
             </div>
           ) : (
-            <Link to="/login" className="btn-gradient" style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.85rem' }}>
+            <Link to="/login" className="btn-gradient" style={{ padding: '10px 24px', borderRadius: '50px', fontSize: '0.85rem', fontWeight: '700' }}>
               Login
             </Link>
           )}
-
-          <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-          </button>
         </nav>
-
-        {/* Mobile Nav Toggle */}
-        <div className="header-actions">
-           {/* Dark Mode toggle for mobile */}
-           <button onClick={toggleTheme} className="theme-toggle" style={{ border: 'none', background: 'transparent' }}>
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+        
+        {/* Header Actions (Always visible) */}
+        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={toggleTheme} className="theme-toggle glass" style={{ border: 'none', background: 'rgba(255,255,255,0.03)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle" style={{ border: 'none', background: 'transparent', padding: '4px' }}>
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </div>

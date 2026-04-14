@@ -282,9 +282,9 @@ export default function Home({ onOpenPayment }) {
 
       <section id="qr" className="qr-section">
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Your Smart <span className="text-gradient">QR Profile</span></h2>
-            <p className="section-desc">Manage your emergency card details and digital identity.</p>
+          <div className="section-header" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h2 className="section-title" style={{ textAlign: 'center' }}>Your Smart <span className="text-gradient">QR Profile</span></h2>
+            <p className="section-desc" style={{ textAlign: 'center', margin: '0 auto' }}>Manage your emergency card details and digital identity.</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center', width: '100%' }}>

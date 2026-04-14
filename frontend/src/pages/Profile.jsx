@@ -100,8 +100,8 @@ export default function Profile() {
       <div className="profile-page" style={{ padding: '100px 0 60px', background: 'var(--bg)', minHeight: '90vh' }}>
         <div className="container">
           
-          <div className="section-header" style={{ marginBottom: '40px' }}>
-            <div className="emergency-badge" style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8' }}>
+          <div className="section-header" style={{ marginBottom: '40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="emergency-badge" style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', marginBottom: '1.5rem' }}>
               <User size={14} /> ACCOUNT OVERVIEW
             </div>
             <h2 className="section-title">Your Premium <span className="text-gradient">Profile</span></h2>
