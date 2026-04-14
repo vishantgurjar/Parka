@@ -36,19 +36,19 @@ const CustomerCard = React.forwardRef(({ user, qrUrl }, ref) => {
              
              <div className="hybrid-info-group">
                 <span className="hybrid-label">REGISTRATION PLATE</span>
-                <span className="hybrid-value" style={{ fontSize: '1.15rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
+                <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
              </div>
 
              <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
                 <div className="hybrid-info-group">
                    <span className="hybrid-label">MEMBERSHIP</span>
-                   <span className="hybrid-value" style={{ fontSize: '1rem', color: isDiamond ? '#818cf8' : (isGold ? '#eab308' : '#38bdf8') }}>
+                   <span className="hybrid-value" style={{ fontSize: '0.85rem', color: isDiamond ? '#818cf8' : (isGold ? '#eab308' : '#38bdf8') }}>
                       {user.subscriptionTier?.toUpperCase() || 'STANDARD'}
                    </span>
                 </div>
                 <div className="hybrid-info-group">
                    <span className="hybrid-label">VALIDITY</span>
-                   <span className="hybrid-value" style={{ fontSize: '1rem' }}>LIFETIME ACCESS</span>
+                   <span className="hybrid-value" style={{ fontSize: '0.85rem' }}>LIFETIME ACCESS</span>
                 </div>
              </div>
           </div>
