@@ -16,56 +16,54 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
 
   return (
     <div className="emergency-card-container" ref={ref} style={{ padding: '0' }}>
-      <div className={`minimal-card ${vipClass}`}>
+      <div className={`hybrid-card ${vipClass}`}>
         
-        {/* Top Header Bar from Photo */}
-        <div className="minimal-card-header" style={{ background: '#0f172a' }}>
-          <div className="minimal-card-brand">
+        {/* Top Carbon Fiber Section */}
+        <div className="carbon-section">
+          <div className="hybrid-brand">
              <img src="/logo.png" alt="Logo" />
              <span>PARKÉÉ CITY</span>
           </div>
-          <div className="minimal-card-badge" style={{ color: '#f43f5e', background: 'rgba(244, 63, 94, 0.1)', borderColor: 'rgba(244, 63, 94, 0.3)' }}>
-             <ShieldCheck size={12} /> EMERGENCY SERVICES
-          </div>
+          <div className="hybrid-chip"></div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="minimal-card-body">
+        {/* Bottom Sapphire Glass Section */}
+        <div className="glass-section">
           
           {/* Info Section (Left) */}
-          <div className="minimal-card-info">
-             <div className="minimal-info-group">
-                <span className="minimal-label">SMART VEHICLE ID</span>
-                <span className="minimal-value">{displayName}</span>
+          <div className="hybrid-info">
+             <div className="hybrid-info-group">
+                <span className="hybrid-label">SMART VEHICLE ID</span>
+                <span className="hybrid-value">{displayName}</span>
              </div>
              
-             <div className="minimal-info-group">
-                <span className="minimal-label">EMERGENCY HELPLINE</span>
-                <span className="minimal-value" style={{ fontSize: '1.6rem', color: '#f43f5e' }}>+91 78950 39922</span>
+             <div className="hybrid-info-group">
+                <span className="hybrid-label">EMERGENCY HELPLINE</span>
+                <span className="hybrid-helpline">+91 78950 39922</span>
              </div>
 
-             <div className="minimal-info-footer">
-                <div className="minimal-info-group">
-                   <span className="minimal-label">VEHICLE PLATE</span>
-                   <span className="minimal-value-small">{user.plateNumber || 'HAWJQIO'}</span>
+             <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
+                <div className="hybrid-info-group">
+                   <span className="hybrid-label">VEHICLE PLATE</span>
+                   <span className="hybrid-value" style={{ fontSize: '0.9rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
                 </div>
-                <div className="minimal-info-group">
-                   <span className="minimal-label">ACCESS</span>
-                   <span className="minimal-value-small">24/7 GLOBAL</span>
+                <div className="hybrid-info-group">
+                   <span className="hybrid-label">ACCESS</span>
+                   <span className="hybrid-value" style={{ fontSize: '1rem' }}>24/7 GLOBAL</span>
                 </div>
              </div>
           </div>
 
           {/* QR Section (Right) */}
-          <div className="minimal-card-qr-section">
-             <div className="minimal-qr-white-frame">
+          <div className="hybrid-qr-wrap">
+             <div className="hybrid-qr-white">
                {qrUrl ? (
                  <img src={qrUrl} alt="QR Code" />
                ) : (
-                 <div className="qr-placeholder"></div>
+                 <div className="qr-placeholder" style={{ width: '90px', height: '90px' }}></div>
                )}
              </div>
-             <span className="minimal-qr-caption">SCAN FOR HELP</span>
+             <span className="hybrid-scan-text">SCAN FOR HELP</span>
           </div>
 
         </div>
