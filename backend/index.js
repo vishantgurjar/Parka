@@ -400,6 +400,47 @@ app.post('/api/user/upgrade', checkDbConnection, async (req, res) => {
   }
 });
 
+// @route   POST /api/user/update-documents
+// @desc    Update vehicle and identity documents
+app.post('/api/user/update-documents', checkDbConnection, async (req, res) => {
+  try {
+    const { userId, ...docData } = req.body;
+    const user = await User.findByIdAndUpdate(userId, { $set: docData }, { new: true });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ success: true, user: userResponse, message: 'Documents updated successfully!' });
+  } catch (error) {
+    console.error('Update Docs Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/user/redeem-points
+// @desc    Redeem Parkee Points
+app.post('/api/user/redeem-points', checkDbConnection, async (req, res) => {
+  try {
+    const { userId, pointsToDeduct, perkName } = req.body;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    if ((user.parkeePoints || 0) < pointsToDeduct) {
+        return res.status(400).json({ message: 'Insufficient points to redeem this perk.' });
+    }
+    
+    user.parkeePoints = (user.parkeePoints || 0) - pointsToDeduct;
+    await user.save();
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ success: true, user: userResponse, message: `Successfully redeemed ${perkName}!` });
+  } catch (error) {
+    console.error('Redeem Points Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // --- NEW MECHANIC ROUTES ---
 
