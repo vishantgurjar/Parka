@@ -322,10 +322,6 @@ export default function Home({ onOpenPayment }) {
                       <Download size={18} />
                       Download Image
                     </button>
-                    <button onClick={handlePrint} className="btn-secondary" style={{ padding: '12px 24px' }}>
-                      <Printer size={18} />
-                      Print Card
-                    </button>
                  </div>
                </div>
 
