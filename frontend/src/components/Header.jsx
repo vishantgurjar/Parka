@@ -28,43 +28,68 @@ export default function Header({ onOpenPayment }) {
   };
 
   return (
-    <header className="header glass" id="header" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-      <div className="container header-inner" style={{ height: '72px' }}>
+    <header className="header glass" id="header" style={{ 
+      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      background: 'rgba(3, 7, 18, 0.4)',
+      backdropFilter: 'blur(var(--glass-blur)) saturate(180%)',
+      zIndex: '1000'
+    }}>
+      <div className="container header-inner" style={{ height: '80px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
-          <div className="logo-icon pulse-primary">
-             <img src="/logo.png" alt="Parkéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
+          <div className="logo-icon light-sweep" style={{ 
+            width: '42px', 
+            height: '42px', 
+            borderRadius: '12px',
+            background: 'var(--gradient-primary)',
+            boxShadow: '0 0 20px var(--primary-glow)'
+          }}>
+             <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text text-gradient" style={{ fontSize: '1.25rem' }}>Parkéé City</span>
+          <span className="logo-text text-gradient" style={{ 
+            fontSize: '1.4rem', 
+            fontWeight: '800', 
+            letterSpacing: 'var(--tracking-tighter)' 
+          }}>PARKÉÉ</span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="nav-desktop">
-          <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
-          <Link to="/community-help">Community</Link>
-          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>SOS Service</a>
-          <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Mechanics</Link>
-          <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold'}}>AI Doctor</Link>
-          <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel AI 🛡️</Link>
-          {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} style={{fontWeight: 'bold'}}>Get PRO</a>}
-
+        <nav className="nav-desktop" style={{ gap: '2.5rem' }}>
+          <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Home</a>
+          <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Community</Link>
+          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>SOS</a>
+          <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Mechanics</Link>
+          <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)' }}>AI Doctor</Link>
           
+          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 10px' }}></div>
+
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Link to="/profile" className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', color: 'var(--fg)', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}>
-                Hi, {user.name?.split(' ')[0] || 'User'}
-                {['silver', 'gold', 'diamond'].includes(user.subscriptionTier?.toLowerCase()) && (
-                  <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
-                    {user.subscriptionTier?.toUpperCase()}
-                  </span>
-                )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <Link to="/profile" className="glass light-sweep" style={{ 
+                padding: '8px 16px', 
+                borderRadius: '50px', 
+                fontSize: '0.8rem', 
+                fontWeight: '700',
+                background: 'rgba(255,255,255,0.05)',
+                display: 'flex', 
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ opacity: 0.7 }}>Account</span>
+                <span style={{ color: 'var(--primary)' }}>{user.name?.split(' ')[0]}</span>
               </Link>
-              <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
-                Sign Out
+              <button onClick={() => { logout(); navigate('/'); }} style={{ background: 'transparent', color: 'var(--muted)', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase' }}>
+                Logout
               </button>
             </div>
           ) : (
-            <Link to="/login" className="btn-gradient" style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.85rem' }}>
-              Login
+            <Link to="/login" className="btn-gradient light-sweep" style={{ 
+              padding: '10px 24px', 
+              borderRadius: '50px', 
+              fontSize: '0.8rem',
+              fontWeight: '800',
+              textTransform: 'uppercase'
+            }}>
+              Join Now
             </Link>
           )}
         </nav>
