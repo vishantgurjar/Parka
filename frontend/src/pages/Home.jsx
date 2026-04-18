@@ -105,13 +105,16 @@ export default function Home({ onOpenPayment }) {
         cacheBust: true,
         width: 520,
         height: 300,
-        pixelRatio: 2,
+        pixelRatio: 3, // Increased for ultra-sharp prints
+        backgroundColor: 'transparent',
         style: {
           transform: 'none',
           perspective: 'none',
           margin: '0',
           padding: '0',
-          borderRadius: '0'
+          borderRadius: '0',
+          width: '520px',  // Force natural width during capture
+          height: '300px'  // Force natural height during capture
         }
       };
 
