@@ -5,14 +5,12 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
   if (!user) return null;
 
   const subscriptionTier = user.subscriptionTier?.toLowerCase() || 'standard';
-  const isDiamond = subscriptionTier === 'diamond';
+  const isDiamond = subscriptionTier === 'diamond' || subscriptionTier === 'pro';
   const isGold = subscriptionTier === 'gold';
   const vipClass = isDiamond ? 'minimal-card-vip-diamond' : (isGold ? 'minimal-card-vip-gold' : '');
 
   // Main emergency name from photo style (e.g. surname)
-  const displayName = (user && user.name) 
-    ? user.name.split(' ').pop()
-    : 'PANWAR';
+  const displayName = user?.name || 'VISHANT PANWAR';
 
   return (
     <div className="emergency-card-container" ref={ref} style={{ padding: '0' }}>
@@ -45,11 +43,11 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
              <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
                 <div className="hybrid-info-group">
                    <span className="hybrid-label">VEHICLE PLATE</span>
-                   <span className="hybrid-value" style={{ fontSize: '0.8rem' }}>{user.plateNumber || 'HAWJQIO'}</span>
+                   <span className="hybrid-value">{user.plateNumber || 'HAWJQIO'}</span>
                 </div>
                 <div className="hybrid-info-group">
                    <span className="hybrid-label">ACCESS</span>
-                   <span className="hybrid-value" style={{ fontSize: '0.85rem' }}>24/7 GLOBAL</span>
+                   <span className="hybrid-value" style={{ fontSize: '1rem' }}>24/7 GLOBAL</span>
                 </div>
              </div>
           </div>

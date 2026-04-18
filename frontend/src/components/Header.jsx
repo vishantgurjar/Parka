@@ -50,20 +50,20 @@ export default function Header({ onOpenPayment }) {
           
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Link to="/profile" className="glass" style={{ padding: '6px 14px', borderRadius: '30px', fontSize: '0.85rem', color: 'var(--fg)', display: 'flex', alignItems: 'center', transition: 'all 0.3s', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <Link to="/profile" className="glass" style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', color: 'var(--fg)', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}>
                 Hi, {user.name?.split(' ')[0] || 'User'}
                 {['silver', 'gold', 'diamond'].includes(user.subscriptionTier?.toLowerCase()) && (
-                  <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: '900', background: 'var(--primary)', color: 'var(--primary-fg)', letterSpacing: '0.5px' }}>
+                  <span className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', background: 'var(--primary)', color: 'var(--primary-fg)' }}>
                     {user.subscriptionTier?.toUpperCase()}
                   </span>
                 )}
               </Link>
-              <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 18px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '600' }}>
+              <button onClick={() => { logout(); navigate('/'); }} className="btn-secondary" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem' }}>
                 Sign Out
               </button>
             </div>
           ) : (
-            <Link to="/login" className="btn-gradient" style={{ padding: '10px 24px', borderRadius: '50px', fontSize: '0.85rem', fontWeight: '700' }}>
+            <Link to="/login" className="btn-gradient" style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.85rem' }}>
               Login
             </Link>
           )}
@@ -80,7 +80,7 @@ export default function Header({ onOpenPayment }) {
         </div>
       </div>
 
-      {/* Mobile Nav Menu */}
+      {/* Mobile Nav Overlay */}
       <nav className={`nav-mobile ${isMenuOpen ? 'show' : ''}`}>
         <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
         <Link to="/community-help" onClick={(e) => { setIsMenuOpen(false); }}>Community</Link>

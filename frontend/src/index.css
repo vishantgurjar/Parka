@@ -135,7 +135,6 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     width: 100%;
 }
 .nav-desktop a:hover, .nav-mobile a:hover { color: var(--fg); }
-
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .theme-toggle, .menu-toggle {
     padding: 8px; border-radius: 8px; background: transparent;
@@ -1151,19 +1150,8 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 .pulse-anim { animation: pulse-anim 2s infinite; }
 
 .shimmer-text {
-    background: linear-gradient(90deg, currentColor 25%, #fff 50%, currentColor 75%);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
     animation: shimmer 3s infinite linear;
 }
-
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 /* ========== LOADING SKELETONS ========== */
 .loading-grid {
@@ -1211,6 +1199,12 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   height: 16px;
   margin-bottom: 8px;
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 /* ========== PREMIUM QR CARDS (UNIFIED) ========== */
 .minimal-card {
@@ -1621,7 +1615,7 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   content: '';
   position: absolute;
   top: 5px; left: 5px; right: 5px; bottom: 5px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
 
@@ -1708,6 +1702,45 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   .hybrid-helpline { font-size: 1.25rem; }
   .hybrid-qr-white img { width: 70px; height: 70px; }
 }
+
+/* Premium VIP Tier Stylings */
+.minimal-card-vip-diamond {
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(129, 140, 248, 0.2), inset 0 1px 1px rgba(255,255,255,0.2) !important;
+  border: 1px solid rgba(129, 140, 248, 0.4) !important;
+}
+
+.minimal-card-vip-diamond .carbon-section {
+  border-bottom: 2px solid #818cf8 !important;
+}
+
+.minimal-card-vip-diamond .hybrid-label {
+  color: #a5b4fc !important;
+}
+
+.minimal-card-vip-diamond .hybrid-helpline,
+.minimal-card-vip-diamond .hybrid-scan-text {
+  color: #818cf8 !important;
+}
+
+.minimal-card-vip-gold {
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(234, 179, 8, 0.2), inset 0 1px 1px rgba(255,255,255,0.2) !important;
+  border: 1px solid rgba(234, 179, 8, 0.4) !important;
+}
+
+.minimal-card-vip-gold .carbon-section {
+  border-bottom: 2px solid #eab308 !important;
+}
+
+.minimal-card-vip-gold .hybrid-label {
+  color: #fde047 !important;
+}
+
+.minimal-card-vip-gold .hybrid-helpline,
+.minimal-card-vip-gold .hybrid-scan-text {
+  color: #eab308 !important;
+}
+
+
 
 .minimal-chip::after {
   content: '';

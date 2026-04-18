@@ -9,6 +9,7 @@ import { toPng } from 'html-to-image';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
+
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
 
   useEffect(() => {
@@ -60,10 +61,6 @@ export default function Home({ onOpenPayment }) {
     recognition.start();
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const qrRef = useRef(null);
   const downloadQR = async () => {
     if (qrRef.current === null) return;
@@ -93,7 +90,6 @@ export default function Home({ onOpenPayment }) {
         title="Parkéé City - Smart Vehicle Protection & Emergency Services"
         description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
       />
-      {/* ========== HERO ========== */}
       {/* ========== HERO ========== */}
       <section id="home" className="hero" style={{ perspective: '1000px' }}>
         <div className="hero-bg"></div>
@@ -125,7 +121,7 @@ export default function Home({ onOpenPayment }) {
             </Link>
           </div>
 
-          {user?.subscriptionTier === 'diamond' && (
+          {(user?.subscriptionTier?.toLowerCase() === 'diamond' || user?.subscriptionTier?.toLowerCase() === 'pro') && (
             <div style={{ marginTop: '2rem', padding: '12px 24px', borderRadius: '50px', background: 'rgba(94, 234, 212, 0.1)', border: '1px solid var(--primary)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>
               <Sparkles size={18} />
               Welcome Back, DIAMOND MEMBER
@@ -158,8 +154,6 @@ export default function Home({ onOpenPayment }) {
         </div>
       </section>
 
-
-
       {/* ========== EMERGENCY SERVICES ========== */}
       <section id="emergency" className="emergency">
         <div className="emergency-bg"></div>
@@ -167,8 +161,8 @@ export default function Home({ onOpenPayment }) {
         <div className="hero-glow emergency-glow-2"></div>
         
         <div className="container emergency-content">
-          <div className="section-header">
-            <div className="emergency-badge">
+          <div className="section-header" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '3rem' }}>
+            <div className="emergency-badge" style={{ marginBottom: '1rem' }}>
               🚨 24/7 Highway Assistance
             </div>
             <h2 className="section-title">Critical <span className="text-gradient">Services</span></h2>
@@ -213,7 +207,7 @@ export default function Home({ onOpenPayment }) {
         </div>
       </section>
 
-      {(!user?.subscriptionTier || !['silver', 'gold', 'diamond'].includes(user.subscriptionTier)) && (
+      {(!user?.subscriptionTier || !['silver', 'gold', 'diamond', 'pro'].includes(user.subscriptionTier?.toLowerCase())) && (
         <section id="pricing" className="pricing">
         <div className="hero-glow pricing-glow"></div>
         <div className="container pricing-content">
@@ -278,13 +272,14 @@ export default function Home({ onOpenPayment }) {
           </p>
         </div>
       </section>
-    )}
+      )}
 
+      {/* ========== QR PROFILE SECTION ========== */}
       <section id="qr" className="qr-section">
         <div className="container">
           <div className="section-header" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h2 className="section-title" style={{ textAlign: 'center' }}>Your Smart <span className="text-gradient">QR Profile</span></h2>
-            <p className="section-desc" style={{ textAlign: 'center', margin: '0 auto' }}>Manage your emergency card details and digital identity.</p>
+            <h2 className="section-title">Your Smart <span className="text-gradient">QR Profile</span></h2>
+            <p className="section-desc">Manage your emergency card details and digital identity.</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center', width: '100%' }}>
@@ -303,62 +298,55 @@ export default function Home({ onOpenPayment }) {
               </button>
             </div>
 
-            {user ? (
-               <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center' }}>
-                 <div ref={qrRef} className="qr-container">
-                    {activeCard === 'profile' ? (
-                      <CustomerCard user={user} qrUrl={qrUrl} />
-                    ) : (
-                      <EmergencyCard 
-                        user={user || { name: 'VISHANT PANWAR', plateNumber: 'HAWJQIO', subscriptionTier: 'diamond' }}
-                        qrUrl={qrUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DEMO'}
-                        theme='diamond' 
-                      />
-                    )}
-                 </div>
-                 
-                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button onClick={downloadQR} className="btn-gradient" style={{ padding: '12px 24px' }}>
-                      <Download size={18} />
-                      Download Image
-                    </button>
-                 </div>
-               </div>
+            {(() => {
+              const guestUser = { name: 'GUEST USER', plateNumber: 'UP 16 XX 0000', subscriptionTier: 'silver' };
+              const displayUser = user || guestUser;
+              const subscriptionTier = displayUser.subscriptionTier?.toLowerCase() || 'standard';
+              const isDiamond = subscriptionTier === 'diamond' || subscriptionTier === 'pro';
 
-            ) : (
-              <div className="qr-card glass-card">
-                <div className="qr-icon-wrap">
-                  <Smartphone size={24} />
-                </div>
-                <h3>Start Protection</h3>
-                <p className="qr-subtitle">Scan & Stay Safe Everywhere</p>
-                <div className="qr-tags">
-                  <span className="qr-tag tag-primary">24/7 Monitoring</span>
-                  <span className="qr-tag tag-danger">SOS Alerts</span>
-                </div>
-                <div className="qr-image-wrap pulse-primary">
-                  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: '8px' }}>
-                    <rect width="120" height="120" rx="8" fill="#0f172a"/>
-                    <rect x="15" y="15" width="35" height="35" rx="4" stroke="#2dd4bf" strokeWidth="3" fill="none"/>
-                    <rect x="22" y="22" width="21" height="21" rx="2" fill="#2dd4bf"/>
-                    <rect x="70" y="15" width="35" height="35" rx="4" stroke="#2dd4bf" strokeWidth="3" fill="none"/>
-                    <rect x="77" y="22" width="21" height="21" rx="2" fill="#2dd4bf"/>
-                    <rect x="15" y="70" width="35" height="35" rx="4" stroke="#2dd4bf" strokeWidth="3" fill="none"/>
-                    <rect x="22" y="77" width="21" height="21" rx="2" fill="#2dd4bf"/>
-                    <rect x="70" y="70" width="14" height="14" fill="#2dd4bf"/>
-                    <rect x="88" y="70" width="14" height="14" fill="#2dd4bf"/>
-                    <rect x="70" y="88" width="14" height="14" fill="#2dd4bf"/>
-                    <rect x="88" y="88" width="14" height="14" fill="#2dd4bf"/>
-                    <rect x="55" y="55" width="10" height="10" fill="#2dd4bf"/>
-                  </svg>
-                </div>
-                <p className="qr-scan-text">Scan for a live preview of our dashboard</p>
-                <div className="qr-actions">
-                  <Link to="/register" className="btn-gradient">Get Started</Link>
-                  <Link to="/faq" className="btn-secondary">Learn More</Link>
-                </div>
-              </div>
-            )}
+              return (
+                 <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', alignItems: 'center' }}>
+                   {!user && (
+                     <div className="hero-badge glass" style={{ marginBottom: '0', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '10px 20px' }}>
+                        <Sparkles size={16} style={{ marginRight: '8px' }} />
+                        PREVIEW MODE: Login to personalize your card
+                     </div>
+                   )}
+                   
+                   <div ref={qrRef} className="qr-container" style={{ border: 'none', background: 'transparent', padding: '0' }}>
+                      {activeCard === 'emergency' ? (
+                        <EmergencyCard 
+                          user={displayUser} 
+                          qrUrl={user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW'} 
+                        />
+                      ) : (
+                        <CustomerCard 
+                          user={displayUser} 
+                          qrUrl={user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW'} 
+                        />
+                      )}
+                   </div>
+                   
+                   {user ? (
+                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button onClick={downloadQR} className="btn-gradient" style={{ padding: '12px 24px' }}>
+                          <Download size={18} />
+                          Download Image
+                        </button>
+                        <button onClick={() => window.print()} className="btn-secondary" style={{ padding: '12px 24px' }}>
+                          <Printer size={18} />
+                          Print Card
+                        </button>
+                     </div>
+                   ) : (
+                     <div className="qr-actions" style={{ maxWidth: '400px' }}>
+                        <Link to="/register" className="btn-gradient">Get Your Premium Card</Link>
+                        <Link to="/faq" className="btn-secondary">Learn More</Link>
+                     </div>
+                   )}
+                 </div>
+              );
+            })()}
           </div>
         </div>
       </section>

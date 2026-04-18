@@ -134,12 +134,12 @@ export default function CommunityHelp() {
   return (
     <div className="community-help-page" style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)' }}>
       <div className="container">
-        <div className="section-header" style={{ textAlign: 'center', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div className="hero-badge glass" style={{ color: 'var(--primary)', border: '1px solid var(--primary)', marginBottom: '1.5rem' }}>
-            <Heart size={16} /> Community Sathi Network
+        <div className="section-header" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '3rem' }}>
+          <div className="emergency-badge" style={{ marginBottom: '1rem' }}>
+            <Heart size={14} /> COMMUNITY FEED
           </div>
-          <h1 className="section-title">Nearby <span className="text-gradient">Help Needed</span></h1>
-          <p className="section-desc">Join the movement. Help a fellow driver and earn Parkéé Credits! ✨</p>
+          <h2 className="section-title">Help & <span className="text-gradient">Support</span></h2>
+          <p className="section-desc">Direct requests from the neighborhood. Help someone today.</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
@@ -152,7 +152,6 @@ export default function CommunityHelp() {
               <Marker position={userLocation} icon={userIcon}>
                 <Popup><b>You are here</b></Popup>
               </Marker>
-
               {helpRequests.map((req) => (
                 <Marker key={req._id} position={[req.location.lat, req.location.lng]} icon={helpIcon}>
                   <Popup>
@@ -197,12 +196,9 @@ export default function CommunityHelp() {
               <h4 style={{ marginBottom: '1rem', paddingLeft: '0.5rem' }}>Nearby Activity</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {helpRequests.length === 0 ? (
-                  <div className="fadeIn" style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                    <div style={{ width: '48px', height: '48px', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
-                      <CheckCircle size={24} />
-                    </div>
-                    <p style={{ fontWeight: 'bold', fontSize: '0.95rem', marginBottom: '5px' }}>All Clear Nearby</p>
-                    <p style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>No active help requests found in your immediate area. Safe driving! ✅</p>
+                  <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                    <Heart size={24} color="var(--muted)" style={{ marginBottom: '0.5rem' }} />
+                    <p style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>No active requests nearby. Everything looks good! ✅</p>
                   </div>
                 ) : (
                   helpRequests.map(req => (
