@@ -99,7 +99,23 @@ export default function Home({ onOpenPayment }) {
     if (qrRef.current === null) return;
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
-      const dataUrl = await toPng(qrRef.current, { cacheBust: true });
+      
+      // Fixed options for perfect capture on all devices (mobile/desktop)
+      const options = {
+        cacheBust: true,
+        width: 520,
+        height: 300,
+        pixelRatio: 2,
+        style: {
+          transform: 'none',
+          perspective: 'none',
+          margin: '0',
+          padding: '0',
+          borderRadius: '0'
+        }
+      };
+
+      const dataUrl = await toPng(qrRef.current, options);
       const link = document.createElement('a');
       link.download = `parkee-city-${name}.png`;
       link.href = dataUrl;
