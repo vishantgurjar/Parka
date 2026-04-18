@@ -38,7 +38,7 @@ export default function Footer() {
               }}>
                 <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
               </div>
-              <span className="logo-text text-gradient" style={{ fontSize: '1.4rem', fontWeight: '800', letterSpacing: 'var(--tracking-tighter)' }}>PARKÉÉ</span>
+              <span className="logo-text text-gradient" style={{ fontSize: '1.4rem', fontWeight: '800', letterSpacing: 'var(--tracking-tighter)' }}>PARKÉÉ CITY</span>
             </Link>
             <p style={{ fontSize: '1rem', opacity: 0.6, fontWeight: '500', lineHeight: '1.6' }}>
               Pioneering the next generation of vehicle security and highway response. Smart QR technology for a safer, smarter world.

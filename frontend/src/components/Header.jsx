@@ -49,7 +49,7 @@ export default function Header({ onOpenPayment }) {
             fontSize: '1.4rem', 
             fontWeight: '800', 
             letterSpacing: 'var(--tracking-tighter)' 
-          }}>PARKÉÉ</span>
+          }}>PARKÉÉ CITY</span>
         </Link>
 
         {/* Desktop Nav */}

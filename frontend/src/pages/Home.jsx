@@ -43,6 +43,19 @@ export default function Home({ onOpenPayment }) {
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [activeCard, setActiveCard] = useState('emergency'); // profile or emergency
   const [showSOSHub, setShowSOSHub] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    // Simulate API call
+    console.log("Contact Request Sent:", contactForm);
+    alert("Success! Your request has been sent to the Parkéé City team.");
+    setContactForm({ name: '', email: '', message: '' });
+  };
 
   useEffect(() => {
     const handleScrollSOS = () => setShowSOSHub(window.scrollY > 400);
@@ -402,10 +415,6 @@ export default function Home({ onOpenPayment }) {
                             <Download size={18} />
                             Download HQ Image
                           </button>
-                          <button onClick={() => window.print()} className="btn-secondary light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800' }}>
-                            <Printer size={18} />
-                            Print Physical Card
-                          </button>
                        </div>
                      ) : (
                        <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
@@ -428,24 +437,42 @@ export default function Home({ onOpenPayment }) {
             <p className="section-desc">Our response team is standing by 24/7 for you.</p>
           </div>
           <div className="contact-form bento-item reveal light-sweep" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <div className="form-grid">
+            <form className="form-grid" onSubmit={handleContactSubmit}>
               <div className="form-group">
                 <label style={{ fontSize: '0.7rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Name</label>
-                <input type="text" placeholder="Your Name" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px' }} />
+                <input 
+                  type="text" 
+                  placeholder="Your Name" 
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px' }} 
+                  value={contactForm.name}
+                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                />
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.7rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Email</label>
-                <input type="email" placeholder="Email Address" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px' }} />
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px' }} 
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                />
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.7rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Message</label>
-                <textarea rows="4" placeholder="How can we help?" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px' }}></textarea>
+                <textarea 
+                  rows="4" 
+                  placeholder="How can we help?" 
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px' }}
+                  value={contactForm.message}
+                  onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                ></textarea>
               </div>
-              <button className="btn-gradient full-width light-sweep" style={{ padding: '18px', borderRadius: '16px', fontWeight: '900', fontSize: '1rem' }}>
+              <button type="submit" className="btn-gradient full-width light-sweep" style={{ padding: '18px', borderRadius: '16px', fontWeight: '900', fontSize: '1rem' }}>
                 <Send size={18} />
                 Send Request
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
