@@ -1,0 +1,23 @@
+{
+  "short_name": "Parkéé City",
+  "name": "Parkéé City - Smart Vehicle Ecosystem",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#030712",
+  "background_color": "#030712",
+  "description": "Premium Vehicle Security & Emergency Assistance Platform",
+  "orientation": "portrait"
+}

@@ -149,12 +149,47 @@ function App() {
         login(data.user, localStorage.getItem('parkeToken')); // Update AuthContext user
         alert(`Congratulations! You are now a ${paymentPlan.name} member.`);
         setPaymentPlan(null);
+        // Refresh to trigger PWA detection if they just upgraded
+        window.location.reload();
       }
     } catch (err) {
       console.error(err);
       alert('Issue upgrading account, please contact support.');
     }
   };
+
+  // --- MOBILE PREMIUM PWA INJECTOR ---
+  useEffect(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    const shouldActivatePWA = isMobile && isPro();
+
+    const manifestId = 'pwa-manifest-tag';
+    let manifestLink = document.getElementById(manifestId);
+
+    if (shouldActivatePWA) {
+      // 1. Inject Manifest
+      if (!manifestLink) {
+        manifestLink = document.createElement('link');
+        manifestLink.id = manifestId;
+        manifestLink.rel = 'manifest';
+        manifestLink.href = '/manifest.json';
+        document.head.appendChild(manifestLink);
+      }
+
+      // 2. Register Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(() => console.log('PWA Service Worker Registered (Premium Mobile)'))
+          .catch(err => console.error('PWA Registration Error:', err));
+      }
+    } else {
+      // Cleanup for Desktop or Guest/Standard users
+      if (manifestLink) {
+        manifestLink.remove();
+      }
+      // Note: We don't unregister SW here as it's complex, but the manifest removal prevents the prompt.
+    }
+  }, [user, isPro]);
 
   return (
     <HelmetProvider>
