@@ -121,7 +121,9 @@ export default function Home({ onOpenPayment }) {
         style: {
           transform: 'none',
           margin: '0',
-          padding: '0'
+          padding: '0',
+          width: '520px',
+          height: '300px'
         }
       };
 
