@@ -96,37 +96,46 @@ export default function Home({ onOpenPayment }) {
 
   const qrRef = useRef(null);
   const downloadQR = async () => {
-    if (qrRef.current === null) return;
+    if (!qrRef.current) return;
+    
+    // Find the actual card element inside the ref container
+    const cardElement = qrRef.current.querySelector('.hybrid-card') || qrRef.current;
+    
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
       
-      // High-compatibility options for perfect results on all devices
+      // Step 1: Force landscape layout for capture
+      cardElement.classList.add('is-downloading');
+      
+      // Step 2: Optimal capture options for high-fidelity physical-ID look
       const options = {
         cacheBust: true,
         width: 520,
         height: 300,
-        pixelRatio: 2, // 2x is optimal for cross-device mobile stability
-        backgroundColor: '#0f172a', // Match card deep background
+        pixelRatio: 4, // 4x for extreme clarity on modern high-dpi mobile screens
+        backgroundColor: '#0f172a',
         style: {
           transform: 'none',
-          perspective: 'none',
           margin: '0',
-          padding: '0',
-          borderRadius: '20px',
-          width: '520px',
-          height: '300px',
-          display: 'flex',
-          overflow: 'hidden'
+          padding: '0'
         }
       };
 
-      const dataUrl = await toPng(qrRef.current, options);
+      // Small delay to let browser apply the .is-downloading styles
+      await new Promise(r => setTimeout(r, 100));
+
+      const dataUrl = await toPng(cardElement, options);
+      
+      // Step 3: Cleanup
+      cardElement.classList.remove('is-downloading');
+      
       const link = document.createElement('a');
       link.download = `parkee-city-${name}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('Error downloading QR:', err);
+      cardElement.classList.remove('is-downloading');
       alert("Could not generate image. Please try taking a screenshot instead.");
     }
   };
