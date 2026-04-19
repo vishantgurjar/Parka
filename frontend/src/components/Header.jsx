@@ -49,7 +49,6 @@ export default function Header({ onOpenPayment }) {
               fontWeight: '800', 
               letterSpacing: 'var(--tracking-tighter)' 
             }}>PARKÉÉ CITY</span>
-            <span style={{ fontSize: '8px', color: 'var(--primary)', letterSpacing: '2px', fontWeight: 'bold', textTransform: 'uppercase' }}>AI ENHANCED V3.0</span>
           </div>
         </Link>
 
