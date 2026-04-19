@@ -322,7 +322,7 @@ export default function Profile() {
                     <div className="form-grid form-grid-2" style={{ gap: '20px' }}>
                        <div className="form-group">
                            <label className="form-label" style={{ fontSize: '0.75rem' }}>RC NUMBER</label>
-                           <input type="text" name="rcNumber" value={docData.rcNumber} onChange={handleDocChange} placeholder="UPxx AA xxxx" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} readOnly={user.rcNumber} />
+                           <input type="text" name="rcNumber" value={docData.rcNumber} onChange={handleDocChange} placeholder="UPxx AA xxxx" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
                        </div>
                        <div className="form-group">
                            <label className="form-label" style={{ fontSize: '0.75rem' }}>RC EXPIRY</label>
@@ -335,7 +335,7 @@ export default function Profile() {
                     <div className="form-grid form-grid-2" style={{ gap: '20px' }}>
                        <div className="form-group">
                            <label className="form-label" style={{ fontSize: '0.75rem' }}>LICENSE NUMBER</label>
-                           <input type="text" name="licenseNumber" value={docData.licenseNumber} onChange={handleDocChange} placeholder="DLxxxxxxxxxxxx" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} readOnly={user.licenseNumber} />
+                           <input type="text" name="licenseNumber" value={docData.licenseNumber} onChange={handleDocChange} placeholder="DLxxxxxxxxxxxx" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
                        </div>
                        <div className="form-group">
                            <label className="form-label" style={{ fontSize: '0.75rem' }}>LICENSE EXPIRY</label>
