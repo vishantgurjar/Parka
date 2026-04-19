@@ -166,11 +166,19 @@ if (!JWT_SECRET) {
 }
 
 // Push Config
-webpush.setVapidDetails(
-  'mailto:support@parkeecity.com',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+try {
+  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      'mailto:panwarvishant9@gmail.com',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+  } else {
+    console.warn('WARNING: VAPID keys are missing. Push notifications will not work but server will start.');
+  }
+} catch (err) {
+  console.error('CRITICAL: VAPID configuration failed:', err.message);
+}
 
 // Middleware
 app.use(cors());
@@ -181,7 +189,9 @@ const connectDB = async () => {
     if (mongoose.connection.readyState >= 1) return;
 
     try {
-        await mongoose.connect(process.env.mongo_url);
+        const dbUrl = process.env.mongo_url || process.env.MONGO_URL;
+        if (!dbUrl) throw new Error('MongoDB connection URL (mongo_url) is missing from environment variables.');
+        await mongoose.connect(dbUrl);
         console.log('Connected to MongoDB');
     } catch (err) {
         console.error('Could not connect to MongoDB:', err.message);
