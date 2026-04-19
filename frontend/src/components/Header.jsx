@@ -28,12 +28,7 @@ export default function Header({ onOpenPayment }) {
   };
 
   return (
-    <header className="header glass" id="header" style={{ 
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
-      background: 'rgba(3, 7, 18, 0.4)',
-      backdropFilter: 'blur(var(--glass-blur)) saturate(180%)',
-      zIndex: '1000'
-    }}>
+    <header className="header glass" id="header" style={{ zIndex: '1000' }}>
       <div className="container header-inner" style={{ height: window.innerWidth < 768 ? '60px' : '80px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon light-sweep" style={{ 

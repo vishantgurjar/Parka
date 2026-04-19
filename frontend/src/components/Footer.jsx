@@ -21,9 +21,6 @@ export default function Footer() {
 
   return (
     <footer className="footer glass" style={{ 
-      background: 'rgba(3, 7, 18, 0.8)', 
-      backdropFilter: 'blur(var(--glass-blur))',
-      borderTop: '1px solid rgba(255,255,255,0.08)',
       padding: window.innerWidth < 768 ? '40px 0 20px' : '80px 0 40px'
     }}>
       <div className="container">

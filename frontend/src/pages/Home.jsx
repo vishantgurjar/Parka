@@ -145,6 +145,11 @@ export default function Home({ onOpenPayment }) {
         description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
       />
       
+      {/* ========== BACKGROUND PATTERNS ========== */}
+      <div className="bg-grain"></div>
+      <div className="bg-grid"></div>
+      <div className="bg-dot-grid"></div>
+
       {/* ========== FLOATING SOS HUB ========== */}
       <div className={`sos-hub glass light-sweep ${showSOSHub ? 'visible' : ''}`} style={{
         position: 'fixed',
