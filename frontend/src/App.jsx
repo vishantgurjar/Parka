@@ -23,6 +23,7 @@ import AIAssistant from './pages/AIAssistant';
 import CommunityHelp from './pages/CommunityHelp';
 import Sentinel from './pages/Sentinel';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
 import GlobalTrackingWidget from './components/GlobalTrackingWidget';
 
 import { HelmetProvider } from 'react-helmet-async';
@@ -295,6 +296,8 @@ function App() {
                   <Route path="/community-help" element={<CommunityHelp />} />
                   <Route path="/sentinel" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+                  
+                  <Route path="/sentinel-ops" element={user && user.email === 'panwarvishant9@gmail.com' ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />

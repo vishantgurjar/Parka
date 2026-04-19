@@ -473,6 +473,95 @@ app.post('/api/user/redeem-points', checkDbConnection, async (req, res) => {
 });
 
 
+// --- ADMIN OPS ROUTES ---
+
+// @route   GET /api/admin/metrics
+// @desc    Get dashboard metrics for owner
+app.get('/api/admin/metrics', checkDbConnection, async (req, res) => {
+  try {
+    const adminEmail = 'panwarvishant9@gmail.com';
+    const email = req.query.email;
+    if (email !== adminEmail) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    // 1. Users created today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayUsersCount = await User.countDocuments({
+      createdAt: { $gte: today }
+    });
+
+    // 2. Active Mechanics
+    const activeMechanicsCount = await Mechanic.countDocuments({
+      isAvailable: true,
+      isPaid: true
+    });
+
+    // 3. Pro Subscription Revenue
+    const proUsers = await User.find({ subscriptionTier: { $ne: 'Free', $exists: true } });
+    let revenue = 0;
+    proUsers.forEach(u => {
+       if (u.subscriptionTier === 'Diamond') revenue += 50000;
+       if (u.subscriptionTier === 'Gold') revenue += 25000;
+       if (u.subscriptionTier === 'Silver') revenue += 15000;
+    });
+
+    // 4. Live SOS
+    const activeSOS = await mongoose.model('SOSRequest').find({
+       status: { $in: ['pending', 'accepted'] }
+    }).populate('user', 'name phone').populate('acceptedBy', 'name phone').sort({ createdAt: -1 });
+
+    res.json({
+       success: true,
+       todayUsers: todayUsersCount,
+       activeMechanics: activeMechanicsCount,
+       totalRevenue: revenue,
+       liveSos: activeSOS
+    });
+  } catch (error) {
+    console.error('Admin Metrics Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/admin/broadcast
+// @desc    Send global push broadcast
+app.post('/api/admin/broadcast', checkDbConnection, async (req, res) => {
+    try {
+        const adminEmail = 'panwarvishant9@gmail.com';
+        const { email, title, message } = req.body;
+        if (email !== adminEmail) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+
+        const payload = JSON.stringify({
+            title: title || 'Parkéé City Alert',
+            body: message || '',
+            url: '/'
+        });
+
+        const usersWithPush = await User.find({ pushSubscription: { $exists: true, $ne: null } });
+        const mechanicsWithPush = await Mechanic.find({ pushSubscription: { $exists: true, $ne: null } });
+        
+        let sentCount = 0;
+        const allSubs = [...usersWithPush, ...mechanicsWithPush].map(u => u.pushSubscription);
+
+        for (const sub of allSubs) {
+            try {
+                await webpush.sendNotification(sub, payload);
+                sentCount++;
+            } catch (err) {}
+        }
+
+        res.json({ success: true, message: `Broadcast sent to ${sentCount} devices.` });
+    } catch (error) {
+        console.error('Admin Broadcast Error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 // --- NEW MECHANIC ROUTES ---
 
 // @route   POST /api/mechanics/register
