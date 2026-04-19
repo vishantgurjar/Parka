@@ -2304,22 +2304,25 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 .is-downloading {
   width: 520px !important;
   height: 300px !important;
-  background: #0f172a !important;
+  background: #030712 !important; /* Solid dark background for capture safety */
   display: flex !important;
   flex-direction: column !important;
   transform: none !important;
   position: fixed !important;
-  left: -9999px !important;
+  left: 0 !important;
   top: 0 !important;
-  z-index: -999 !important;
+  opacity: 0.99 !important; /* Keep it almost opaque but hidden via z-index behind everything */
+  z-index: -9999 !important;
   border-radius: 20px !important;
   overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 .is-downloading .carbon-section {
-  height: 135px !important;
+  height: 120px !important;
+  background: #111827 !important;
   flex-direction: row !important;
-  padding: 20px 24px !important;
+  padding: 15px 24px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
@@ -2327,21 +2330,43 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 
 .is-downloading .glass-section {
   flex: 1 !important;
+  background: #030712 !important; /* Solid, no blur needed for capture */
   display: flex !important;
   flex-direction: row !important;
-  padding: 20px 24px !important;
+  padding: 15px 24px !important;
   justify-content: space-between !important;
   align-items: center !important;
   text-align: left !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .is-downloading .hybrid-info {
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
+  gap: 6px !important;
+  text-align: left !important;
+  align-items: flex-start !important;
 }
 
 .is-downloading .hybrid-qr-wrap {
   margin-left: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.is-downloading .hybrid-qr-white {
+  width: 100px !important;
+  height: 100px !important;
+  padding: 8px !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+}
+
+.is-downloading .hybrid-qr-white img {
+  width: 100% !important;
+  height: 100% !important;
 }
 

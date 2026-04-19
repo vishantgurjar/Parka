@@ -98,31 +98,32 @@ export default function Home({ onOpenPayment }) {
   const downloadQR = async () => {
     if (!qrRef.current) return;
     
-    // Step 1: Create a hidden clone for capture
+    // Step 1: Create the hidden capture clone
     const originalCard = qrRef.current.querySelector('.hybrid-card') || qrRef.current;
     const clonedCard = originalCard.cloneNode(true);
     
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
       
-      // Step 2: Configure the clone (Invisible to user)
+      // Step 2: Inject the clone into the hidden background layer
       clonedCard.classList.add('is-downloading');
       document.body.appendChild(clonedCard);
       
+      // Step 3: Wait specifically for images and fonts to be ready
+      // 500ms is the "Gold Standard" for mobile rendering stability
+      await new Promise(r => setTimeout(r, 500));
+
       const options = {
         width: 520,
         height: 300,
         pixelRatio: 4, 
-        backgroundColor: '#0f172a',
+        backgroundColor: '#030712',
         style: {
           transform: 'none',
           margin: '0',
           padding: '0'
         }
       };
-
-      // Wait a tiny bit for the DOM to process the new element
-      await new Promise(r => setTimeout(r, 200));
 
       const dataUrl = await toPng(clonedCard, options);
       
@@ -131,10 +132,10 @@ export default function Home({ onOpenPayment }) {
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      console.error('Download Error:', err);
-      alert("Flawless download failed. Please try a screenshot for now.");
+      console.error('Final Download Error:', err);
+      alert("Mobile render failed. Please use a screenshot if this continues.");
     } finally {
-      // Always cleanup the hidden clone
+      // Step 4: Immediate cleanup
       if (document.body.contains(clonedCard)) {
         document.body.removeChild(clonedCard);
       }
