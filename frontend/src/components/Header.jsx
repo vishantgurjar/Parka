@@ -64,6 +64,11 @@ export default function Header({ onOpenPayment }) {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              {user.email === 'panwarvishant9@gmail.com' && (
+                <Link to="/sentinel-ops" className="glass shimmer-text" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                  ADMIN OPS
+                </Link>
+              )}
               <Link to="/profile" className="glass light-sweep" style={{ 
                 padding: '8px 16px', 
                 borderRadius: '50px', 
@@ -127,6 +132,11 @@ export default function Header({ onOpenPayment }) {
                 </span>
               )}
             </span>
+            {user.email === 'panwarvishant9@gmail.com' && (
+              <Link to="/sentinel-ops" onClick={() => setIsMenuOpen(false)} className="btn-secondary full-width" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px', textAlign: 'center', fontWeight: 'bold', display: 'block', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                ADMIN OPS
+              </Link>
+            )}
             <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="btn-secondary full-width" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px', textAlign: 'center', fontWeight: 'bold', display: 'block' }}>
               My Profile
             </Link>
