@@ -100,21 +100,23 @@ export default function Home({ onOpenPayment }) {
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
       
-      // Fixed options for perfect capture on all devices (mobile/desktop)
+      // High-compatibility options for perfect results on all devices
       const options = {
         cacheBust: true,
         width: 520,
         height: 300,
-        pixelRatio: 3, // Increased for ultra-sharp prints
-        backgroundColor: 'transparent',
+        pixelRatio: 2, // 2x is optimal for cross-device mobile stability
+        backgroundColor: '#0f172a', // Match card deep background
         style: {
           transform: 'none',
           perspective: 'none',
           margin: '0',
           padding: '0',
-          borderRadius: '0',
-          width: '520px',  // Force natural width during capture
-          height: '300px'  // Force natural height during capture
+          borderRadius: '20px',
+          width: '520px',
+          height: '300px',
+          display: 'flex',
+          overflow: 'hidden'
         }
       };
 
@@ -412,15 +414,17 @@ export default function Home({ onOpenPayment }) {
                        </div>
                      )}
                      
-                     <div ref={qrRef} className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
+                     <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
                         <div className="light-sweep" style={{ borderRadius: '32px' }}>
                           {activeCard === 'emergency' ? (
                             <EmergencyCard 
+                              ref={qrRef}
                               user={displayUser} 
                               qrUrl={user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW'} 
                             />
                           ) : (
                             <CustomerCard 
+                              ref={qrRef}
                               user={displayUser} 
                               qrUrl={user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW'} 
                             />

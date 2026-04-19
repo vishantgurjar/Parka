@@ -34,7 +34,7 @@ export default function Header({ onOpenPayment }) {
       backdropFilter: 'blur(var(--glass-blur)) saturate(180%)',
       zIndex: '1000'
     }}>
-      <div className="container header-inner" style={{ height: '80px' }}>
+      <div className="container header-inner" style={{ height: window.innerWidth < 768 ? '60px' : '80px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon light-sweep" style={{ 
             width: '42px', 
@@ -46,7 +46,7 @@ export default function Header({ onOpenPayment }) {
              <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
           <span className="logo-text text-gradient" style={{ 
-            fontSize: '1.4rem', 
+            fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem', 
             fontWeight: '800', 
             letterSpacing: 'var(--tracking-tighter)' 
           }}>PARKÉÉ CITY</span>

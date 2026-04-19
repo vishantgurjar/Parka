@@ -143,7 +143,7 @@ export default function AIAssistant() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '6px 16px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '1rem' }}>
               <Volume2 size={16} /> Parkéé AI Labs (Beta)
           </div>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--fg)' }}>AI Engine <span style={{color:'#38bdf8'}}>Sound Analyzer</span></h1>
+          <h1 className="ai-assistant-title" style={{ color: 'var(--fg)', marginBottom: '1rem' }}>AI Engine <span style={{color:'#38bdf8'}}>Sound Analyzer</span></h1>
           <p style={{ color: 'var(--muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
             Hearing a weird noise? Describe it or hold your phone near the engine, and let our AI Acoustic Engine diagnose the problem.
           </p>

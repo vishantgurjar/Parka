@@ -578,7 +578,7 @@ export default function MechanicList() {
                   <Link to="/mechanic-register" className="btn-gradient" style={{ padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>Register as Mechanic</Link>
               </div>
             ) : (
-              <div className="fadeIn" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+              <div className="fadeIn mechanic-list-grid" style={{ display: 'grid', gap: '1.5rem' }}>
                 {mechanics.map((mechanic) => (
                   <div key={mechanic._id} className="glass-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%' }}>
                       

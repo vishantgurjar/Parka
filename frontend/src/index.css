@@ -131,6 +131,14 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   .bento-tall { grid-row: span 2; }
 }
 
+.mechanic-list-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.ai-assistant-title {
+    font-size: 2.5rem;
+}
+
 /* ========== MESH GRADIENT ANIMATION ========== */
 .mesh-bg {
   position: absolute;
@@ -1996,10 +2004,10 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     .header-inner { height: 60px; }
     .hero { flex-direction: column; text-align: center; padding-top: 80px; min-height: auto; }
     .hero-bg { background-attachment: scroll !important; }
-    .hero-content { padding: 3rem 0 4rem !important; width: 100%; }
-    .hero-title { font-size: 2.5rem !important; letter-spacing: -1px; margin-bottom: 1.5rem !important; }
-    .hero-desc { font-size: 1rem !important; margin-bottom: 2.5rem !important; padding: 0 1rem; }
-    .hero-badge { margin-bottom: 1.5rem !important; }
+    .hero-content { padding: 2rem 0 3rem !important; width: 100%; }
+    .hero-title { font-size: 1.85rem !important; letter-spacing: -0.5px; margin-bottom: 1.25rem !important; line-height: 1.2 !important; }
+    .hero-desc { font-size: 0.9rem !important; margin-bottom: 2rem !important; padding: 0 1rem; line-height: 1.5 !important; opacity: 0.7 !important; }
+    .hero-badge { margin-bottom: 1.25rem !important; padding: 6px 12px !important; font-size: 0.75rem !important; }
     
     .hero-cta-buttons { 
         flex-direction: column !important; 
@@ -2071,16 +2079,95 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 
     .minimal-card {
         width: 100% !important;
-        max-width: 360px !important;
+        max-width: 320px !important;
         height: auto !important;
-        min-height: 200px !important;
+        min-height: 180px !important;
     }
     .customer-card-container,
     .emergency-card-container {
         width: 100% !important;
         display: flex !important;
         justify-content: center !important;
-        overflow-x: auto !important;
+        overflow-x: hidden !important;
+        padding: 0 10px !important;
+    }
+
+    /* Community Help Mobile Layout */
+    .community-help-page div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    .community-help-page .glass[style*="height: 600px"] {
+        height: 350px !important;
+    }
+
+    /* Mechanic List Mobile Refinements */
+    .mechanic-list-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .ai-assistant-title {
+        font-size: 1.6rem !important;
+    }
+    
+    /* QR Card Responsiveness */
+    .hybrid-card {
+        width: 100% !important;
+        max-width: 320px !important;
+        height: auto !important;
+        min-height: 200px !important;
+        border-radius: 12px !important;
+    }
+    .carbon-section {
+        height: auto !important;
+        padding: 10px 15px !important;
+    }
+    .glass-section {
+        padding: 12px 15px !important;
+        flex-direction: column !important;
+        gap: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .hybrid-brand span { font-size: 1rem !important; }
+    .hybrid-chip { width: 40px !important; height: 28px !important; }
+    .hybrid-value { font-size: 0.85rem !important; }
+    .hybrid-helpline { font-size: 1.1rem !important; }
+    .hybrid-qr-wrap { padding: 8px !important; }
+    .hybrid-qr-white img { width: 80px !important; height: 80px !important; }
+
+    /* Bento Item Padding Reduction */
+    .bento-item {
+        padding: 1.25rem !important;
+        border-radius: 20px !important;
+    }
+    .bento-large {
+        padding: 1.25rem !important;
+    }
+    .feature-title {
+        font-size: 1.05rem !important;
+    }
+
+    /* Section Spacing Optimization */
+    .section-header {
+        margin-bottom: 2rem !important;
+    }
+    .section-title {
+        font-size: 1.4rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .section-desc {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Padding overrides for sections with inline styles */
+    section {
+        padding: 3rem 0 !important;
+    }
+    .hero {
+        padding-top: 50px !important;
     }
 }
 
@@ -2099,11 +2186,20 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 
 
 @media (max-width: 480px) {
-    .hero-title { font-size: 2.1rem !important; }
+    .hero-title { font-size: 1.7rem !important; }
+    .hero-desc { font-size: 0.85rem !important; }
     .hero-features { grid-template-columns: 1fr !important; gap: 0.75rem; }
-    .feature-card { flex-direction: row; text-align: left; padding: 1.25rem; gap: 1rem; width: 100%; }
-    .feature-icon-box { width: 40px; height: 40px; flex-shrink: 0; }
-    .feature-card p { display: block; font-size: 0.7rem; }
+    .feature-card { flex-direction: row; text-align: left; padding: 1rem !important; gap: 1rem; width: 100%; border-radius: 16px !important; }
+    .feature-icon-box { width: 36px !important; height: 36px !important; flex-shrink: 0; }
+    .feature-card p { display: block; font-size: 0.65rem !important; }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr !important;
+        padding: 0 10px;
+    }
+    .pricing-card {
+        padding: 1.5rem !important;
+    }
 }
 
 
