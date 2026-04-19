@@ -32,19 +32,25 @@ export default function Header({ onOpenPayment }) {
       <div className="container header-inner" style={{ height: window.innerWidth < 768 ? '60px' : '80px' }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon light-sweep" style={{ 
-            width: '42px', 
-            height: '42px', 
+            width: window.innerWidth < 768 ? '32px' : '40px',
+            height: window.innerWidth < 768 ? '32px' : '40px',
             borderRadius: '12px',
             background: 'var(--gradient-primary)',
-            boxShadow: '0 0 20px var(--primary-glow)'
+            boxShadow: '0 0 20px var(--primary-glow)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-             <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
+             <img src="/logo.png" alt="Logo" style={{ width: '80%', height: '80%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <span className="logo-text text-gradient" style={{ 
-            fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem', 
-            fontWeight: '800', 
-            letterSpacing: 'var(--tracking-tighter)' 
-          }}>PARKÉÉ CITY</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span className="logo-text text-gradient" style={{ 
+              fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem', 
+              fontWeight: '800', 
+              letterSpacing: 'var(--tracking-tighter)' 
+            }}>PARKÉÉ CITY</span>
+            <span style={{ fontSize: '8px', color: 'var(--primary)', letterSpacing: '2px', fontWeight: 'bold', textTransform: 'uppercase' }}>AI ENHANCED V3.0</span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}

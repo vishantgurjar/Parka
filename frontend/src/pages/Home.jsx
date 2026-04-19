@@ -195,17 +195,25 @@ export default function Home({ onOpenPayment }) {
           </div>
           
           <h1 className="hero-title reveal active" style={{ 
+            opacity: 1, 
+            animation: 'blurIn 1.5s cubic-bezier(0.16, 1, 0.3, 1)',
+            filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))',
             fontSize: 'clamp(3rem, 8vw, 6rem)', 
             letterSpacing: 'var(--tracking-tighter)', 
             fontWeight: '900',
             marginBottom: '2rem'
           }}>
-            Protect Your <br />
-            <span className="text-gradient">Vehicle Journey.</span>
+            Automotive Security <span className="text-gradient shimmer-text">Reimagined</span>
           </h1>
           
           <div className="reveal active" style={{ transitionDelay: '0.2s' }}>
-            <p className="hero-desc" style={{ fontSize: '1.25rem', opacity: '0.8', textShadow: 'none', marginBottom: '4rem' }}>
+            <p className="hero-desc reveal active" style={{ 
+              animation: 'fadeIn 1s ease-out 0.5s forwards',
+              opacity: 0,
+              fontSize: '1.25rem', 
+              textShadow: 'none', 
+              marginBottom: '4rem' 
+            }}>
               Advanced AI Diagnostics. Roadside Intelligence. <br /> 
               Instant Emergency QR Profiles for Smart Drivers.
             </p>

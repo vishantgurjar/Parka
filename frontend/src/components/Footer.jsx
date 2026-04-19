@@ -70,7 +70,10 @@ export default function Footer() {
           fontWeight: '600',
           letterSpacing: '0.05em'
         }}>
-          <div>© {new Date().getFullYear()} PARKÉÉ CITY INC.</div>
+          <div>
+            <p>&copy; {new Date().getFullYear()} PARKÉÉ CITY. All rights reserved.</p>
+            <p style={{ fontSize: '10px', marginTop: '4px', opacity: 0.5, letterSpacing: '2px' }}>PREMIUM AI ENGINE V3.1 ACTIVE</p>
+          </div>
           <div style={{ display: 'flex', gap: '1.5rem' }}>
             <span>DESIGNED BY ANTIGRAVITY</span>
             <span>PROUDLY INDIAN</span>
