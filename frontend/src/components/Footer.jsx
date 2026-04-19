@@ -1,4 +1,4 @@
-VO import { Car } from 'lucide-react';
+import { Car } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Footer() {

@@ -1,3 +1,12 @@
+import React, { createContext, useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import io from 'socket.io-client';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import PaymentModal from './components/PaymentModal';
+import IncomingCallModal from './components/IncomingCallModal';
+import SecureCallModal from './components/SecureCallModal';
+
 import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
 import LoginPage from './pages/LoginPage';
