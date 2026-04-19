@@ -55,7 +55,7 @@ export default function MechanicList() {
   const [showIncidentModal, setShowIncidentModal] = useState(false);
   const [incidentForm, setIncidentForm] = useState({ type: 'traffic', description: '' });
 
-  const { user, isPro } = useContext(AuthContext);
+  const { user, isPro, setActiveSOS } = useContext(AuthContext);
   
   // Point 1: Live Tracking state
   const [mechanicLocation, setMechanicLocation] = useState(null);
@@ -251,6 +251,7 @@ export default function MechanicList() {
           if (res.ok) {
               setSosStatus('accepted');
               setAssignedMechanic(bidToAccept);
+              setActiveSOS({...bidToAccept, id: activeSosId}); // Trigger Global Widget
               if(socket) socket.disconnect();
               setSocket(null);
           } else {

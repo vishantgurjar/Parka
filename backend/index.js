@@ -953,42 +953,60 @@ function getSmartDiagnosis(userInput, signature, peaks = []) {
     return bestResult;
 }
 
-// --- AI DIAGNOSTIC ROUTE ---
+// --- AI DIAGNOSTIC ROUTE (Upgraded with Vision & Buddy Persona) ---
 app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
     try {
-        const { symptom, audioSignature, spectralPeaks } = req.body;
+        const { symptom, audioSignature, spectralPeaks, image } = req.body;
 
-        if (!symptom && !audioSignature && !spectralPeaks) {
+        if (!symptom && !audioSignature && !spectralPeaks && !image) {
             return res.status(400).json({ message: "No input provided for analysis." });
         }
 
-        let prompt = `You are an expert car mechanic AI. 
-        Symptom: "${symptom || 'Acoustic Scan'}"
+        let prompt = `You are "Parkéé Buddy", a friendly, expert car mechanic. 
+        Symptom: "${symptom || 'Visual/Acoustic Scan'}"
         Spectral Signature: "${audioSignature}"
         Frequency Peaks: ${JSON.stringify(spectralPeaks || [])}
 
         Instructions:
-        1. Analyze if this is a vehicle issue.
-        2. Provide response in RAW JSON:
+        1. Analyze the symptoms and/or the image provided to identify the vehicle issue.
+        2. Speak in a friendly, helpful Hinglish style (mix of English and Hindi/Urdu). Use terms like "Bhaiya", "Chinta mat karo", "Dekho".
+        3. Explain the problem simply as if talking to a friend on WhatsApp.
+        4. Provide response in RAW JSON ONLY:
         {
           "issue": "Specific Problem Name",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
-          "details": "WhatsApp style Hinglish explanation",
+          "details": "Friendly Hinglish explanation from Parkéé Buddy",
           "action": "Immediate Hinglish advice",
           "estimatedCost": "₹X - ₹Y",
           "confidence": 0-100
         }`;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
+        let parts = [prompt];
+        
+        // Add image data if provided (Multimodal)
+        if (image && image.includes('base64,')) {
+          const base64Data = image.split('base64,')[1];
+          const mimeType = image.split(';')[0].split(':')[1] || 'image/jpeg';
+          parts.push({
+            inlineData: {
+              data: base64Data,
+              mimeType: mimeType
+            }
+          });
+        }
+
+        const result = await model.generateContent(parts);
+        const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
 
         try {
           const diagnostic = JSON.parse(text);
           res.json(diagnostic);
         } catch (parseErr) {
-          throw new Error("Invalid AI response");
+          console.error("AI Parse Error:", text);
+          throw new Error("Invalid AI response format");
         }
     } catch (error) {
+        console.error("AI Route Error:", error);
         const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature, req.body.spectralPeaks);
         res.json(diagnostic);
     }

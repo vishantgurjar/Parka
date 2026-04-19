@@ -8,15 +8,19 @@ export default function AIAssistant() {
   const [diagnosis, setDiagnosis] = useState(null);
   const [symptom, setSymptom] = useState('');
   const [error, setError] = useState(null);
-  const [audioSignature, setAudioSignature] = useState(null);
-  const freqHistoryRef = useRef([]);
-  
-  // Audio Visualizer Refs
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const dataArrayRef = useRef(null);
-  const animationFrameRef = useRef(null);
   const [visualizerData, setVisualizerData] = useState(new Array(15).fill(20));
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Point 3: Voicebot (Hinglish TTS)
+  const speakDiagnosis = (text) => {
+    if (!('speechSynthesis' in window)) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'hi-IN'; // Better for Hinglish accent
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  };
 
   const startAnalysis = async () => {
     try {
@@ -107,7 +111,8 @@ export default function AIAssistant() {
         body: JSON.stringify({ 
             symptom: symptom, 
             audioSignature: signature,
-            spectralPeaks: peaks 
+            spectralPeaks: peaks,
+            image: selectedImage
         })
       });
 
@@ -127,6 +132,15 @@ export default function AIAssistant() {
       console.error("Analysis error:", err);
       setError("Network error. Please ensure the backend is running and Gemini API key is valid.");
       setStatus('idle');
+    }
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setSelectedImage(reader.result);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -169,21 +183,52 @@ export default function AIAssistant() {
                     width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)',
                     border: '1px solid var(--border)', color: 'var(--fg)', fontSize: '1rem', resize: 'none', marginBottom: '1.5rem'
                   }}
-                  rows="3"
-                />
-                <button 
-                    onClick={startAnalysis}
-                    className="pulse-anim"
-                    style={{
-                    width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
-                    border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 15px 35px rgba(56, 189, 248, 0.4)', color: 'white', margin: '0 auto 1.5rem'
-                    }}
-                >
-                    <Mic size={40} />
-                </button>
-                <h2>{symptom ? 'Analyze Diagnostic' : 'Tap to Listen'}</h2>
-                <p style={{ color: 'var(--muted)' }}>Requires microphone permission</p>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+                    <div style={{ flex: 1 }}>
+                        <button 
+                            onClick={startAnalysis}
+                            className="pulse-anim"
+                            style={{
+                            width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                            border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 15px 35px rgba(56, 189, 248, 0.4)', color: 'white', margin: '0 auto 1rem'
+                            }}
+                        >
+                            <Mic size={36} />
+                        </button>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Record Sound</p>
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                        <input 
+                            type="file" 
+                            accept="image/*" 
+                            capture="environment" 
+                            style={{ display: 'none' }} 
+                            ref={fileInputRef}
+                            onChange={handleImageSelect}
+                        />
+                        <button 
+                            onClick={() => fileInputRef.current.click()}
+                            className={selectedImage ? "" : "pulse-anim"}
+                            style={{
+                            width: '90px', height: '90px', borderRadius: '50%', background: selectedImage ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255,255,255,0.05)',
+                            border: `2px solid ${selectedImage ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: selectedImage ? '#38bdf8' : 'var(--muted)', margin: '0 auto 1rem', overflow: 'hidden'
+                            }}
+                        >
+                            {selectedImage ? (
+                                <img src={selectedImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <Activity size={36} />
+                            )}
+                        </button>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{selectedImage ? "Image Ready" : "Capture Evidence"}</p>
+                    </div>
+                </div>
+
+                <h2>Ready to Diagnose</h2>
+                <p style={{ color: 'var(--muted)' }}>Select an image or record sound for best results.</p>
               </div>
             </div>
           )}
@@ -230,7 +275,7 @@ export default function AIAssistant() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                     <h2 style={{ margin: 0 }}>{diagnosis.issue}</h2>
                     <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: 'var(--muted)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)' }}>
-                      v{diagnosis.version || "2.1-Legacy"}
+                      v{diagnosis.version || "6.0-ULTRA"}
                     </span>
                   </div>
                   <span style={{ 
@@ -241,6 +286,12 @@ export default function AIAssistant() {
                     {diagnosis.dangerLevel} DANGER
                   </span>
                 </div>
+                <button 
+                   onClick={() => speakDiagnosis(`${diagnosis.details}. Summary Action is: ${diagnosis.action}`)}
+                   style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid #38bdf8', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}
+                >
+                    <Volume2 size={24} />
+                </button>
               </div>
 
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '1.5rem' }}>

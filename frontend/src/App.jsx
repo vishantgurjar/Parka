@@ -1,11 +1,3 @@
-import { useState, useEffect, createContext, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header'; // Redeploy trigger: 1775923200
-import Footer from './components/Footer';
-import PaymentModal from './components/PaymentModal';
-import IncomingCallModal from './components/IncomingCallModal';
-import SecureCallModal from './components/SecureCallModal';
-import io from 'socket.io-client';
 import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
 import LoginPage from './pages/LoginPage';
@@ -22,6 +14,7 @@ import AIAssistant from './pages/AIAssistant';
 import CommunityHelp from './pages/CommunityHelp';
 import Sentinel from './pages/Sentinel';
 import Profile from './pages/Profile';
+import GlobalTrackingWidget from './components/GlobalTrackingWidget';
 
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -100,19 +93,42 @@ function App() {
   };
 
 
+  // Global SOS Tracking State
+  const [activeSOS, setActiveSOS] = useState(null);
+  const [mechanicLocation, setMechanicLocation] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.log("Global location error:", err)
+      );
+    }
+  }, []);
+
   // Modals & Call State
   const [paymentPlan, setPaymentPlan] = useState(null); // { name, amount }
   const [incomingCall, setIncomingCall] = useState(null); // { from, signal, fromName }
   const [activeCall, setActiveCall] = useState(false);
+  
+  const [socket, setSocket] = useState(null);
+
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app');
+    setSocket(newSocket);
     
     if (user) {
       newSocket.emit('register-user', user._id);
+      newSocket.emit('join-sos-room', user._id);
     }
 
     newSocket.on('incoming-call', (data) => {
       setIncomingCall(data);
+    });
+
+    newSocket.on('mechanic-moved', (loc) => {
+      setMechanicLocation(loc);
     });
 
     return () => newSocket.disconnect();
@@ -194,7 +210,7 @@ function App() {
   return (
     <HelmetProvider>
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-          <AuthContext.Provider value={{ user, login, logout, isPro }}>
+          <AuthContext.Provider value={{ user, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
             <Router>
               <Header onOpenPayment={handleOpenPayment} />
               <main>
@@ -254,6 +270,14 @@ function App() {
                   }}
                 />
               )}
+
+              {/* Global Tracking Widget */}
+              <GlobalTrackingWidget 
+                activeSOS={activeSOS}
+                mechanicLocation={mechanicLocation}
+                userLocation={userLocation}
+                onComplete={() => setActiveSOS(null)}
+              />
             </Router>
           </AuthContext.Provider>
         </ThemeContext.Provider>
