@@ -127,7 +127,7 @@ export default function MechanicList() {
 
     const fetchMechanics = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/mechanics`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics`);
         if (!res.ok) throw new Error('Failed to fetch mechanics');
         const data = await res.json();
         
@@ -148,7 +148,7 @@ export default function MechanicList() {
         setMechanics(mechanicsWithDistance);
 
         // Fetch Community Hazard Incidents
-        const incidentRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/incidents`);
+        const incidentRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/incidents`);
         if (incidentRes.ok) {
           const incData = await incidentRes.json();
           setIncidents(incData);
@@ -194,7 +194,7 @@ export default function MechanicList() {
             userPhone: user.phone || 'N/A',
             location: { lat: userLocation.lat, lng: userLocation.lng }
         };
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/sos/broadcast`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/broadcast`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -205,7 +205,7 @@ export default function MechanicList() {
             setActiveSosId(data.sosRequest._id);
 
             // Establish Socket to listen for incoming bids
-            const newSocket = io(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}`);
+            const newSocket = io(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}`);
             setSocket(newSocket);
 
             newSocket.on('connect', () => {
@@ -242,7 +242,7 @@ export default function MechanicList() {
 
   const finalizeSOS = async (bidToAccept = selectedBid) => {
       try {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/sos/finalize`, {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/finalize`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ sosId: activeSosId, bid: bidToAccept })
@@ -264,7 +264,7 @@ export default function MechanicList() {
 
   const handleCompleteSOS = async () => {
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/sos/${activeSosId}/complete`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/${activeSosId}/complete`, {
             method: 'POST'
         });
         if (res.ok) {
@@ -278,7 +278,7 @@ export default function MechanicList() {
 
   const handleSubmitReview = async () => {
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/reviews`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/reviews`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -317,7 +317,7 @@ export default function MechanicList() {
             latitude: userLocation.lat,
             longitude: userLocation.lng
         };
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/incidents`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/incidents`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

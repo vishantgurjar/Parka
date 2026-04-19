@@ -47,7 +47,7 @@ export default function CommunityHelp() {
   const [loading, setLoading] = useState(true);
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
 
   useEffect(() => {
     // Get User Location

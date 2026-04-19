@@ -15,7 +15,7 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
 
   useEffect(() => {
     // 1. Setup Socket
-    const socket = io(import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app');
+    const socket = io(import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app');
     socketRef.current = socket;
 
     const startConnection = async () => {

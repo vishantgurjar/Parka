@@ -125,7 +125,7 @@ function App() {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app');
+    const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app');
     setSocket(newSocket);
     
     if (user) {
@@ -165,7 +165,7 @@ function App() {
   const handlePaymentSuccess = async () => {
     try {
       const tier = paymentPlan.name.includes('Diamond') ? 'diamond' : (paymentPlan.name.includes('Gold') ? 'gold' : 'silver');
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/user/upgrade`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/user/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id, tier })
@@ -232,7 +232,7 @@ function App() {
             if (permission === 'granted') {
                 const existingSub = await registration.pushManager.getSubscription();
                 if (!existingSub) {
-                    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app';
+                    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
                     const vapidRes = await fetch(`${baseUrl}/api/push/vapidPublicKey`);
                     if (!vapidRes.ok) return;
                     

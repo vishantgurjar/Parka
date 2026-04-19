@@ -10,7 +10,7 @@ export default function AdminDashboard({ user }) {
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [broadcastSending, setBroadcastSending] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
   const ADMIN_EMAIL = 'panwarvishant9@gmail.com';
 
   useEffect(() => {

@@ -19,7 +19,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
 
     try {
       // 1. Create Order on Backend
-      const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/payment/create-order`, {
+      const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payment/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -44,7 +44,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
         handler: async function (response) {
           // 3. Verify Signature on Backend
           try {
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/payment/verify-signature`, {
+            const verifyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/payment/verify-signature`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

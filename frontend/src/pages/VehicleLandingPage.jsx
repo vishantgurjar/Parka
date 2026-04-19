@@ -19,7 +19,7 @@ export default function VehicleLandingPage() {
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/auth/vehicle/${id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/auth/vehicle/${id}`);
         const data = await res.json();
         
         if (res.ok) {
@@ -55,7 +55,7 @@ export default function VehicleLandingPage() {
     };
 
     const sendScanAlert = (lat, lng, ownerPhone) => {
-      fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/alerts/scan`, {
+      fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/alerts/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -69,7 +69,7 @@ export default function VehicleLandingPage() {
 
     const fetchNearestMechanic = async (lat, lng) => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/mechanics/nearest?lat=${lat}&lng=${lng}`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics/nearest?lat=${lat}&lng=${lng}`);
         if (res.ok) {
           const data = await res.json();
           setNearestMechanic(data);
@@ -87,7 +87,7 @@ export default function VehicleLandingPage() {
     if (reporting) return;
     setReporting(issueType);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parkee-city-backend.vercel.app'}/api/user/report-issue`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/user/report-issue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
