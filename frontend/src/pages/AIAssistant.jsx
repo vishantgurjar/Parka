@@ -183,6 +183,7 @@ export default function AIAssistant() {
                     width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)',
                     border: '1px solid var(--border)', color: 'var(--fg)', fontSize: '1rem', resize: 'none', marginBottom: '1.5rem'
                   }}
+                />
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
                     <div style={{ flex: 1 }}>
                         <button 
