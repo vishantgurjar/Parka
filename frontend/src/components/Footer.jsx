@@ -1,4 +1,4 @@
-import { Car } from 'lucide-react';
+VO import { Car } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Footer() {
@@ -20,16 +20,16 @@ export default function Footer() {
   };
 
   return (
-    <footer className="footer glass" style={{ 
+    <footer className="footer glass" style={{
       padding: window.innerWidth < 768 ? '40px 0 20px' : '80px 0 40px'
     }}>
       <div className="container">
         <div className="footer-top" style={{ marginBottom: '60px', borderBottom: '1px solid rgba(255,255,255,0.05)', pb: '60px' }}>
           <div className="footer-brand" style={{ maxWidth: '400px' }}>
             <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')} style={{ marginBottom: '24px' }}>
-              <div className="logo-icon light-sweep" style={{ 
-                width: '40px', 
-                height: '40px', 
+              <div className="logo-icon light-sweep" style={{
+                width: '40px',
+                height: '40px',
                 borderRadius: '10px',
                 background: 'var(--gradient-primary)'
               }}>
@@ -41,7 +41,7 @@ export default function Footer() {
               Pioneering the next generation of vehicle security and highway response. Smart QR technology for a safer, smarter world.
             </p>
           </div>
-          
+
           <div className="footer-links" style={{ gap: '4rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <h4 style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Ecosystem</h4>
@@ -50,7 +50,7 @@ export default function Footer() {
               <Link to="/mechanics" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Mechanics</Link>
               <Link to="/sentinel" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Sentinel AI</Link>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <h4 style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Company</h4>
               <Link to="/help-center" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Support</Link>
@@ -60,12 +60,12 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        
-        <div className="footer-bottom" style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          fontSize: '0.8rem', 
+
+        <div className="footer-bottom" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '0.8rem',
           opacity: 0.4,
           fontWeight: '600',
           letterSpacing: '0.05em'
