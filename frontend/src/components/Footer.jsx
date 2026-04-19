@@ -74,7 +74,6 @@ export default function Footer() {
             <p>&copy; {new Date().getFullYear()} PARKÉÉ CITY. All rights reserved.</p>
           </div>
           <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <span>DESIGNED BY ANTIGRAVITY</span>
             <span>PROUDLY INDIAN</span>
           </div>
         </div>

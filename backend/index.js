@@ -33,6 +33,7 @@ const razorpay = new Razorpay({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_FALLBACK_IF_ANY");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+const webpush = require('web-push');
 
 const app = express();
 const server = http.createServer(app);
@@ -164,6 +165,13 @@ if (!JWT_SECRET) {
     console.warn('WARNING: JWT_SECRET is not defined. Authentication will fail.');
 }
 
+// Push Config
+webpush.setVapidDetails(
+  'mailto:support@parkeecity.com',
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -215,6 +223,29 @@ app.get("/api/status", (req, res) => {
         envVarPresent: envDetected,
         urlPreview: maskedUrl
     });
+});
+
+// --- PUSH NOTIFICATION ROUTES ---
+app.get('/api/push/vapidPublicKey', (req, res) => {
+    res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
+});
+
+app.post('/api/push/subscribe', checkDbConnection, async (req, res) => {
+    try {
+        const { subscription, userId, mechanicId } = req.body;
+        if (userId) {
+            await User.findByIdAndUpdate(userId, { pushSubscription: subscription });
+            res.status(201).json({});
+        } else if (mechanicId) {
+            await Mechanic.findByIdAndUpdate(mechanicId, { pushSubscription: subscription });
+            res.status(201).json({});
+        } else {
+            res.status(400).json({ error: 'No user or mechanic ID provided' });
+        }
+    } catch (err) {
+        console.error('Push Subscription Error:', err);
+        res.status(500).json({ error: 'Server err' });
+    }
 });
 
 // Register Endpoint
@@ -625,6 +656,19 @@ app.post('/api/alerts/scan', checkDbConnection, async (req, res) => {
       console.log(`Message: "ALERT: Your vehicle (${user.plateNumber}) Parkéé City QR was just scanned. If this isn't you, check on your vehicle immediately!"`);
       console.log(`Time: ${new Date().toLocaleString()}`);
       console.log(`========================================\n\n`);
+      
+      // Dispatch Push
+      if (user.pushSubscription) {
+        try {
+            await webpush.sendNotification(user.pushSubscription, JSON.stringify({
+                title: '🚨 SECURITY ALERT',
+                body: `Your vehicle (${user.plateNumber}) QR was just scanned!`,
+                icon: '/logo.png'
+            }));
+        } catch(e) {
+            console.error('Push err:', e);
+        }
+      }
     }
 
     res.json({ success: true, message: 'Alert notification sent simulated' });
@@ -703,6 +747,26 @@ app.post('/api/sos/finalize', checkDbConnection, async (req, res) => {
         io.to('mechanic_sos').emit("sos-resolved", sosId);
         // Specifically tell the winning mechanic
         io.to(`mechanic_${bid.mechanicId}`).emit("sos-match-confirmed", { sosId, sos });
+
+        const user = await User.findById(sos.userId);
+        if (user && user.pushSubscription) {
+             try {
+                 await webpush.sendNotification(user.pushSubscription, JSON.stringify({
+                     title: '✅ SOS Accepted!',
+                     body: `Mechanic ${mechanic.name} is on the way!`,
+                     icon: '/logo.png'
+                 }));
+             } catch(e) {}
+        }
+        if (mechanic.pushSubscription) {
+             try {
+                 await webpush.sendNotification(mechanic.pushSubscription, JSON.stringify({
+                     title: '✅ SOS Match Confirmed!',
+                     body: `You are booked for an SOS! Go to Dashboard.`,
+                     icon: '/logo.png'
+                 }));
+             } catch(e) {}
+        }
 
         res.json({ message: "SOS Match Finalized Successfully", sos });
     } catch (err) {

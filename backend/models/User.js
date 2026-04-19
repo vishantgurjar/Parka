@@ -53,6 +53,9 @@ const UserSchema = new mongoose.Schema({
   insuranceExpiryDate: { type: String },
   // Gamification
   parkeePoints: { type: Number, default: 0 },
+  
+  // Push Notifications
+  pushSubscription: { type: Object },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

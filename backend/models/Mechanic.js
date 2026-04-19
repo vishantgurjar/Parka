@@ -30,6 +30,8 @@ const MechanicSchema = new mongoose.Schema({
   averageRating: { type: Number, default: 0 },
   numReviews: { type: Number, default: 0 },
 
+  // Push Notifications
+  pushSubscription: { type: Object },
 }, { timestamps: true });
 
 MechanicSchema.index({ location: '2dsphere' });

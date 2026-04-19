@@ -207,6 +207,60 @@ function App() {
     }
   }, [user, isPro]);
 
+  // --- PUSH NOTIFICATIONS REGISTRATION ---
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.register('/sw.js').then(async (registration) => {
+        // We only subscribe if a user or mechanic is actively logged in
+        const parkeActive = localStorage.getItem('parkeActiveUser');
+        const mechanicActive = localStorage.getItem('mechanic_data');
+        
+        if (!parkeActive && !mechanicActive) return;
+
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const existingSub = await registration.pushManager.getSubscription();
+                if (!existingSub) {
+                    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                    const vapidRes = await fetch(`${baseUrl}/api/push/vapidPublicKey`);
+                    if (!vapidRes.ok) return;
+                    
+                    const { publicKey } = await vapidRes.json();
+                    const padding = '='.repeat((4 - publicKey.length % 4) % 4);
+                    const base64 = (publicKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                    const rawData = window.atob(base64);
+                    const authArray = new Uint8Array(rawData.length);
+                    for (let i = 0; i < rawData.length; ++i) { authArray[i] = rawData.charCodeAt(i); }
+                    
+                    const subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: authArray
+                    });
+                    
+                    let reqBody = { subscription };
+                    if (user && user._id) {
+                        reqBody.userId = user._id;
+                    } else if (mechanicActive) {
+                        const m = JSON.parse(mechanicActive);
+                        reqBody.mechanicId = m._id || m.id;
+                    }
+
+                    await fetch(`${baseUrl}/api/push/subscribe`, {
+                        method: 'POST',
+                        body: JSON.stringify(reqBody),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    console.log('Push Notifications Subscribed successfully!');
+                }
+            }
+        } catch (err) {
+            console.error('Push Registration Error:', err);
+        }
+      }).catch(err => console.error('SW Push Err', err));
+    }
+  }, [user]);
+
   return (
     <HelmetProvider>
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
