@@ -2193,8 +2193,7 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
         font-size: 1.6rem !important;
     }
     
-    /* QR Card Responsiveness (Excluded during download) */
-    .hybrid-card:not(.is-downloading) {
+    .hybrid-card {
         width: 100% !important;
         max-width: 320px !important;
         height: auto !important;
@@ -2202,42 +2201,11 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
         border-radius: 12px !important;
     }
 
-    /* GLOBAL OVERRIDE FOR DOWNLOAD: This must override everything */
-    .is-downloading {
-        width: 520px !important;
-        height: 300px !important;
-        transform: none !important;
-        transition: none !important;
-        position: fixed !important;
-        left: -9999px !important;
-        top: 0 !important;
-        z-index: -100 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .is-downloading .glass-section {
-        flex-direction: row !important;
-        padding: 20px 24px !important;
-        gap: normal !important;
-        align-items: center !important;
-        text-align: left !important;
-    }
-    
-    .is-downloading .hybrid-info {
-        text-align: left !important;
-        align-items: flex-start !important;
-    }
-
-    .is-downloading .hybrid-qr-wrap {
-        margin-left: auto !important;
-    }
-
     .carbon-section {
         height: auto !important;
         padding: 10px 15px !important;
     }
-    .hybrid-card:not(.is-downloading) .glass-section {
+    .glass-section {
         padding: 12px 15px !important;
         flex-direction: column !important;
         gap: 15px !important;
@@ -2331,4 +2299,49 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 }
 
 /* ========== END OF PREMIUM SECTION ========== */
+
+/* ========== GLOBAL DOWNLOAD OVERRIDES (FOR CAPTURE ONLY) ========== */
+.is-downloading {
+  width: 520px !important;
+  height: 300px !important;
+  background: #0f172a !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transform: none !important;
+  position: fixed !important;
+  left: -9999px !important;
+  top: 0 !important;
+  z-index: -999 !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+}
+
+.is-downloading .carbon-section {
+  height: 135px !important;
+  flex-direction: row !important;
+  padding: 20px 24px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.is-downloading .glass-section {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  padding: 20px 24px !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  text-align: left !important;
+}
+
+.is-downloading .hybrid-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.is-downloading .hybrid-qr-wrap {
+  margin-left: auto !important;
+}
 

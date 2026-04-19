@@ -98,22 +98,18 @@ export default function Home({ onOpenPayment }) {
   const downloadQR = async () => {
     if (!qrRef.current) return;
     
-    // Step 1: Find the actual card and clone it
+    // Step 1: Create a hidden clone for capture
     const originalCard = qrRef.current.querySelector('.hybrid-card') || qrRef.current;
     const clonedCard = originalCard.cloneNode(true);
     
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
       
-      // Step 2: Prepare the clone for perfect capture
-      // By adding it to the body with absolute positioning off-screen, 
-      // we bypass all viewport-based mobile responsive overrides.
+      // Step 2: Configure the clone (Invisible to user)
       clonedCard.classList.add('is-downloading');
       document.body.appendChild(clonedCard);
       
-      // Step 3: High-fidelity capture options
       const options = {
-        cacheBust: true,
         width: 520,
         height: 300,
         pixelRatio: 4, 
@@ -121,31 +117,27 @@ export default function Home({ onOpenPayment }) {
         style: {
           transform: 'none',
           margin: '0',
-          padding: '0',
-          // Ensure it's rendered at full size even if the browser tries to be smart
-          width: '520px',
-          height: '300px'
+          padding: '0'
         }
       };
 
-      // Slight wait for the clone to be fully rendered in the DOM
-      await new Promise(r => setTimeout(r, 150));
+      // Wait a tiny bit for the DOM to process the new element
+      await new Promise(r => setTimeout(r, 200));
 
       const dataUrl = await toPng(clonedCard, options);
-      
-      // Step 4: Cleanup
-      document.body.removeChild(clonedCard);
       
       const link = document.createElement('a');
       link.download = `parkee-city-${name}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      console.error('Error downloading QR:', err);
+      console.error('Download Error:', err);
+      alert("Flawless download failed. Please try a screenshot for now.");
+    } finally {
+      // Always cleanup the hidden clone
       if (document.body.contains(clonedCard)) {
         document.body.removeChild(clonedCard);
       }
-      alert("Could not generate image flawlessly. Please try taking a High-Res screenshot instead.");
     }
   };
 
