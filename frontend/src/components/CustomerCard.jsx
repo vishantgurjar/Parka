@@ -31,12 +31,12 @@ const CustomerCard = React.forwardRef(({ user, qrUrl }, ref) => {
           <div className="hybrid-info">
              <div className="hybrid-info-group">
                 <span className="hybrid-label">VEHICLE OWNER</span>
-                <span className="hybrid-value">{user.name || 'VISHANT PANWAR'}</span>
+                <span className="hybrid-value">{user.name || 'VEHICLE OWNER'}</span>
              </div>
              
              <div className="hybrid-info-group">
                 <span className="hybrid-label">REGISTRATION PLATE</span>
-                <span className="hybrid-value">{user.plateNumber || 'HAWJQIO'}</span>
+                <span className="hybrid-value">{user.plateNumber || 'PENDING'}</span>
              </div>
 
              <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>

@@ -10,7 +10,7 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
   const vipClass = isDiamond ? 'minimal-card-vip-diamond' : (isGold ? 'minimal-card-vip-gold' : '');
 
   // Main emergency name from photo style (e.g. surname)
-  const displayName = user?.name || 'VISHANT PANWAR';
+  const displayName = user?.name || 'VEHICLE OWNER';
 
   return (
     <div className="emergency-card-container" ref={ref} style={{ padding: '0' }}>
@@ -43,7 +43,7 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
              <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
                 <div className="hybrid-info-group">
                    <span className="hybrid-label">VEHICLE PLATE</span>
-                   <span className="hybrid-value">{user.plateNumber || 'HAWJQIO'}</span>
+                   <span className="hybrid-value">{user.plateNumber || 'PENDING'}</span>
                 </div>
                 <div className="hybrid-info-group">
                    <span className="hybrid-label">ACCESS</span>

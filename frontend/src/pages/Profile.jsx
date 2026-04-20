@@ -17,7 +17,13 @@ export default function Profile() {
     licenseExpiryDate: user?.licenseExpiryDate || '',
     insuranceProvider: user?.insuranceProvider || '',
     insurancePolicyNumber: user?.insurancePolicyNumber || '',
-    insuranceExpiryDate: user?.insuranceExpiryDate || ''
+    insuranceExpiryDate: user?.insuranceExpiryDate || '',
+    name: user?.name || '',
+    plateNumber: user?.plateNumber || '',
+    make: user?.make || '',
+    model: user?.model || '',
+    year: user?.year || '',
+    color: user?.color || ''
   });
 
   if (!user) {
@@ -316,7 +322,45 @@ export default function Profile() {
                     
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', padding: '10px', background: 'rgba(129, 140, 248, 0.05)', borderRadius: '8px' }}>
                         <ShieldCheck size={18} color="#818cf8" />
-                        <p style={{ fontSize: '0.8rem', color: '#818cf8' }}>Submit valid certificate numbers for official Parkéé Verification.</p>
+                        <p style={{ fontSize: '0.8rem', color: '#818cf8' }}>Update your primary identity and vehicle details to sync with your QR Cards.</p>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                        <label className="form-label" style={{ fontSize: '0.75rem' }}>FULL NAME (ON CARD)</label>
+                        <input type="text" name="name" value={docData.name} onChange={handleDocChange} placeholder="e.g. VISHANT PANWAR" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    </div>
+
+                    <div className="form-grid form-grid-2" style={{ gap: '20px' }}>
+                       <div className="form-group">
+                           <label className="form-label" style={{ fontSize: '0.75rem' }}>VEHICLE PLATE NUMBER</label>
+                           <input type="text" name="plateNumber" value={docData.plateNumber} onChange={handleDocChange} placeholder="e.g. UP16 AB 1234" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                       </div>
+                       <div className="form-group">
+                           <label className="form-label" style={{ fontSize: '0.75rem' }}>VEHICLE COLOR</label>
+                           <input type="text" name="color" value={docData.color} onChange={handleDocChange} placeholder="e.g. Sapphire Black" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                       </div>
+                    </div>
+
+                    <div className="form-grid form-grid-3" style={{ gap: '15px', marginTop: '15px' }}>
+                       <div className="form-group">
+                           <label className="form-label" style={{ fontSize: '0.75rem' }}>MAKE</label>
+                           <input type="text" name="make" value={docData.make} onChange={handleDocChange} placeholder="e.g. Toyota" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                       </div>
+                       <div className="form-group">
+                           <label className="form-label" style={{ fontSize: '0.75rem' }}>MODEL</label>
+                           <input type="text" name="model" value={docData.model} onChange={handleDocChange} placeholder="e.g. Fortuner" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                       </div>
+                       <div className="form-group">
+                           <label className="form-label" style={{ fontSize: '0.75rem' }}>YEAR</label>
+                           <input type="text" name="year" value={docData.year} onChange={handleDocChange} placeholder="e.g. 2024" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                       </div>
+                    </div>
+
+                    <div className="separator" style={{ margin: '25px 0', opacity: 0.1 }}></div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', padding: '10px', background: 'rgba(34, 197, 94, 0.05)', borderRadius: '8px' }}>
+                        <FileText size={18} color="#22c55e" />
+                        <p style={{ fontSize: '0.8rem', color: '#22c55e' }}>Digital verification documents for secondary security audit.</p>
                     </div>
 
                     <div className="form-grid form-grid-2" style={{ gap: '20px' }}>
