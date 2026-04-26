@@ -52,11 +52,12 @@ export default function Footer() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h4 style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Company</h4>
-              <Link to="/help-center" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Support</Link>
-              <Link to="/privacy-policy" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Privacy</Link>
-              <Link to="/terms-of-service" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Terms</Link>
-              <Link to="/faq" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>FAQ Hub</Link>
+              <h4 style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Company & Legal</h4>
+              <Link to="/about" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>About Us</Link>
+              <Link to="/help-center" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Contact Us</Link>
+              <Link to="/privacy-policy" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Privacy Policy</Link>
+              <Link to="/terms-of-service" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Terms & Conditions</Link>
+              <Link to="/refund-policy" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Cancellation & Refunds</Link>
             </div>
           </div>
         </div>
