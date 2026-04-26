@@ -147,7 +147,7 @@ export default function AIAssistant() {
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '4rem' }}>
       <SEO 
-        title="AI Engine Sound Analyzer - Parkéé City"
+        title="AI Engine Sound Analyzer - Parxéé City"
         description="Diagnose your car's abnormal engine sounds using our AI-powered acoustic analyzer."
       />
       
@@ -155,7 +155,7 @@ export default function AIAssistant() {
         
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '6px 16px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-              <Volume2 size={16} /> Parkéé AI Labs (Beta)
+              <Volume2 size={16} /> Parxéé AI Labs (Beta)
           </div>
           <h1 className="ai-assistant-title" style={{ color: 'var(--fg)', marginBottom: '1rem' }}>AI Engine <span style={{color:'#38bdf8'}}>Sound Analyzer</span></h1>
           <p style={{ color: 'var(--muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>

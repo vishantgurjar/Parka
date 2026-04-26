@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
     try {
       const mechanic = await Mechanic.findById(data.mechanicId);
       if (!mechanic || mechanic.walletBalance < 89) {
-          socket.emit("bid-error", "Insufficient Parkéé Leads Wallet Balance. Minimum ₹89 required. Top up to continue.");
+          socket.emit("bid-error", "Insufficient Parxéé Leads Wallet Balance. Minimum ₹89 required. Top up to continue.");
           return;
       }
 
@@ -217,7 +217,7 @@ const checkDbConnection = async (req, res, next) => {
 
 app.get("/", (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
-    res.send(`Hello World! Parke City Backend is running. Database: ${dbStatus}`);
+    res.send(`Hello World! Parxee City Backend is running. Database: ${dbStatus}`);
 });
 
 app.get("/api/status", (req, res) => {
@@ -459,18 +459,18 @@ app.post('/api/user/update-documents', checkDbConnection, async (req, res) => {
 });
 
 // @route   POST /api/user/redeem-points
-// @desc    Redeem Parkee Points
+// @desc    Redeem Parxee Points
 app.post('/api/user/redeem-points', checkDbConnection, async (req, res) => {
   try {
     const { userId, pointsToDeduct, perkName } = req.body;
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    if ((user.parkeePoints || 0) < pointsToDeduct) {
+    if ((user.parxeePoints || 0) < pointsToDeduct) {
         return res.status(400).json({ message: 'Insufficient points to redeem this perk.' });
     }
     
-    user.parkeePoints = (user.parkeePoints || 0) - pointsToDeduct;
+    user.parxeePoints = (user.parxeePoints || 0) - pointsToDeduct;
     await user.save();
     
     const userResponse = user.toObject();
@@ -546,7 +546,7 @@ app.post('/api/admin/broadcast', checkDbConnection, async (req, res) => {
         }
 
         const payload = JSON.stringify({
-            title: title || 'Parkéé City Alert',
+            title: title || 'Parxéé City Alert',
             body: message || '',
             url: '/'
         });
@@ -649,7 +649,7 @@ app.get('/api/mechanics/nearest', checkDbConnection, async (req, res) => {
     }).select('name phone shopName');
 
     if (!nearest) {
-      return res.json({ phone: '7895039922', name: 'Parkéé Admin' }); // Fallback
+      return res.json({ phone: '7895039922', name: 'Parxéé Admin' }); // Fallback
     }
 
     res.json(nearest);
@@ -752,7 +752,7 @@ app.post('/api/alerts/scan', checkDbConnection, async (req, res) => {
       console.log(`\n\n========================================`);
       console.log(`[🚨 EMERGENCY NOTIFICATION SYSTEM: SMS/WhatsApp MOCK]`);
       console.log(`To: ${user.phone} (${user.name})`);
-      console.log(`Message: "ALERT: Your vehicle (${user.plateNumber}) Parkéé City QR was just scanned. If this isn't you, check on your vehicle immediately!"`);
+      console.log(`Message: "ALERT: Your vehicle (${user.plateNumber}) Parxéé City QR was just scanned. If this isn't you, check on your vehicle immediately!"`);
       console.log(`Time: ${new Date().toLocaleString()}`);
       console.log(`========================================\n\n`);
       
@@ -931,7 +931,7 @@ app.post('/api/user/report-issue', checkDbConnection, async (req, res) => {
     if (reporterId) {
         const reporter = await User.findById(reporterId);
         if (reporter) {
-            reporter.parkeePoints = (reporter.parkeePoints || 0) + 50;
+            reporter.parxeePoints = (reporter.parxeePoints || 0) + 50;
             await reporter.save();
             pointsEarned = 50;
         }
@@ -939,7 +939,7 @@ app.post('/api/user/report-issue', checkDbConnection, async (req, res) => {
 
     res.json({ 
         success: true, 
-        message: `Owner notified about ${issueType}. You earned ${pointsEarned} Parkéé Points!`,
+        message: `Owner notified about ${issueType}. You earned ${pointsEarned} Parxéé Points!`,
         pointsEarned 
     });
   } catch (error) {
@@ -1125,7 +1125,7 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
             return res.status(400).json({ message: "No input provided for analysis." });
         }
 
-        let prompt = `You are "Parkéé Buddy", a friendly, expert car mechanic. 
+        let prompt = `You are "Parxéé Buddy", a friendly, expert car mechanic. 
         Symptom: "${symptom || 'Visual/Acoustic Scan'}"
         Spectral Signature: "${audioSignature}"
         Frequency Peaks: ${JSON.stringify(spectralPeaks || [])}
@@ -1138,7 +1138,7 @@ app.post('/api/ai/diagnose', checkDbConnection, async (req, res) => {
         {
           "issue": "Specific Problem Name",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
-          "details": "Friendly Hinglish explanation from Parkéé Buddy",
+          "details": "Friendly Hinglish explanation from Parxéé Buddy",
           "action": "Immediate Hinglish advice",
           "estimatedCost": "₹X - ₹Y",
           "confidence": 0-100
@@ -1301,7 +1301,7 @@ app.put('/api/community-help/:id/complete', checkDbConnection, async (req, res) 
         if (help.helperId) {
             const helper = await User.findById(help.helperId);
             if (helper) {
-                helper.parkeePoints = (helper.parkeePoints || 0) + (help.rewardPoints || 100);
+                helper.parxeePoints = (helper.parxeePoints || 0) + (help.rewardPoints || 100);
                 await helper.save();
             }
         }

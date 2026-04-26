@@ -1,6 +1,6 @@
-# Parkéé City
+# Parxéé City
 
-Parkéé City is a comprehensive web application for managing vehicle protection and emergency services with smart QR-based emergency cards.
+Parxéé City is a comprehensive web application for managing vehicle protection and emergency services with smart QR-based emergency cards.
 
 ## Features
 - Smart Vehicle Protection

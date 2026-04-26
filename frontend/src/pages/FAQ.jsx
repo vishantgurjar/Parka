@@ -9,8 +9,8 @@ export default function FAQ() {
   return (
     <div className="container" style={{ paddingTop: '100px', paddingBottom: '60px', minHeight: '80vh' }}>
       <SEO 
-        title="FAQ - Parkéé City"
-        description="Frequently asked questions about Parkéé City's smart parking solutions, emergency cards, and highway assistance services."
+        title="FAQ - Parxéé City"
+        description="Frequently asked questions about Parxéé City's smart parking solutions, emergency cards, and highway assistance services."
       />
       <h1 className="section-title" style={{ textAlign: 'left', marginBottom: '1rem' }}>Frequently Asked Questions</h1>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -72,7 +72,7 @@ export default function AdminDashboard({ user }) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#050505', color: '#f3f4f6', paddingTop: '80px', paddingBottom: '4rem', fontFamily: 'monospace' }}>
-      <SEO title="System Admin | Parkéé City" />
+      <SEO title="System Admin | Parxéé City" />
       
       <div className="container" style={{ maxWidth: '1200px' }}>
          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1f2937', paddingBottom: '1rem', marginBottom: '2rem' }}>

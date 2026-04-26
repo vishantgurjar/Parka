@@ -37,7 +37,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "Parkéé City",
+        name: "Parxéé City",
         description: `Payment for ${plan.name}`,
         image: "/logo.png",
         order_id: orderData.id,

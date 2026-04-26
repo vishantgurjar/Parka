@@ -26,7 +26,7 @@ export default function Sentinel() {
 
   const sendSOS = () => {
     addLog("SOS DISPATCHED TO EMERGENCY CLOUD.");
-    alert("SOS DISPATCHED! Evidence locked and uploaded to Parkéé Cloud.");
+    alert("SOS DISPATCHED! Evidence locked and uploaded to Parxéé Cloud.");
     setIsImpactDetected(false);
   };
 
@@ -100,7 +100,7 @@ export default function Sentinel() {
 
   return (
     <div className="sentinel-page" style={{ background: '#0a0a0b', minHeight: '100vh', color: '#fff', paddingTop: '80px', paddingBottom: '40px' }}>
-      <SEO title="Parkéé Sentinel - AI Accident Detection" description="Transform your phone into a smart black box with Parkéé Sentinel Mode." />
+      <SEO title="Parxéé Sentinel - AI Accident Detection" description="Transform your phone into a smart black box with Parxéé Sentinel Mode." />
       
       <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         <header style={{ textAlign: 'center', marginBottom: '3rem' }}>

@@ -40,8 +40,8 @@ export default function LoginPage() {
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <SEO 
-        title="Login - Parkéé City"
-        description="Log in to your Parkéé City account to manage your vehicle protection, subscriptions, and emergency cards."
+        title="Login - Parxéé City"
+        description="Log in to your Parxéé City account to manage your vehicle protection, subscriptions, and emergency cards."
       />
       <div className="glass-card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem', margin: '1rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>

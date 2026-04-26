@@ -49,7 +49,7 @@ const UserSchema = new mongoose.Schema({
   licenseNumber: { type: String },
   licenseExpiryDate: { type: String },
   // Gamification
-  parkeePoints: { type: Number, default: 0 },
+  parxeePoints: { type: Number, default: 0 },
   
   // Push Notifications
   pushSubscription: { type: Object },

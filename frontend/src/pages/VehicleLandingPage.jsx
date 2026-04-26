@@ -11,7 +11,7 @@ export default function VehicleLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showSecureCall, setShowSecureCall] = useState(false);
-  const [nearestMechanic, setNearestMechanic] = useState({ phone: '7895039922', name: 'Parkéé Admin' });
+  const [nearestMechanic, setNearestMechanic] = useState({ phone: '7895039922', name: 'Parxéé Admin' });
   const [reporting, setReporting] = useState(null);
   const { user: currentUser } = useContext(AuthContext);
 
@@ -133,7 +133,7 @@ export default function VehicleLandingPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#030712', padding: '80px 1rem 40px' }}>
       <SEO 
-        title={`${vehicle?.name || 'Vehicle'}'s Protected Identity - Parkéé City`}
+        title={`${vehicle?.name || 'Vehicle'}'s Protected Identity - Parxéé City`}
         description={`Safety landing page for ${vehicle?.name || 'Owner'}'s ${vehicle?.make || ''} ${vehicle?.model || 'Vehicle'}. Instant emergency contact access.`}
       />
       
@@ -285,7 +285,7 @@ export default function VehicleLandingPage() {
               <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '14px' }}>
                 <AlertTriangle size={28} />
               </div>
-              {nearestMechanic.name === 'Parkéé Admin' ? 'HIGHWAY HELP (24/7)' : `SOS: ${nearestMechanic.shopName || nearestMechanic.name}`}
+              {nearestMechanic.name === 'Parxéé Admin' ? 'HIGHWAY HELP (24/7)' : `SOS: ${nearestMechanic.shopName || nearestMechanic.name}`}
             </div>
             <ChevronRight size={24} />
           </a>
@@ -320,7 +320,7 @@ export default function VehicleLandingPage() {
                 <Bell size={18} /> Help the Owner
              </h3>
              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1.25rem' }}>
-                See something wrong? Notify {vehicle.name} instantly and earn <strong>50 Parkéé Points</strong>.
+                See something wrong? Notify {vehicle.name} instantly and earn <strong>50 Parxéé Points</strong>.
              </p>
              
              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -365,10 +365,10 @@ export default function VehicleLandingPage() {
 
         {/* Footer Info */}
         <div style={{ marginTop: '2.5rem', textAlign: 'center' }}>
-          <img src="/logo.png" alt="Parkéé City" style={{ width: '32px', height: '32px', borderRadius: '8px', marginBottom: '1rem', opacity: 0.8 }} />
+          <img src="/logo.png" alt="Parxéé City" style={{ width: '32px', height: '32px', borderRadius: '8px', marginBottom: '1rem', opacity: 0.8 }} />
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
             This vehicle is protected by <br/>
-            <strong>Parkéé City Smart Parking Systems</strong>
+            <strong>Parxéé City Smart Parking Systems</strong>
           </p>
           <div style={{ marginTop: '1.5rem' }}>
             <Link to="/" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}>

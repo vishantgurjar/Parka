@@ -26,7 +26,7 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Parkéé City Alert';
+  const title = data.title || 'Parxéé City Alert';
   const options = {
     body: data.body || 'You have a new update.',
     icon: data.icon || '/logo.png',

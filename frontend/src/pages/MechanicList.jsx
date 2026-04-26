@@ -337,7 +337,7 @@ export default function MechanicList() {
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '4rem' }}>
       <SEO 
-        title="Find Nearby Mechanics - Parkéé City"
+        title="Find Nearby Mechanics - Parxéé City"
         description="Find and contact professional mechanics near you for emergency vehicle repair and roadside assistance. 24/7 service available on major highways."
       />
       <div className="container" style={{ maxWidth: '1200px' }}>
@@ -458,7 +458,7 @@ export default function MechanicList() {
                     <div className="fadeIn" style={{padding: '15px', textAlign: 'center'}}>
                          <CheckCircle size={50} color="#10b981" style={{marginBottom: '10px'}} />
                          <h3 style={{color: '#10b981'}}>Job Completed!</h3>
-                         <p style={{color: 'var(--muted)', fontSize: '0.9rem'}}>Thank you for using Parkéé City SOS.</p>
+                         <p style={{color: 'var(--muted)', fontSize: '0.9rem'}}>Thank you for using Parxéé City SOS.</p>
                          <button onClick={() => setSosStatus('idle')} className="btn-secondary" style={{marginTop: '15px', padding: '10px 20px', borderRadius: '30px'}}>Close</button>
                     </div>
                 )}
@@ -626,7 +626,7 @@ export default function MechanicList() {
                           <button 
                             onClick={() => {
                                 if (isPro()) {
-                                    window.open(`https://wa.me/${mechanic.phone}?text=${encodeURIComponent(`Hi ${mechanic.name}, I found your profile on Parkéé City. I need assistance with my ${user?.make || 'vehicle'}...`)}`, '_blank');
+                                    window.open(`https://wa.me/${mechanic.phone}?text=${encodeURIComponent(`Hi ${mechanic.name}, I found your profile on Parxéé City. I need assistance with my ${user?.make || 'vehicle'}...`)}`, '_blank');
                                 } else {
                                     alert("WhatsApp Chat is a PRO feature! Please upgrade to Silver or Gold plan to use it.");
                                 }
@@ -711,7 +711,7 @@ export default function MechanicList() {
                <AlertTriangle /> Report Road Hazard
              </h2>
              <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-               Drop a pin at your current GPS location to warn the Parkéé Community.
+               Drop a pin at your current GPS location to warn the Parxéé Community.
              </p>
 
              <form onSubmit={handleReportIncident}>

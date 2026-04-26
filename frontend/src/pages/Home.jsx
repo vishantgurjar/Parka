@@ -53,7 +53,7 @@ export default function Home({ onOpenPayment }) {
     }
     // Simulate API call
     console.log("Contact Request Sent:", contactForm);
-    alert("Success! Your request has been sent to the Parkéé City team.");
+    alert("Success! Your request has been sent to the Parxéé City team.");
     setContactForm({ name: '', email: '', message: '' });
   };
 
@@ -130,7 +130,7 @@ export default function Home({ onOpenPayment }) {
       const dataUrl = await toPng(clonedCard, options);
       
       const link = document.createElement('a');
-      link.download = `parkee-city-${name}.png`;
+      link.download = `parxee-city-${name}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -154,8 +154,8 @@ export default function Home({ onOpenPayment }) {
   return (
     <>
       <SEO 
-        title="Parkéé City - Smart Vehicle Protection & Emergency Services"
-        description="Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
+        title="Parxéé City - Smart Vehicle Protection & Emergency Services"
+        description="Secure your vehicle with Parxéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access."
       />
       
       {/* ========== BACKGROUND PATTERNS ========== */}

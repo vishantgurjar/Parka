@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
 export default function SEO({ 
-  title = "Parkéé City - Smart Vehicle Protection & Emergency Services", 
-  description = "Secure your vehicle with Parkéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access.", 
-  keywords = "smart parking, vehicle protection, emergency repair, highway assistance, QR card, Parkéé City, roadside help",
+  title = "Parxéé City - Smart Vehicle Protection & Emergency Services", 
+  description = "Secure your vehicle with Parxéé City's smart QR-based Emergency Cards. Get 24/7 roadside assistance, highway engine repair, and instant contact access.", 
+  keywords = "smart parking, vehicle protection, emergency repair, highway assistance, QR card, Parxéé City, roadside help",
   image = "https://parka-frontend.vercel.app/og-image.png",
   url = "https://parka-frontend.vercel.app/",
   type = "website"

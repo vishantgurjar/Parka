@@ -98,8 +98,8 @@ export default function ExtendedRegistration() {
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)' }}>
       <SEO 
-        title="Register Vehicle - Parkéé City"
-        description="Register your vehicle with Parkéé City to get your smart QR-based Emergency Card and access premium protection services."
+        title="Register Vehicle - Parxéé City"
+        description="Register your vehicle with Parxéé City to get your smart QR-based Emergency Card and access premium protection services."
       />
       <div className="container">
         

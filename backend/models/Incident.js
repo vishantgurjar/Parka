@@ -20,7 +20,7 @@ const IncidentSchema = new mongoose.Schema({
   },
   reportedBy: {
     type: String, // E.g., user name or "Anonymous Driver"
-    default: 'Anonymous Parkéé User'
+    default: 'Anonymous Parxéé User'
   }
 }, { timestamps: true });
 

@@ -158,8 +158,8 @@ export default function MechanicRegistration() {
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)' }}>
       <SEO 
-        title="Become a Partner Mechanic - Parkéé City"
-        description="Join Parkéé City's partner network as a professional mechanic. Provide emergency assistance and grow your business with our smart platform."
+        title="Become a Partner Mechanic - Parxéé City"
+        description="Join Parxéé City's partner network as a professional mechanic. Provide emergency assistance and grow your business with our smart platform."
       />
       <div className="container" style={{ maxWidth: '800px' }}>
         <div className="glass-card">

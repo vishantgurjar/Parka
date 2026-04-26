@@ -59,7 +59,7 @@ export default function Profile() {
   };
 
   const redeemPerk = async (perk) => {
-    if ((user.parkeePoints || 0) < perk.cost) {
+    if ((user.parxeePoints || 0) < perk.cost) {
       alert('Insufficient points!');
       return;
     }
@@ -98,7 +98,7 @@ export default function Profile() {
 
   return (
     <>
-      <SEO title={`${user.name} - Profile | Parkéé City`} />
+      <SEO title={`${user.name} - Profile | Parxéé City`} />
       
       <div className="profile-page" style={{ padding: '100px 0 60px', background: 'var(--bg)', minHeight: '90vh' }}>
         <div className="container">
@@ -209,7 +209,7 @@ export default function Profile() {
                 <Award size={24} />
               </div>
               <p className="hybrid-label">PARKÉÉ POINTS</p>
-              <h3 className="text-gradient" style={{ fontSize: '2rem', margin: '8px 0' }}>{user.parkeePoints || 0}</h3>
+              <h3 className="text-gradient" style={{ fontSize: '2rem', margin: '8px 0' }}>{user.parxeePoints || 0}</h3>
               <button 
                 onClick={() => setIsRedeemModalOpen(true)}
                 className="btn-gradient" 
@@ -277,7 +277,7 @@ export default function Profile() {
                 <div style={{ padding: '20px' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '12px', borderRadius: '12px', marginBottom: '20px', textAlign: 'center' }}>
                         <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Available Points:</span>
-                        <h4 style={{ fontSize: '1.5rem', color: '#38bdf8', fontWeight: '900' }}>{user.parkeePoints || 0}</h4>
+                        <h4 style={{ fontSize: '1.5rem', color: '#38bdf8', fontWeight: '900' }}>{user.parxeePoints || 0}</h4>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '350px', overflowY: 'auto' }}>
                         {perks.map(perk => (
@@ -291,8 +291,8 @@ export default function Profile() {
                                 </div>
                                 <button 
                                     onClick={() => redeemPerk(perk)}
-                                    disabled={isLoading || (user.parkeePoints || 0) < perk.cost}
-                                    style={{ padding: '6px 14px', borderRadius: '50px', border: 'none', background: (user.parkeePoints || 0) >= perk.cost ? '#38bdf8' : 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                    disabled={isLoading || (user.parxeePoints || 0) < perk.cost}
+                                    style={{ padding: '6px 14px', borderRadius: '50px', border: 'none', background: (user.parxeePoints || 0) >= perk.cost ? '#38bdf8' : 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
                                 >
                                     {perk.cost} P
                                 </button>
@@ -393,7 +393,7 @@ export default function Profile() {
                         {isLoading ? 'Encrypting & Saving...' : 'Submit Documents for Verification'}
                     </button>
                     <p style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--muted)', marginTop: '15px' }}>
-                        *Your data is encrypted using AES-256 for Parkéé Sentinel Security.
+                        *Your data is encrypted using AES-256 for Parxéé Sentinel Security.
                     </p>
                 </form>
             </div>

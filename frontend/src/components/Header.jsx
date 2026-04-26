@@ -48,7 +48,7 @@ export default function Header({ onOpenPayment }) {
               fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem', 
               fontWeight: '800', 
               letterSpacing: 'var(--tracking-tighter)' 
-            }}>PARKÉÉ CITY</span>
+            }}>PARXÉÉ CITY</span>
           </div>
         </Link>
 

@@ -141,7 +141,7 @@ export default function MechanicDashboard() {
 
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '4rem' }}>
-      <SEO title="Mechanic Dashboard - Parkéé City" />
+      <SEO title="Mechanic Dashboard - Parxéé City" />
       <div className="container" style={{ maxWidth: '800px' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -178,7 +178,7 @@ export default function MechanicDashboard() {
         <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderLeft: '4px solid #10b981' }}>
             <div>
                 <h3 style={{ margin: '0 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Wallet size={20} style={{ color: '#10b981' }} /> Parkéé Leads Wallet
+                    <Wallet size={20} style={{ color: '#10b981' }} /> Parxéé Leads Wallet
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--muted)' }}>Balance required to accept SOS Leads (Cost: ₹89 per accepted lead)</p>
             </div>

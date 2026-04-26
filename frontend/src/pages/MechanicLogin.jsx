@@ -37,7 +37,7 @@ export default function MechanicLogin() {
 
   return (
     <div style={{ paddingTop: '80px', minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <SEO title="Mechanic Login - Parkéé City" />
+      <SEO title="Mechanic Login - Parxéé City" />
       <div className="container" style={{ maxWidth: '400px' }}>
         <div className="glass-card" style={{ padding: '2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>

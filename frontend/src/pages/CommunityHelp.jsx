@@ -114,7 +114,7 @@ export default function CommunityHelp() {
 
   const handleAcceptHelp = async (requestId) => {
     if (!user) return alert("Please login to help others.");
-    if (confirm("Do you want to accept this help request? You will earn 100 Parkéé Credits!")) {
+    if (confirm("Do you want to accept this help request? You will earn 100 Parxéé Credits!")) {
       try {
         const res = await fetch(`${API_BASE}/api/community-help/${requestId}/accept`, {
           method: 'PUT',
@@ -181,7 +181,7 @@ export default function CommunityHelp() {
                 <Shield size={20} color="var(--primary)" /> Smart Helper
               </h3>
               <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '1.5rem' }}>
-                Stranded or need a quick hand? Post a request and nearby Parkéé Sathis will reach out.
+                Stranded or need a quick hand? Post a request and nearby Parxéé Sathis will reach out.
               </p>
               <button 
                 onClick={() => setIsRequesting(true)}
