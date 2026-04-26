@@ -15,9 +15,7 @@ export default function Profile() {
     rcExpiryDate: user?.rcExpiryDate || '',
     licenseNumber: user?.licenseNumber || '',
     licenseExpiryDate: user?.licenseExpiryDate || '',
-    insuranceProvider: user?.insuranceProvider || '',
-    insurancePolicyNumber: user?.insurancePolicyNumber || '',
-    insuranceExpiryDate: user?.insuranceExpiryDate || '',
+    licenseExpiryDate: user?.licenseExpiryDate || '',
     name: user?.name || '',
     plateNumber: user?.plateNumber || '',
     make: user?.make || '',
@@ -231,7 +229,6 @@ export default function Profile() {
               <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '12px' }}>
                 <div title="RC Status" style={{ color: user.rcNumber ? '#22c55e' : '#f43f5e' }}><Zap size={16} /></div>
                 <div title="License Status" style={{ color: user.licenseNumber ? '#22c55e' : '#f43f5e' }}><ShieldCheck size={16} /></div>
-                <div title="Insurance Status" style={{ color: user.insuranceProvider ? '#22c55e' : '#f43f5e' }}><Calendar size={16} /></div>
               </div>
               <button 
                 onClick={() => setIsDocsModalOpen(true)}
@@ -387,22 +384,6 @@ export default function Profile() {
                        </div>
                     </div>
 
-                    <div className="separator" style={{ margin: '20px 0' }}></div>
-
-                    <div className="form-group" style={{ marginBottom: '15px' }}>
-                        <label className="form-label" style={{ fontSize: '0.75rem' }}>INSURANCE PROVIDER</label>
-                        <input type="text" name="insuranceProvider" value={docData.insuranceProvider} onChange={handleDocChange} placeholder="e.g. HDFC Ergo, LIC, TATA AIG" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
-                    </div>
-
-                    <div className="form-grid form-grid-2" style={{ gap: '20px' }}>
-                       <div className="form-group">
-                           <label className="form-label" style={{ fontSize: '0.75rem' }}>POLICY NUMBER</label>
-                           <input type="text" name="insurancePolicyNumber" value={docData.insurancePolicyNumber} onChange={handleDocChange} placeholder="POLxxxxxxxxx" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
-                       </div>
-                       <div className="form-group">
-                           <label className="form-label" style={{ fontSize: '0.75rem' }}>POLICY EXPIRY</label>
-                           <input type="date" name="insuranceExpiryDate" value={docData.insuranceExpiryDate} onChange={handleDocChange} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
-                       </div>
                     </div>
 
                     <button 

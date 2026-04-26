@@ -48,9 +48,6 @@ const UserSchema = new mongoose.Schema({
   rcExpiryDate: { type: String },
   licenseNumber: { type: String },
   licenseExpiryDate: { type: String },
-  insuranceProvider: { type: String },
-  insurancePolicyNumber: { type: String },
-  insuranceExpiryDate: { type: String },
   // Gamification
   parkeePoints: { type: Number, default: 0 },
   

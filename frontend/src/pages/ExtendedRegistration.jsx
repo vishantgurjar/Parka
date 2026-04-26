@@ -29,9 +29,7 @@ export default function ExtendedRegistration() {
     rcExpiryDate: '',
     licenseNumber: '',
     licenseExpiryDate: '',
-    insuranceProvider: '',
-    insurancePolicyNumber: '',
-    insuranceExpiryDate: ''
+    licenseExpiryDate: ''
   });
 
   const handleChange = (e) => {
@@ -74,9 +72,7 @@ export default function ExtendedRegistration() {
       rcExpiryDate: formData.rcExpiryDate,
       licenseNumber: formData.licenseNumber,
       licenseExpiryDate: formData.licenseExpiryDate,
-      insuranceProvider: formData.insuranceProvider,
-      insurancePolicyNumber: formData.insurancePolicyNumber,
-      insuranceExpiryDate: formData.insuranceExpiryDate
+      licenseExpiryDate: formData.licenseExpiryDate
     };
 
     try {
@@ -284,27 +280,6 @@ export default function ExtendedRegistration() {
 
                 <div className="separator"></div>
 
-                {/* Insurance Details */}
-                <div style={{marginBottom: '32px'}}>
-                    <h3 className="section-title">
-                        <CreditCard /> Insurance Details
-                    </h3>
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label className="form-label">Insurance Provider</label>
-                            <input type="text" name="insuranceProvider" value={formData.insuranceProvider} onChange={handleChange} placeholder="State Farm, Geico, Progressive..." required />
-                        </div>
-                        <div className="form-grid form-grid-2">
-                            <div className="form-group">
-                                <label className="form-label">Policy Number</label>
-                                <input type="text" name="insurancePolicyNumber" value={formData.insurancePolicyNumber} onChange={handleChange} placeholder="POL123456789" required />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Insurance Expiry Date</label>
-                                <input type="date" name="insuranceExpiryDate" value={formData.insuranceExpiryDate} onChange={handleChange} required />
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="btn-group">
