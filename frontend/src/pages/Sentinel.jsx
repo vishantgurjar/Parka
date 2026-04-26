@@ -285,6 +285,17 @@ export default function Sentinel() {
           border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .sentinel-page h2, .sentinel-page h3 { margin: 0; }
+        @media (max-width: 768px) {
+          .sentinel-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .main-display {
+            min-height: 400px !important;
+          }
+          .hud-overlay {
+            padding: 1rem !important;
+          }
+        }
       `}</style>
     </div>
   );
