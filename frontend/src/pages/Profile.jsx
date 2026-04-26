@@ -95,7 +95,7 @@ export default function Profile() {
   ];
 
   const tierColor = user.subscriptionTier === 'diamond' ? '#818cf8' : (user.subscriptionTier === 'gold' ? '#eab308' : '#38bdf8');
-  const isVerified = user.rcNumber && user.licenseNumber && user.insuranceProvider;
+  const isVerified = user.rcNumber && user.licenseNumber;
 
   return (
     <>
