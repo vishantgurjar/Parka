@@ -59,6 +59,7 @@ export default function Header({ onOpenPayment }) {
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>SOS</a>
           <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Mechanics</Link>
           <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)' }}>AI Doctor</Link>
+          <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8' }}>Sentinel AI</Link>
           
           <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 10px' }}></div>
 
