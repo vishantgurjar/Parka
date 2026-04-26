@@ -279,9 +279,6 @@ export default function ExtendedRegistration() {
                 </div>
 
                 <div className="separator"></div>
-
-                </div>
-
                 <div className="btn-group">
                     <button type="button" onClick={() => setStep(1)} className="btn-secondary" style={{padding: '16px', borderRadius: '12px', border: 'none'}}>
                         Back to Personal Info
