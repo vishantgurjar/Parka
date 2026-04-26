@@ -28,7 +28,6 @@ export default function ExtendedRegistration() {
     rcNumber: '',
     rcExpiryDate: '',
     licenseNumber: '',
-    licenseExpiryDate: '',
     licenseExpiryDate: ''
   });
 
@@ -71,7 +70,6 @@ export default function ExtendedRegistration() {
       rcNumber: formData.rcNumber,
       rcExpiryDate: formData.rcExpiryDate,
       licenseNumber: formData.licenseNumber,
-      licenseExpiryDate: formData.licenseExpiryDate,
       licenseExpiryDate: formData.licenseExpiryDate
     };
 

@@ -15,7 +15,6 @@ export default function Profile() {
     rcExpiryDate: user?.rcExpiryDate || '',
     licenseNumber: user?.licenseNumber || '',
     licenseExpiryDate: user?.licenseExpiryDate || '',
-    licenseExpiryDate: user?.licenseExpiryDate || '',
     name: user?.name || '',
     plateNumber: user?.plateNumber || '',
     make: user?.make || '',
