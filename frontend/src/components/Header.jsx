@@ -36,43 +36,43 @@ export default function Header({ onOpenPayment }) {
         alignItems: 'center',
         width: '100%'
       }}>
-        <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
+        <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <div className="logo-icon light-sweep" style={{ 
-            width: window.innerWidth < 768 ? '32px' : '40px',
-            height: window.innerWidth < 768 ? '32px' : '40px',
+            width: '40px',
+            height: '40px',
             borderRadius: '12px',
             background: 'var(--gradient-primary)',
             boxShadow: '0 0 20px var(--primary-glow)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
-             <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '80%', height: '80%', borderRadius: 'inherit', objectFit: 'cover' }} />
+             <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-            <span className="logo-text text-gradient" style={{ 
-              fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem', 
-              fontWeight: '800', 
-              letterSpacing: 'var(--tracking-tighter)',
-              whiteSpace: 'nowrap',
-              marginLeft: window.innerWidth < 768 ? '8px' : '12px'
-            }}>PARXÉÉ CITY</span>
+          <span className="logo-text text-gradient" style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '800', 
+            letterSpacing: 'var(--tracking-tighter)',
+            whiteSpace: 'nowrap'
+          }}>PARXÉÉ CITY</span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="nav-desktop" style={{ gap: '2.5rem' }}>
-          <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Home</a>
-          <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Community</Link>
-          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>SOS</a>
-          <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700' }}>Mechanics</Link>
-          <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)' }}>AI Doctor</Link>
-          <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8' }}>Sentinel AI</Link>
+        <nav className="nav-desktop" style={{ gap: '1.5rem', display: 'flex', alignItems: 'center' }}>
+          <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Home</a>
+          <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
+          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
+          <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Mechanics</Link>
+          <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
+          <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Sentinel AI</Link>
           
           <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 10px' }}></div>
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {user.email === 'panwarvishant9@gmail.com' && (
-                <Link to="/sentinel-ops" className="glass shimmer-text" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                <Link to="/sentinel-ops" className="glass shimmer-text" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', whiteSpace: 'nowrap' }}>
                   ADMIN OPS
                 </Link>
               )}
@@ -84,12 +84,13 @@ export default function Header({ onOpenPayment }) {
                 background: 'rgba(255,255,255,0.05)',
                 display: 'flex', 
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                whiteSpace: 'nowrap'
               }}>
                 <span style={{ opacity: 0.7 }}>Account</span>
                 <span style={{ color: 'var(--primary)' }}>{user.name?.split(' ')[0]}</span>
               </Link>
-              <button onClick={() => { logout(); navigate('/'); }} style={{ background: 'transparent', color: 'var(--muted)', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase' }}>
+              <button onClick={() => { logout(); navigate('/'); }} style={{ background: 'transparent', color: 'var(--muted)', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer' }}>
                 Logout
               </button>
             </div>
@@ -99,7 +100,8 @@ export default function Header({ onOpenPayment }) {
               borderRadius: '50px', 
               fontSize: '0.8rem',
               fontWeight: '800',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap'
             }}>
               Join Now
             </Link>
