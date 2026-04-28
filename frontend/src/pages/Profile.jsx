@@ -208,7 +208,7 @@ export default function Profile() {
               <div style={{ width: '48px', height: '48px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                 <Award size={24} />
               </div>
-              <p className="hybrid-label">PARKÉÉ POINTS</p>
+              <p className="hybrid-label">PARXÉÉ POINTS</p>
               <h3 className="text-gradient" style={{ fontSize: '2rem', margin: '8px 0' }}>{user.parxeePoints || 0}</h3>
               <button 
                 onClick={() => setIsRedeemModalOpen(true)}

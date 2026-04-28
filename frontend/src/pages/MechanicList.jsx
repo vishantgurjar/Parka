@@ -94,7 +94,7 @@ export default function MechanicList() {
     recognition.onresult = (event) => {
       const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
       console.log("Voice Transcript:", transcript);
-      if (transcript.includes("help me") || transcript.includes("parkee help") || transcript.includes("emergency")) {
+      if (transcript.includes("help me") || transcript.includes("parxee help") || transcript.includes("emergency")) {
         handleBroadcastSOS();
         recognition.stop();
       }
