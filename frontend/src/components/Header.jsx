@@ -44,7 +44,7 @@ export default function Header({ onOpenPayment }) {
              <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '80%', height: '80%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
             <span className="logo-text text-gradient" style={{ 
-              fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem', 
+              fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem', 
               fontWeight: '800', 
               letterSpacing: 'var(--tracking-tighter)',
               whiteSpace: 'nowrap'
