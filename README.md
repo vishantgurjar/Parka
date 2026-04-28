@@ -13,8 +13,8 @@ Parxéé City is a comprehensive web application for managing vehicle protection
 - **Backend**: Node JS + Express + MongoDB
 
 ## Deployments
-- Frontend Vercel URL: https://parkee-city-frontend.vercel.app/
-- Backend Vercel URL: https://parkee-city-backend.vercel.app/
+- Frontend Vercel URL: https://Parxee-city-frontend.vercel.app/
+- Backend Vercel URL: https://Parxee-city-backend.vercel.app/
 
 ## Setup Locally
 1. Clone the repository

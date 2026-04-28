@@ -9,8 +9,8 @@ async function migrate() {
         
         const db = mongoose.connection.db;
         const result = await db.collection('users').updateMany(
-            { parkeePoints: { $exists: true } },
-            { $rename: { 'parkeePoints': 'parxeePoints' } }
+            { ParxeePoints: { $exists: true } },
+            { $rename: { 'ParxeePoints': 'parxeePoints' } }
         );
         
         console.log(`Migration complete. Updated ${result.modifiedCount} users.`);

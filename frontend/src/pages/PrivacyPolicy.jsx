@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
       <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)',boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <p style={{ marginBottom: '1rem' }}>Last updated: {new Date().toLocaleDateString()}</p>
         <p style={{ marginBottom: '1rem' }}>
-          Parké City ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by Parké City.
+          Parxéé City ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by Parxéé City.
         </p>
         <h3 style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>Information We Collect</h3>
         <p style={{ marginBottom: '1rem' }}>

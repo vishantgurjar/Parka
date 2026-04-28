@@ -50,7 +50,7 @@ export default function LoginPage() {
             {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
           </h3>
           <p style={{ color: 'var(--muted)', fontSize: '1rem', marginTop: '0.5rem' }}>
-            {mode === 'login' ? 'Log in to manage your parking & subscriptions' : 'Join Parké City for smart parking and emergency services'}
+            {mode === 'login' ? 'Log in to manage your parking & subscriptions' : 'Join Parxéé City for smart parking and emergency services'}
           </p>
         </div>
 

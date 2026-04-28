@@ -16,7 +16,7 @@ export default function HelpCenter() {
       <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h3>How can we help you today?</h3>
         <p style={{ marginTop: '1rem' }}>
-          Welcome to the Parké City Help Center. Here you can find answers to our most commonly asked questions, instructions on using our services, and ways to contact our support team.
+          Welcome to the Parxéé City Help Center. Here you can find answers to our most commonly asked questions, instructions on using our services, and ways to contact our support team.
         </p>
         <ul style={{ marginTop: '1rem', marginLeft: '1.5rem', lineHeight: '1.8' }}>
           <li><strong>Emergency Service:</strong> Call our 24/7 hotline at 789-503-9922.</li>

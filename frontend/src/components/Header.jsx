@@ -41,7 +41,7 @@ export default function Header({ onOpenPayment }) {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-             <img src="/logo.png" alt="Logo" style={{ width: '80%', height: '80%', borderRadius: 'inherit', objectFit: 'cover' }} />
+             <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '80%', height: '80%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span className="logo-text text-gradient" style={{ 

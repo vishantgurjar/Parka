@@ -169,7 +169,7 @@ export default function MechanicRegistration() {
                   Mechanic Partner Registration
               </h1>
               <p className="card-description">
-                  Join Parké City's Highway Emergency Network and reach more customers
+                  Join Parxéé City's Highway Emergency Network and reach more customers
               </p>
           </div>
 

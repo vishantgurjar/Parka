@@ -9,8 +9,8 @@ function replaceInDir(dir) {
       replaceInDir(fullPath);
     } else if (fullPath.endsWith('.jsx') || fullPath.endsWith('.js')) {
       let content = fs.readFileSync(fullPath, 'utf8');
-      if (content.includes('parkee-city-backend.vercel.app')) {
-        content = content.replace(/parkee-city-backend\.vercel\.app/g, 'parka-backend.vercel.app');
+      if (content.includes('Parxee-city-backend.vercel.app')) {
+        content = content.replace(/Parxee-city-backend\.vercel\.app/g, 'parka-backend.vercel.app');
         fs.writeFileSync(fullPath, content);
         console.log(`Fixed ${fullPath}`);
       }

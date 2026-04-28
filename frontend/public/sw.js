@@ -1,4 +1,4 @@
-const CACHE_NAME = 'parkee-cache-v1';
+const CACHE_NAME = 'Parxee-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -32,7 +32,7 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/logo.png',
     badge: '/logo.png',
     data: {
-      url: 'https://parkee-city.vercel.app/' // Assuming production url
+      url: 'https://Parxee-city.vercel.app/' // Assuming production url
     }
   };
 

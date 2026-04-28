@@ -111,7 +111,7 @@ export default function ExtendedRegistration() {
                     Personal Information
                 </h1>
                 <p className="card-description">
-                    Please provide your personal details to create your Parké City profile
+                    Please provide your personal details to create your Parxéé City profile
                 </p>
             </div>
 

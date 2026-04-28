@@ -16,7 +16,7 @@ export default function TermsOfService() {
       <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)',boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <p style={{ marginBottom: '1rem' }}>Last updated: {new Date().toLocaleDateString()}</p>
         <p style={{ marginBottom: '1rem' }}>
-          Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the Parké City website and services operated by us.
+          Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the Parxéé City website and services operated by us.
         </p>
         <h3 style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>Conditions of Use</h3>
         <p style={{ marginBottom: '1rem' }}>

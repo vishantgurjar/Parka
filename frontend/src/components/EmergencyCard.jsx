@@ -19,7 +19,7 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
         {/* Top Carbon Fiber Section */}
         <div className="carbon-section">
           <div className="hybrid-brand">
-             <img src="/logo.png" alt="Logo" />
+             <img src="/logo.png" alt="Parxéé City Logo" />
              <span>PARXÉÉ CITY</span>
           </div>
           <div className="hybrid-chip"></div>

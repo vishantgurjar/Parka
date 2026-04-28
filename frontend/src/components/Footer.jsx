@@ -33,7 +33,7 @@ export default function Footer() {
                 borderRadius: '10px',
                 background: 'var(--gradient-primary)'
               }}>
-                <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
+                <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
               </div>
               <span className="logo-text text-gradient" style={{ fontSize: window.innerWidth < 768 ? '1.15rem' : '1.4rem', fontWeight: '800', letterSpacing: 'var(--tracking-tighter)' }}>PARXÉÉ CITY</span>
             </Link>
