@@ -38,8 +38,8 @@ export default function Header({ onOpenPayment }) {
       }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <div className="logo-icon light-sweep" style={{ 
-            width: '40px',
-            height: '40px',
+            width: window.innerWidth < 768 ? '32px' : '40px',
+            height: window.innerWidth < 768 ? '32px' : '40px',
             borderRadius: '12px',
             background: 'var(--gradient-primary)',
             boxShadow: '0 0 20px var(--primary-glow)',
@@ -51,7 +51,7 @@ export default function Header({ onOpenPayment }) {
              <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
           <span className="logo-text text-gradient" style={{ 
-            fontSize: '1.25rem', 
+            fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem', 
             fontWeight: '800', 
             letterSpacing: 'var(--tracking-tighter)',
             whiteSpace: 'nowrap'
@@ -59,7 +59,7 @@ export default function Header({ onOpenPayment }) {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="nav-desktop" style={{ gap: '1.5rem', display: 'flex', alignItems: 'center' }}>
+        <nav className="nav-desktop" style={{ gap: '1.5rem' }}>
           <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Home</a>
           <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
