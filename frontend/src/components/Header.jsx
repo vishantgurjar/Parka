@@ -29,7 +29,13 @@ export default function Header({ onOpenPayment }) {
 
   return (
     <header className="header glass" id="header" style={{ zIndex: '1000' }}>
-      <div className="container header-inner" style={{ height: window.innerWidth < 768 ? '60px' : '80px' }}>
+      <div className="container header-inner" style={{ 
+        height: window.innerWidth < 768 ? '60px' : '80px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%'
+      }}>
         <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')}>
           <div className="logo-icon light-sweep" style={{ 
             width: window.innerWidth < 768 ? '32px' : '40px',
@@ -47,7 +53,8 @@ export default function Header({ onOpenPayment }) {
               fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem', 
               fontWeight: '800', 
               letterSpacing: 'var(--tracking-tighter)',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              marginLeft: window.innerWidth < 768 ? '8px' : '12px'
             }}>PARXÉÉ CITY</span>
         </Link>
 
