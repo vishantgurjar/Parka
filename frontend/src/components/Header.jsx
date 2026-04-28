@@ -43,13 +43,12 @@ export default function Header({ onOpenPayment }) {
           }}>
              <img src="/logo.png" alt="Parxéé City Logo" style={{ width: '80%', height: '80%', borderRadius: 'inherit', objectFit: 'cover' }} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span className="logo-text text-gradient" style={{ 
               fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem', 
               fontWeight: '800', 
-              letterSpacing: 'var(--tracking-tighter)' 
+              letterSpacing: 'var(--tracking-tighter)',
+              whiteSpace: 'nowrap'
             }}>PARXÉÉ CITY</span>
-          </div>
         </Link>
 
         {/* Desktop Nav */}
