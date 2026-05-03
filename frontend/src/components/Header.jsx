@@ -110,9 +110,6 @@ export default function Header({ onOpenPayment }) {
         
         {/* Header Actions (Always visible) */}
         <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button onClick={toggleTheme} className="theme-toggle glass" style={{ border: 'none', background: 'rgba(255,255,255,0.03)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="menu-toggle" style={{ border: 'none', background: 'transparent', padding: '4px' }}>
             {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
