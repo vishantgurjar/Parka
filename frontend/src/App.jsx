@@ -298,9 +298,7 @@ function App() {
                   <Route path="/community-help" element={<CommunityHelp />} />
                   <Route path="/sentinel" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-                  
-                  <Route path="/sentinel-ops" element={user && user.email === import.meta.env.VITE_ADMIN_EMAIL ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
-                  
+                  <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
