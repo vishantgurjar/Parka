@@ -390,7 +390,7 @@ app.get('/api/auth/vehicle/:id', checkDbConnection, async (req, res) => {
         if (req.params.id === 'demo') {
             return res.json({
                 name: 'VISHANT GURJAR',
-                phone: '7895039922',
+                phone: '9112200000',
                 make: 'MERCEDES',
                 model: 'G-WAGON',
                 plateNumber: 'HR51 AA 0001',
@@ -649,7 +649,7 @@ app.get('/api/mechanics/nearest', checkDbConnection, async (req, res) => {
     }).select('name phone shopName');
 
     if (!nearest) {
-      return res.json({ phone: '7895039922', name: 'Parxéé Admin' }); // Fallback
+      return res.json({ phone: '9112200000', name: 'Parxéé Admin' }); // Fallback
     }
 
     res.json(nearest);

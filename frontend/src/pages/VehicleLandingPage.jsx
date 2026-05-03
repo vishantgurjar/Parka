@@ -11,7 +11,7 @@ export default function VehicleLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showSecureCall, setShowSecureCall] = useState(false);
-  const [nearestMechanic, setNearestMechanic] = useState({ phone: '7895039922', name: 'Parxéé Admin' });
+  const [nearestMechanic, setNearestMechanic] = useState({ phone: '9112200000', name: 'Parxéé Admin' });
   const [reporting, setReporting] = useState(null);
   const { user: currentUser } = useContext(AuthContext);
 
@@ -225,7 +225,7 @@ export default function VehicleLandingPage() {
               <ChevronRight size={24} />
             </button>
           ) : (
-            <a href={`tel:${vehicle.phone || '7895039922'}`} className="btn-gradient" style={{ 
+            <a href={`tel:${vehicle.phone || '9112200000'}`} className="btn-gradient" style={{ 
               textDecoration: 'none', 
               padding: '18px', 
               borderRadius: '20px', 
