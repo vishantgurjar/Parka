@@ -61,26 +61,27 @@ export default function Profile() {
 
   const redeemPerk = async (perk) => {
     if ((user.parxeePoints || 0) < perk.cost) {
-      return toast.error('Insufficient points!');
+      return toast.error(`Insufficient points! You need ${perk.cost} points.`);
     }
-
-    if (!confirm(`Confirm redemption of ${perk.name} for ${perk.cost} points?`)) return;
 
     setIsLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/user/redeem-points`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user._id, pointsToDeduct: perk.cost, perkName: perk.name })
+        body: JSON.stringify({ userId: user._id || user.id, pointsToDeduct: perk.cost, perkName: perk.name })
       });
       const data = await res.json();
       if (res.ok) {
         login(data.user, localStorage.getItem('parkeToken'));
-        toast.success(`Successfully redeemed ${perk.name}! Check your email for details.`);
+        toast.success(`Successfully redeemed ${perk.name}!`);
+        setIsRedeemModalOpen(false);
+      } else {
+        toast.error(data.message || 'Redemption failed.');
       }
     } catch (err) {
       console.error(err);
-      toast.error('Redemption failed.');
+      toast.error('Network error during redemption.');
     } finally {
       setIsLoading(false);
     }
