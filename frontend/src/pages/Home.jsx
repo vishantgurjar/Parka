@@ -458,18 +458,18 @@ export default function Home({ onOpenPayment }) {
                         </div>
                      </div>
                      
-                     {user ? (
-                       <div className="reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                          <button onClick={downloadQR} className="btn-gradient light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800' }}>
-                            <Download size={18} />
-                            Download HQ Image
-                          </button>
-                       </div>
-                     ) : (
-                       <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
-                          <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
-                       </div>
-                     )}
+                     <div className="reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', flexDirection: 'column', alignItems: 'center' }}>
+                        <button onClick={downloadQR} className="btn-gradient light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Download size={18} />
+                          {user ? 'Download HQ Image' : 'Download Sample Free Card'}
+                        </button>
+                        
+                        {!user && (
+                          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                            To get a working QR code for your vehicle, <Link to="/register" style={{ color: 'var(--primary)' }}>Register Here</Link>.
+                          </p>
+                        )}
+                     </div>
                    </div>
                 );
               })()}
