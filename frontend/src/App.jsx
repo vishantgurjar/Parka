@@ -185,10 +185,10 @@ function App() {
     }
   };
 
-  // --- MOBILE PREMIUM PWA INJECTOR ---
+  // --- MOBILE PWA INJECTOR ---
   useEffect(() => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    const shouldActivatePWA = isMobile && isPro();
+    const shouldActivatePWA = isMobile;
 
     const manifestId = 'pwa-manifest-tag';
     let manifestLink = document.getElementById(manifestId);
