@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import PaymentModal from './components/PaymentModal';
 import IncomingCallModal from './components/IncomingCallModal';
 import SecureCallModal from './components/SecureCallModal';
+import { Toaster } from 'react-hot-toast';
 
 import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
@@ -54,7 +55,7 @@ function App() {
       const saved = localStorage.getItem('parkeActiveUser');
       let u = (saved && saved !== 'undefined') ? JSON.parse(saved) : null;
       // Force Diamond status for owner on startup/refresh
-      if (u && u.email === 'panwarvishant9@gmail.com') {
+      if (u && u.email === import.meta.env.VITE_ADMIN_EMAIL) {
         u.subscriptionTier = 'diamond';
       }
       return u;
@@ -76,7 +77,7 @@ function App() {
   const login = (userData, jwtToken) => {
     if (!userData) return;
     // Force Diamond status for owner upon login
-    if (userData.email === 'panwarvishant9@gmail.com') {
+    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL) {
       userData.subscriptionTier = 'diamond';
     }
     setUser(userData);
@@ -97,7 +98,7 @@ function App() {
   const isPro = (u = user) => {
     if (!u) return false;
     // Hardcoded bypass for owner for absolute reliability
-    if (u.email === 'panwarvishant9@gmail.com') return true;
+    if (u.email === import.meta.env.VITE_ADMIN_EMAIL) return true;
     if (!u.subscriptionTier) return false;
     return ['silver', 'gold', 'diamond'].includes(u.subscriptionTier.toLowerCase());
   };
@@ -276,6 +277,7 @@ function App() {
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
           <AuthContext.Provider value={{ user, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
             <Router>
+              <Toaster position="top-center" toastOptions={{ style: { background: '#111827', color: '#f3f4f6', borderRadius: '8px', border: '1px solid #374151' } }} />
               <Header onOpenPayment={handleOpenPayment} />
               <main>
                 <Routes>
@@ -297,7 +299,7 @@ function App() {
                   <Route path="/sentinel" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   
-                  <Route path="/sentinel-ops" element={user && user.email === 'panwarvishant9@gmail.com' ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
+                  <Route path="/sentinel-ops" element={user && user.email === import.meta.env.VITE_ADMIN_EMAIL ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />

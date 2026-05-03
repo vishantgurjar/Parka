@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Wrench, IndianRupee, ShieldAlert, KeyRound, Send, Activity, RefreshCw } from 'lucide-react';
 import SEO from '../components/SEO';
+import { toast } from 'react-hot-toast';
 
 export default function AdminDashboard({ user }) {
   const navigate = useNavigate();
@@ -11,12 +12,12 @@ export default function AdminDashboard({ user }) {
   const [broadcastSending, setBroadcastSending] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
-  const ADMIN_EMAIL = 'panwarvishant9@gmail.com';
+  const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'panwarvishant9@gmail.com';
 
   useEffect(() => {
     // 1. Kick out unauthorized users
     if (!user || user.email !== ADMIN_EMAIL) {
-      alert("UNAUTHORIZED ACCESS DETECTED. IPs LOGGED.");
+      toast.error("UNAUTHORIZED ACCESS DETECTED. IPs LOGGED.");
       navigate('/');
       return;
     }
@@ -44,7 +45,7 @@ export default function AdminDashboard({ user }) {
   };
 
   const sendBroadcast = async () => {
-    if (!broadcastMessage.trim()) return alert("Message cannot be empty!");
+    if (!broadcastMessage.trim()) return toast.error("Message cannot be empty!");
     setBroadcastSending(true);
     try {
       const res = await fetch(`${API_BASE}/api/admin/broadcast`, {
@@ -54,13 +55,13 @@ export default function AdminDashboard({ user }) {
       });
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        toast.success(data.message);
         setBroadcastMessage('');
       } else {
-        alert("Broadcast failed.");
+        toast.error("Broadcast failed.");
       }
     } catch (err) {
-      alert("Network Error");
+      toast.error("Network Error");
     } finally {
       setBroadcastSending(false);
     }
@@ -71,7 +72,7 @@ export default function AdminDashboard({ user }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', color: '#f3f4f6', paddingTop: '80px', paddingBottom: '4rem', fontFamily: 'monospace' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)', paddingTop: '80px', paddingBottom: '4rem' }}>
       <SEO title="System Admin | Parxéé City" />
       
       <div className="container" style={{ maxWidth: '1200px' }}>
@@ -86,7 +87,7 @@ export default function AdminDashboard({ user }) {
 
          {/* Metrics HUD */}
          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-            <div style={{ background: '#111827', border: '1px solid #ef4444', borderLeft: '4px solid #ef4444', padding: '1.5rem', borderRadius: '4px' }}>
+            <div className="glass-card" style={{ borderLeft: '4px solid #ef4444', padding: '1.5rem', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', color: '#ef4444' }}>
                    <Users size={24} />
                    <span style={{ fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>LIVE</span>
@@ -95,7 +96,7 @@ export default function AdminDashboard({ user }) {
                 <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: 'bold' }}>{metrics.todayUsers}</p>
             </div>
 
-            <div style={{ background: '#111827', border: '1px solid #3b82f6', borderLeft: '4px solid #3b82f6', padding: '1.5rem', borderRadius: '4px' }}>
+            <div className="glass-card" style={{ borderLeft: '4px solid #3b82f6', padding: '1.5rem', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', color: '#3b82f6' }}>
                    <Wrench size={24} />
                    <span style={{ fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>HIGHWAY READY</span>
@@ -104,7 +105,7 @@ export default function AdminDashboard({ user }) {
                 <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: 'bold' }}>{metrics.activeMechanics}</p>
             </div>
 
-            <div style={{ background: '#111827', border: '1px solid #10b981', borderLeft: '4px solid #10b981', padding: '1.5rem', borderRadius: '4px' }}>
+            <div className="glass-card" style={{ borderLeft: '4px solid #10b981', padding: '1.5rem', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', color: '#10b981' }}>
                    <IndianRupee size={24} />
                    <span style={{ fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>EST. REVENUE</span>
@@ -117,8 +118,8 @@ export default function AdminDashboard({ user }) {
          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
             
             {/* Global Broadcast */}
-            <div style={{ background: '#111827', border: '1px solid #374151', padding: '2rem', borderRadius: '4px' }}>
-               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: '#f3f4f6', borderBottom: '1px solid #1f2937', paddingBottom: '1rem' }}>
+            <div className="glass-card" style={{ padding: '2rem', borderRadius: '12px' }}>
+               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: 'var(--fg)', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
                   <Send size={20} color="#8b5cf6" /> Push Notify All Devices
                </h3>
                <textarea 
@@ -137,8 +138,8 @@ export default function AdminDashboard({ user }) {
             </div>
 
             {/* Live SOS Desk */}
-            <div style={{ background: '#111827', border: '1px solid #374151', padding: '2rem', borderRadius: '4px' }}>
-               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: '#f3f4f6', borderBottom: '1px solid #1f2937', paddingBottom: '1rem' }}>
+            <div className="glass-card" style={{ padding: '2rem', borderRadius: '12px' }}>
+               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: 'var(--fg)', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
                   <ShieldAlert size={20} color="#f59e0b" /> Active SOS Watch
                </h3>
                
@@ -147,7 +148,7 @@ export default function AdminDashboard({ user }) {
                ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                      {metrics.liveSos.map((sos) => (
-                        <div key={sos._id} style={{ background: '#050505', border: `1px solid ${sos.status === 'pending' ? '#ef4444' : '#f59e0b'}`, padding: '1rem', borderRadius: '4px' }}>
+                        <div key={sos._id} style={{ background: 'var(--bg)', border: `1px solid ${sos.status === 'pending' ? '#ef4444' : '#f59e0b'}`, padding: '1rem', borderRadius: '8px' }}>
                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                               <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>ID: {sos._id.substring(0,8)}</span>
                               <span style={{ fontSize: '0.8rem', background: sos.status === 'pending' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: sos.status === 'pending' ? '#ef4444' : '#f59e0b', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>

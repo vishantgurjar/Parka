@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { AuthContext } from '../App';
+import { toast } from 'react-hot-toast';
 import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
 
@@ -48,11 +49,11 @@ export default function Profile() {
       if (res.ok) {
         login(data.user, localStorage.getItem('parkeToken'));
         setIsDocsModalOpen(false);
-        alert('Documents updated successfully! Verification status will be updated shortly.');
+        toast.success('Documents updated successfully! Verification status will be updated shortly.');
       }
     } catch (err) {
       console.error(err);
-      alert('Error updating documents.');
+      toast.error('Error updating documents.');
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +61,7 @@ export default function Profile() {
 
   const redeemPerk = async (perk) => {
     if ((user.parxeePoints || 0) < perk.cost) {
-      alert('Insufficient points!');
-      return;
+      return toast.error('Insufficient points!');
     }
 
     if (!confirm(`Confirm redemption of ${perk.name} for ${perk.cost} points?`)) return;
@@ -76,11 +76,11 @@ export default function Profile() {
       const data = await res.json();
       if (res.ok) {
         login(data.user, localStorage.getItem('parkeToken'));
-        alert(`Successfully redeemed ${perk.name}! Check your email for details.`);
+        toast.success(`Successfully redeemed ${perk.name}! Check your email for details.`);
       }
     } catch (err) {
       console.error(err);
-      alert('Redemption failed.');
+      toast.error('Redemption failed.');
     } finally {
       setIsLoading(false);
     }

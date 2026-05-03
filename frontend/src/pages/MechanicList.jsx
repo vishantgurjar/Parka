@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { Wrench, MapPin, PhoneCall, Star, CheckCircle, Map as MapIcon, List as ListIcon, AlertTriangle, PlusCircle, X, Radio, Check } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { AuthContext } from '../App';
 import { io } from 'socket.io-client';
 import { Link } from 'react-router-dom';
@@ -71,7 +72,7 @@ export default function MechanicList() {
   }, []);
 
   const toggleVoiceSOS = () => {
-    if (!isPro()) return alert("Voice SOS is a PRO feature. Please upgrade to use it.");
+    if (!isPro()) return toast.error("Voice SOS is a PRO feature. Please upgrade to use it.");
     
     if (isVoiceListening) {
       setIsVoiceListening(false);
@@ -177,11 +178,11 @@ export default function MechanicList() {
 
   const handleBroadcastSOS = async () => {
     if (!userLocation) {
-        alert("We need your location to broadcast an SOS! Please enable GPS.");
+        toast.error("We need your location to broadcast an SOS! Please enable GPS.");
         return;
     }
     if (!user) {
-        alert("Please log in to use SOS Broadcasts.");
+        toast.error("Please log in to use SOS Broadcasts.");
         window.location.href = '/login';
         return;
     }
@@ -222,7 +223,7 @@ export default function MechanicList() {
         }
     } catch (err) {
         console.error("Broadcast error:", err);
-        alert("Failed to broadcast SOS. Please check your connection.");
+        toast.error("Failed to broadcast SOS. Please check your connection.");
         setSosStatus('idle');
     }
   };
@@ -255,10 +256,10 @@ export default function MechanicList() {
               if(socket) socket.disconnect();
               setSocket(null);
           } else {
-              alert(data.message || "Failed to finalize SOS booking.");
+              toast.error(data.message || "Failed to finalize SOS booking.");
           }
       } catch (e) {
-          alert("Network Error finalizing SOS.");
+          toast.error("Network Error finalizing SOS.");
       }
   };
 
@@ -272,7 +273,7 @@ export default function MechanicList() {
             setShowRatingModal(true);
         }
     } catch (e) {
-        alert("Error marking job as complete.");
+        toast.error("Error marking job as complete.");
     }
   };
 
@@ -291,13 +292,13 @@ export default function MechanicList() {
             })
         });
         if (res.ok) {
-            alert("Thank you for your feedback!");
+            toast.success("Thank you for your feedback!");
             setShowRatingModal(false);
             setSosStatus('idle');
             setAssignedMechanic(null);
         }
     } catch (err) {
-        alert("Failed to submit review.");
+        toast.error("Failed to submit review.");
     }
   };
 
@@ -306,7 +307,7 @@ export default function MechanicList() {
   const handleReportIncident = async (e) => {
     e.preventDefault();
     if (!userLocation) {
-        alert("We need your location to drop a hazard pin! Please enable GPS.");
+        toast.error("We need your location to drop a hazard pin! Please enable GPS.");
         return;
     }
     
@@ -327,10 +328,10 @@ export default function MechanicList() {
             setIncidents([data.incident, ...incidents]);
             setShowIncidentModal(false);
             setIncidentForm({ type: 'traffic', description: '' });
-            alert("Hazard reported successfully! Everyone in the area has been alerted.");
+            toast.success("Hazard reported successfully! Everyone in the area has been alerted.");
         }
     } catch (err) {
-        alert("Failed to report hazard.");
+        toast.error("Failed to report hazard.");
     }
   };
 
@@ -628,7 +629,7 @@ export default function MechanicList() {
                                 if (isPro()) {
                                     window.open(`https://wa.me/${mechanic.phone}?text=${encodeURIComponent(`Hi ${mechanic.name}, I found your profile on Parxéé City. I need assistance with my ${user?.make || 'vehicle'}...`)}`, '_blank');
                                 } else {
-                                    alert("WhatsApp Chat is a PRO feature! Please upgrade to Silver or Gold plan to use it.");
+                                    toast.error("WhatsApp Chat is a PRO feature! Please upgrade to Silver or Gold plan to use it.");
                                 }
                             }}
                             className={isPro() ? "btn-secondary" : "btn-muted"}

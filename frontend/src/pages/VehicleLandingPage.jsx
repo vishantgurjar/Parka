@@ -4,6 +4,7 @@ import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, Chevr
 import SEO from '../components/SEO';
 import SecureCallModal from '../components/SecureCallModal';
 import { AuthContext } from '../App';
+import { toast } from 'react-hot-toast';
 
 export default function VehicleLandingPage() {
   const { id } = useParams();
@@ -98,13 +99,13 @@ export default function VehicleLandingPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert(`✅ Success! ${data.message}`);
+        toast.success(data.message);
       } else {
-        alert(data.message || "Failed to notify owner.");
+        toast.error(data.message || "Failed to notify owner.");
       }
     } catch (err) {
       console.error(err);
-      alert("Error reporting issue. Check your connection.");
+      toast.error("Error reporting issue. Check your connection.");
     } finally {
       setReporting(null);
     }

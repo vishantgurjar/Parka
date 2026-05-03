@@ -169,7 +169,7 @@ if (!JWT_SECRET) {
 try {
   if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
-      'mailto:panwarvishant9@gmail.com',
+      process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com',
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY
     );
@@ -323,7 +323,7 @@ app.post('/api/auth/login', checkDbConnection, async (req, res) => {
         delete userResponse.password;
 
         // Founder Bypass (Hardcoded for stability)
-        if (user.email === 'panwarvishant9@gmail.com' || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
+        if ((process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
             userResponse.subscriptionTier = 'diamond';
         }
 
@@ -371,7 +371,7 @@ app.post('/api/auth/google', checkDbConnection, async (req, res) => {
         if (userResponse.password) delete userResponse.password;
 
         // Founder Bypass (Hardcoded for stability)
-        if (user.email === 'panwarvishant9@gmail.com' || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
+        if ((process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) || (process.env.FOUNDER_EMAIL && user.email === process.env.FOUNDER_EMAIL)) {
             userResponse.subscriptionTier = 'diamond';
         }
 
@@ -489,7 +489,7 @@ app.post('/api/user/redeem-points', checkDbConnection, async (req, res) => {
 // @desc    Get dashboard metrics for owner
 app.get('/api/admin/metrics', checkDbConnection, async (req, res) => {
   try {
-    const adminEmail = 'panwarvishant9@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com';
     const email = req.query.email;
     if (email !== adminEmail) {
       return res.status(403).json({ message: 'Forbidden' });
@@ -539,7 +539,7 @@ app.get('/api/admin/metrics', checkDbConnection, async (req, res) => {
 // @desc    Send global push broadcast
 app.post('/api/admin/broadcast', checkDbConnection, async (req, res) => {
     try {
-        const adminEmail = 'panwarvishant9@gmail.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com';
         const { email, title, message } = req.body;
         if (email !== adminEmail) {
             return res.status(403).json({ message: 'Forbidden' });
