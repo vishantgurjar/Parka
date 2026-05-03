@@ -77,7 +77,7 @@ function App() {
   const login = (userData, jwtToken) => {
     if (!userData) return;
     // Force Diamond status for owner upon login
-    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL) {
+    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL || userData.email === 'panwarvishant9@gmail.com') {
       userData.subscriptionTier = 'diamond';
     }
     setUser(userData);
