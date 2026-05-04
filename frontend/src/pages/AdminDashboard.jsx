@@ -32,7 +32,9 @@ export default function AdminDashboard({ user }) {
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/metrics?email=${ADMIN_EMAIL}`);
+      const res = await fetch(`${API_BASE}/api/admin/metrics`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
+      });
       const data = await res.json();
       if (data.success) {
         setMetrics(data);
@@ -50,8 +52,11 @@ export default function AdminDashboard({ user }) {
     try {
       const res = await fetch(`${API_BASE}/api/admin/broadcast`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: ADMIN_EMAIL, title: "PLATFORM ANNOUNCEMENT", message: broadcastMessage })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('parkeToken')}`
+        },
+        body: JSON.stringify({ title: "PLATFORM ANNOUNCEMENT", message: broadcastMessage })
       });
       const data = await res.json();
       if (data.success) {

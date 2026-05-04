@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 import EmergencyCard from '../components/EmergencyCard';
 import CustomerCard from '../components/CustomerCard';
 import { toPng } from 'html-to-image';
-
+import { toast } from 'react-hot-toast';
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
@@ -44,17 +44,21 @@ export default function Home({ onOpenPayment }) {
   const [activeCard, setActiveCard] = useState('emergency'); // profile or emergency
   const [showSOSHub, setShowSOSHub] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleContactSubmit = (e) => {
+  const handleContactSubmit = async (e) => {
     e.preventDefault();
     if (!contactForm.name || !contactForm.email || !contactForm.message) {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
       return;
     }
+    setIsSubmitting(true);
     // Simulate API call
+    await new Promise(r => setTimeout(r, 1000));
     console.log("Contact Request Sent:", contactForm);
-    alert("Success! Your request has been sent to the Parxéé City team.");
+    toast.success("Success! Your request has been sent to the Parxéé City team.");
     setContactForm({ name: '', email: '', message: '' });
+    setIsSubmitting(false);
   };
 
   useEffect(() => {
@@ -87,7 +91,7 @@ export default function Home({ onOpenPayment }) {
       const transcript = event.results[0][0].transcript.toLowerCase();
       if (transcript.includes('help') || transcript.includes('emergency') || transcript.includes('bachao')) {
         window.location.href = 'tel:911'; 
-        alert("Emergency Voice SOS Triggered! Calling Emergency Services...");
+        toast.success("Emergency Voice SOS Triggered! Calling Emergency Services...");
       }
     };
 
@@ -135,7 +139,7 @@ export default function Home({ onOpenPayment }) {
       link.click();
     } catch (err) {
       console.error('Final Download Error:', err);
-      alert("Mobile render failed. Please use a screenshot if this continues.");
+      toast.error("Mobile render failed. Please use a screenshot if this continues.");
     } finally {
       // Step 4: Immediate cleanup
       if (document.body.contains(clonedCard)) {
@@ -517,11 +521,18 @@ export default function Home({ onOpenPayment }) {
                   onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                 ></textarea>
               </div>
-              <button type="submit" className="btn-gradient full-width light-sweep" style={{ padding: '18px', borderRadius: '16px', fontWeight: '900', fontSize: '1rem' }}>
-                <Send size={18} />
-                Send Request
+              <button type="submit" disabled={isSubmitting} className="btn-gradient full-width light-sweep" style={{ padding: '18px', borderRadius: '16px', fontWeight: '900', fontSize: '1rem', opacity: isSubmitting ? 0.7 : 1 }}>
+                {isSubmitting ? (
+                  <span style={{ display: 'inline-block', width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                ) : (
+                  <Send size={18} />
+                )}
+                {isSubmitting ? 'Sending...' : 'Send Request'}
               </button>
             </form>
+            <style>{`
+              @keyframes spin { 100% { transform: rotate(360deg); } }
+            `}</style>
           </div>
         </div>
       </section>

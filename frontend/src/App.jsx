@@ -6,7 +6,7 @@ import Footer from './components/Footer';
 import PaymentModal from './components/PaymentModal';
 import IncomingCallModal from './components/IncomingCallModal';
 import SecureCallModal from './components/SecureCallModal';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
@@ -156,7 +156,7 @@ function App() {
 
   const handleOpenPayment = (name, amount) => {
     if (!user) {
-      alert("Please log in or register before subscribing.");
+      toast.error("Please log in or register before subscribing.");
       window.location.href = '/login';
       return;
     }
@@ -174,14 +174,14 @@ function App() {
       const data = await res.json();
       if (res.ok) {
         login(data.user, localStorage.getItem('parkeToken')); // Update AuthContext user
-        alert(`Congratulations! You are now a ${paymentPlan.name} member.`);
+        toast.success(`Congratulations! You are now a ${paymentPlan.name} member.`);
         setPaymentPlan(null);
         // Refresh to trigger PWA detection if they just upgraded
         window.location.reload();
       }
     } catch (err) {
       console.error(err);
-      alert('Issue upgrading account, please contact support.');
+      toast.error('Issue upgrading account, please contact support.');
     }
   };
 
