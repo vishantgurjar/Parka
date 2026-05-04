@@ -36,10 +36,11 @@ router.get('/metrics', protect, isAdmin, async (req, res) => {
        if (u.subscriptionTier === 'Silver' || u.subscriptionTier === 'silver') revenue += 15000;
     });
 
-    // 4. Live SOS - Simplified query for debugging
-    const activeSOS = await SOSRequest.find({}).sort({ createdAt: -1 }).limit(10);
-    console.log(`Admin Metrics: Found ${activeSOS.length} total SOS requests.`);
-
+    // 4. Live SOS - Showing only actionable requests
+    const activeSOS = await SOSRequest.find({
+        status: { $in: ['pending', 'accepted'] }
+    }).sort({ createdAt: -1 }).limit(20);
+    
     res.json({
        success: true,
        todayUsers: todayUsersCount,

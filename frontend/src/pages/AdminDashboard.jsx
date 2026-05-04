@@ -25,8 +25,8 @@ export default function AdminDashboard({ user }) {
     // 2. Fetch metrics
     fetchMetrics();
     
-    // 3. Auto-refresh every 30 seconds
-    const interval = setInterval(fetchMetrics, 30000);
+    // 3. Auto-refresh every 10 seconds
+    const interval = setInterval(fetchMetrics, 10000);
     return () => clearInterval(interval);
   }, [user, navigate]);
 

@@ -149,14 +149,22 @@ module.exports = function(io) {
                     }
 
                     // Save the URL to the corresponding SOS request
-                    const { sosId } = req.body;
-                    console.log('Processing evidence for SOS ID:', sosId);
+                    const { sosId, userId } = req.body;
+                    let targetSos = null;
+
                     if (sosId) {
-                        const sos = await SOSRequest.findById(sosId);
-                        if (sos) {
-                            sos.evidenceUrl = result.secure_url;
-                            await sos.save();
-                        }
+                        targetSos = await SOSRequest.findById(sosId);
+                    } else if (userId) {
+                        // Fallback: If sosId is missing, find the latest pending SOS for this user
+                        targetSos = await SOSRequest.findOne({ userId, status: 'pending' }).sort({ createdAt: -1 });
+                    }
+
+                    if (targetSos) {
+                        targetSos.evidenceUrl = result.secure_url;
+                        await targetSos.save();
+                        console.log('Evidence linked to SOS:', targetSos._id);
+                    } else {
+                        console.warn('Evidence uploaded but no matching SOS found for ID:', sosId, 'or User:', userId);
                     }
 
                     res.json({ message: 'Evidence uploaded successfully', url: result.secure_url });
