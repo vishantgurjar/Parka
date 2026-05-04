@@ -134,6 +134,7 @@ module.exports = function(io) {
     // @desc    Upload Sentinel video evidence
     router.post('/evidence', upload.single('video'), async (req, res) => {
         try {
+            console.log('Evidence Upload Request received. Body:', req.body);
             if (!req.file) {
                 return res.status(400).json({ message: 'No video file provided' });
             }
@@ -149,6 +150,7 @@ module.exports = function(io) {
 
                     // Save the URL to the corresponding SOS request
                     const { sosId } = req.body;
+                    console.log('Processing evidence for SOS ID:', sosId);
                     if (sosId) {
                         const sos = await SOSRequest.findById(sosId);
                         if (sos) {

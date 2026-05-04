@@ -71,9 +71,9 @@ export default function Sentinel() {
     addLog("UPLOADING EVIDENCE TO CLOUD...");
     try {
       const formData = new FormData();
-      formData.append('video', blob, 'sentinel-evidence.webm');
-      formData.append('userId', user?._id || 'guest');
       if (sosId) formData.append('sosId', sosId);
+      formData.append('userId', user?._id || 'guest');
+      formData.append('video', blob, 'sentinel-evidence.webm');
 
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence`, {
         method: 'POST',
