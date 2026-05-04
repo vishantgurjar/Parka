@@ -111,7 +111,16 @@ export default function Sentinel() {
     }
     
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
+      // Request low-res video to keep file size small for cloud upload (< 4MB limit on Vercel)
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          frameRate: { ideal: 15 }
+        }, 
+        audio: true 
+      });
       setStream(mediaStream);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       
@@ -121,8 +130,8 @@ export default function Sentinel() {
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
             chunksRef.current.push(e.data);
-            // Keep only last 20 seconds (approx)
-            if (chunksRef.current.length > 20) {
+            // Keep only last 10 seconds to ensure file size is small enough for Vercel
+            if (chunksRef.current.length > 10) {
                 chunksRef.current.shift();
             }
         }
@@ -258,7 +267,7 @@ export default function Sentinel() {
                         </div>
                         <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right' }}>
                           <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>Storage</div>
-                          <div style={{ fontWeight: 'bold' }}>BUFFERING (20s)</div>
+                          <div style={{ fontWeight: 'bold' }}>BUFFERING (10s)</div>
                         </div>
                       </div>
 
