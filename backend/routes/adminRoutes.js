@@ -38,7 +38,7 @@ router.get('/metrics', protect, isAdmin, async (req, res) => {
     // 4. Live SOS
     const activeSOS = await mongoose.model('SOSRequest').find({
        status: { $in: ['pending', 'accepted'] }
-    }).populate('user', 'name phone').populate('acceptedBy', 'name phone').sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 });
 
     res.json({
        success: true,
