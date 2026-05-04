@@ -30,6 +30,7 @@ const SOSRequestSchema = new mongoose.Schema({
         price: { type: Number },
         phone: { type: String }
     },
+    evidenceUrl: { type: String },
     createdAt: { type: Date, default: Date.now, expires: 7200 } // TTL 2 hours
 });
 

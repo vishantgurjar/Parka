@@ -3,6 +3,19 @@ const SOSRequest = require('../models/SOSRequest');
 const Mechanic = require('../models/Mechanic');
 const User = require('../models/User');
 const webpush = require('web-push');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const streamifier = require('streamifier');
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Setup Multer (Memory Storage)
+const upload = multer({ storage: multer.memoryStorage() });
 
 module.exports = function(io) {
     const router = express.Router();
@@ -114,6 +127,45 @@ module.exports = function(io) {
             }
         } catch (err) {
             res.status(500).json({ message: "Error updating SOS status." });
+        }
+    });
+
+    // @route   POST /api/sos/evidence
+    // @desc    Upload Sentinel video evidence
+    router.post('/evidence', upload.single('video'), async (req, res) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ message: 'No video file provided' });
+            }
+
+            // Stream upload to Cloudinary
+            const uploadStream = cloudinary.uploader.upload_stream(
+                { resource_type: 'video', folder: 'sentinel_evidence' },
+                async (error, result) => {
+                    if (error) {
+                        console.error('Cloudinary Upload Error:', error);
+                        return res.status(500).json({ message: 'Error uploading video to cloud' });
+                    }
+
+                    // Save the URL to the corresponding SOS request
+                    const { sosId } = req.body;
+                    if (sosId) {
+                        const sos = await SOSRequest.findById(sosId);
+                        if (sos) {
+                            sos.evidenceUrl = result.secure_url;
+                            await sos.save();
+                        }
+                    }
+
+                    res.json({ message: 'Evidence uploaded successfully', url: result.secure_url });
+                }
+            );
+
+            streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+
+        } catch (err) {
+            console.error('Evidence Route Error:', err);
+            res.status(500).json({ message: 'Server error processing evidence' });
         }
     });
 

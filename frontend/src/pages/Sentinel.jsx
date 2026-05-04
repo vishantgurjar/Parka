@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { Shield, Radio, Activity, Camera, AlertCircle, X, MapPin, Gauge } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../App';
 import SEO from '../components/SEO';
 
 export default function Sentinel() {
-  const { isPro } = useContext(AuthContext);
+  const { isPro, user } = useContext(AuthContext);
   const [isActive, setIsActive] = useState(false);
   const [isImpactDetected, setIsImpactDetected] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [gForce, setGForce] = useState({ x: 0, y: 0, z: 0, total: 0 });
   const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
   const [stream, setStream] = useState(null);
   const [logs, setLogs] = useState([]);
 
@@ -24,10 +27,62 @@ export default function Sentinel() {
     setCountdown(10);
   };
 
-  const sendSOS = () => {
+  const sosIdRef = useRef(null);
+  const [currentSosId, setCurrentSosId] = useState(null);
+
+  const sendSOS = async () => {
     addLog("SOS DISPATCHED TO EMERGENCY CLOUD.");
-    alert("SOS DISPATCHED! Evidence locked and uploaded to Parxéé Cloud.");
+    
+    try {
+      // 1. Broadcast the SOS
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/broadcast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?._id || 'guest',
+          userName: user?.name || 'Sentinel Driver',
+          userPhone: user?.phone || '9112200000',
+          location: { lat: 28.7041, lng: 77.1025 } // Using static/mock location for now
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.sosRequest) {
+        setCurrentSosId(data.sosRequest._id);
+        sosIdRef.current = data.sosRequest._id;
+        
+        // 2. Stop recording and get the blob (the onstop handler will call uploadEvidence)
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      }
+    } catch (err) {
+      console.error("SOS Broadcast Failed:", err);
+    }
+
     setIsImpactDetected(false);
+  };
+
+  const uploadEvidence = async (blob, sosId) => {
+    try {
+      const formData = new FormData();
+      formData.append('video', blob, 'sentinel-evidence.webm');
+      formData.append('userId', user?._id || 'guest');
+      if (sosId) formData.append('sosId', sosId);
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        addLog("EVIDENCE UPLOADED TO CLOUD VAULT.");
+        toast.success("SOS & Video Evidence Uploaded!");
+      }
+    } catch (err) {
+      console.error("Upload failed:", err);
+      addLog("CLOUD UPLOAD FAILED. RECORD SAVED LOCALLY.");
+    }
   };
 
   const cancelSOS = () => {
@@ -51,13 +106,29 @@ export default function Sentinel() {
     }
     
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
       setStream(mediaStream);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      
+      // Setup MediaRecorder
+      const recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+        uploadEvidence(blob, sosIdRef.current);
+      };
+      
+      recorder.start(1000); // Capture in 1s chunks
+      mediaRecorderRef.current = recorder;
+
       setIsActive(true);
       addLog("System Armed. Monitoring Sensors.");
     } catch (e) {
-      alert("Camera access required for Sentinel Mode.");
+      console.error(e);
+      toast.error("Camera access required for Sentinel Mode.");
     }
   };
 
