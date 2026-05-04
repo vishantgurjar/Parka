@@ -14,6 +14,7 @@ export default function Sentinel() {
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const [stream, setStream] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [logs, setLogs] = useState([]);
 
   // Mock logging function
@@ -64,6 +65,8 @@ export default function Sentinel() {
   };
 
   const uploadEvidence = async (blob, sosId) => {
+    setIsUploading(true);
+    addLog("UPLOADING EVIDENCE TO CLOUD...");
     try {
       const formData = new FormData();
       formData.append('video', blob, 'sentinel-evidence.webm');
@@ -76,12 +79,14 @@ export default function Sentinel() {
       });
 
       if (res.ok) {
-        addLog("EVIDENCE UPLOADED TO CLOUD VAULT.");
+        addLog("EVIDENCE SECURED IN CLOUD VAULT.");
         toast.success("SOS & Video Evidence Uploaded!");
       }
     } catch (err) {
       console.error("Upload failed:", err);
-      addLog("CLOUD UPLOAD FAILED. RECORD SAVED LOCALLY.");
+      addLog("UPLOAD FAILED. CHECK INTERNET.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -114,7 +119,13 @@ export default function Sentinel() {
       const recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+        if (e.data.size > 0) {
+            chunksRef.current.push(e.data);
+            // Keep only last 20 seconds (approx)
+            if (chunksRef.current.length > 20) {
+                chunksRef.current.shift();
+            }
+        }
       };
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' });
@@ -209,71 +220,88 @@ export default function Sentinel() {
                 </button>
               </div>
             ) : (
-              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                {/* Live Video Feed */}
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  muted 
-                  playsInline 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6, display: 'block' }}
-                />
-                
-                {/* HUD Overlay */}
-                <div className="hud-overlay" style={{ position: 'absolute', inset: 0, padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                  
-                  {/* Top HUD */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>System Status</div>
-                      <div style={{ color: '#22c55e', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Radio size={14} className="pulse-anim" /> ONLINE
-                      </div>
+              <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {isUploading ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
+                    <div className="pulse-anim" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center' }}>
+                      <Activity size={80} color="#38bdf8" />
                     </div>
-                    <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>Storage</div>
-                      <div style={{ fontWeight: 'bold' }}>BUFFERING (30s)</div>
+                    <h2 style={{ fontSize: '2rem', color: '#38bdf8', marginBottom: '1rem' }}>SECURING EVIDENCE</h2>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '400px', margin: '0 auto' }}>
+                      Uploading dashcam footage to Parxéé Cloud Vault. Please do not close the app.
+                    </p>
+                    <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginTop: '2.5rem', overflow: 'hidden' }}>
+                      <div className="loading-bar-fill" style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', animation: 'loading-progress 2s infinite linear' }} />
                     </div>
                   </div>
+                ) : (
+                  <>
+                    {/* Live Video Feed */}
+                    <video 
+                      ref={videoRef} 
+                      autoPlay 
+                      muted 
+                      playsInline 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6, display: 'block' }}
+                    />
+                    
+                    {/* HUD Overlay */}
+                    <div className="hud-overlay" style={{ position: 'absolute', inset: 0, padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
+                      
+                      {/* Top HUD */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>System Status</div>
+                          <div style={{ color: '#22c55e', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Radio size={14} className="pulse-anim" /> ONLINE
+                          </div>
+                        </div>
+                        <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>Storage</div>
+                          <div style={{ fontWeight: 'bold' }}>BUFFERING (20s)</div>
+                        </div>
+                      </div>
 
-                  {/* Center HUD (Impact) */}
-                  {isImpactDetected && (
-                    <div className="impact-alert glass" style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', border: '2px solid #ef4444', padding: '3rem', borderRadius: '24px', textAlign: 'center', animation: 'impact-pulse 1s infinite', pointerEvents: 'all' }}>
-                      <AlertCircle size={60} color="#ef4444" style={{ margin: '0 auto 1.5rem' }} />
-                      <h2 style={{ fontSize: '2rem', color: '#ef4444', fontWeight: '900', marginBottom: '0.5rem' }}>IMPACT DETECTED!</h2>
-                      <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>Automatic SOS in <strong>{countdown}s</strong></p>
-                      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <button onClick={cancelSOS} style={{ padding: '14px 28px', background: '#333', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                          I'M SAFE
-                        </button>
-                        <button onClick={sendSOS} style={{ padding: '14px 28px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                          SEND SOS
+                      {/* Center HUD (Impact) */}
+                      {isImpactDetected && (
+                        <div className="impact-alert glass" style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', border: '2px solid #ef4444', padding: '3rem', borderRadius: '24px', textAlign: 'center', animation: 'impact-pulse 1s infinite', pointerEvents: 'all' }}>
+                          <AlertCircle size={60} color="#ef4444" style={{ margin: '0 auto 1.5rem' }} />
+                          <h2 style={{ fontSize: '2rem', color: '#ef4444', fontWeight: '900', marginBottom: '0.5rem' }}>IMPACT DETECTED!</h2>
+                          <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>Automatic SOS in <strong>{countdown}s</strong></p>
+                          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                            <button onClick={cancelSOS} style={{ padding: '14px 28px', background: '#333', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                              I'M SAFE
+                            </button>
+                            <button onClick={sendSOS} style={{ padding: '14px 28px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                              SEND SOS
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bottom HUD */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                        <div className="glass" style={{ padding: '20px', borderRadius: '20px', minWidth: '200px', display: 'flex', gap: '20px' }}>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)' }}>G-FORCE</div>
+                              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{gForce.total}G</div>
+                            </div>
+                            <div style={{ height: '40px', width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)' }}>STABILITY</div>
+                              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>98%</div>
+                            </div>
+                        </div>
+                        <button 
+                          onClick={stopSentinel} 
+                          style={{ pointerEvents: 'all', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        >
+                          <X size={24} />
                         </button>
                       </div>
                     </div>
-                  )}
-
-                  {/* Bottom HUD */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <div className="glass" style={{ padding: '20px', borderRadius: '20px', minWidth: '200px', display: 'flex', gap: '20px' }}>
-                        <div>
-                          <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)' }}>G-FORCE</div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{gForce.total}G</div>
-                        </div>
-                        <div style={{ height: '40px', width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                        <div>
-                          <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)' }}>STABILITY</div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>98%</div>
-                        </div>
-                    </div>
-                    <button 
-                      onClick={stopSentinel} 
-                      style={{ pointerEvents: 'all', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -343,6 +371,25 @@ export default function Sentinel() {
           0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
           70% { box-shadow: 0 0 0 30px rgba(239, 68, 68, 0); }
           100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        @keyframes loading-progress {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes shimmer {
+          0% { opacity: 0.5; }
+          50% { opacity: 1; }
+          100% { opacity: 0.5; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .loading-bar-fill {
+           animation: loading-progress 2s infinite linear;
+        }
+        .fadeIn {
+           animation: fadeIn 0.5s ease forwards;
         }
         .text-gradient {
           background: linear-gradient(135deg, #38bdf8, #818cf8);
