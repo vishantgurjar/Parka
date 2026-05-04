@@ -160,11 +160,17 @@ export default function AdminDashboard({ user }) {
                                  {sos.status}
                               </span>
                            </div>
-                           <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem' }}><strong>Victim:</strong> {sos.user?.name || 'Unknown'} ({sos.user?.phone || 'No Phone'})</p>
-                           {sos.acceptedBy && (
-                              <p style={{ margin: '0', fontSize: '0.9rem', color: '#10b981' }}><strong>Mechanic:</strong> {sos.acceptedBy.name} ({sos.acceptedBy.phone})</p>
+                           <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem' }}><strong>Victim:</strong> {sos.userName || 'Unknown'} ({sos.userPhone || 'No Phone'})</p>
+                           {sos.assignedBid?.mechanicName && (
+                              <p style={{ margin: '0', fontSize: '0.9rem', color: '#10b981' }}><strong>Mechanic:</strong> {sos.assignedBid.mechanicName} ({sos.assignedBid.phone})</p>
                            )}
-                           <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: '#ef4444' }}><strong>Issue:</strong> {sos.issueDescription}</p>
+                           {sos.evidenceUrl && (
+                              <div style={{ marginTop: '10px' }}>
+                                 <a href={sos.evidenceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid #38bdf8', padding: '6px 12px', borderRadius: '4px', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 'bold' }}>
+                                    🎥 View Dashcam Evidence
+                                 </a>
+                              </div>
+                           )}
                         </div>
                      ))}
                   </div>
