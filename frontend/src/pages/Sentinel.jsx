@@ -49,6 +49,8 @@ export default function Sentinel() {
 
       const data = await res.json();
       if (res.ok && data.sosRequest) {
+        addLog("SOS BROADCASTED SUCCESSFULLY.");
+        toast.success("Emergency Signal Sent!");
         setCurrentSosId(data.sosRequest._id);
         sosIdRef.current = data.sosRequest._id;
         

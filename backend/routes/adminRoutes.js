@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Mechanic = require('../models/Mechanic');
+const SOSRequest = require('../models/SOSRequest');
 const webpush = require('web-push');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
@@ -35,10 +36,9 @@ router.get('/metrics', protect, isAdmin, async (req, res) => {
        if (u.subscriptionTier === 'Silver' || u.subscriptionTier === 'silver') revenue += 15000;
     });
 
-    // 4. Live SOS
-    const activeSOS = await mongoose.model('SOSRequest').find({
-       status: { $in: ['pending', 'accepted'] }
-    }).sort({ createdAt: -1 });
+    // 4. Live SOS - Simplified query for debugging
+    const activeSOS = await SOSRequest.find({}).sort({ createdAt: -1 }).limit(10);
+    console.log(`Admin Metrics: Found ${activeSOS.length} total SOS requests.`);
 
     res.json({
        success: true,
