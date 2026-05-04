@@ -102,10 +102,11 @@ router.post('/diagnose', async (req, res) => {
         Frequency Peaks: ${JSON.stringify(spectralPeaks || [])}
 
         Instructions:
-        1. Analyze the symptoms and/or the image provided to identify the vehicle issue.
-        2. Speak in a friendly, helpful Hinglish style (mix of English and Hindi/Urdu). Use terms like "Bhaiya", "Chinta mat karo", "Dekho".
-        3. Explain the problem simply as if talking to a friend on WhatsApp.
-        4. Provide response in RAW JSON ONLY:
+        1. CRITICAL: Evaluate if the Symptom or Image is actually related to a car, vehicle, engine, or mechanical issue. If it is NOT (e.g., just "hello", random text, or unrelated topics), you MUST return this exact JSON: {"issue": "Invalid Query", "dangerLevel": "LOW", "details": "Bhaiya, main ek car mechanic AI hu. Please gaadi se related problem batao.", "action": "Try explaining the car issue again.", "estimatedCost": "₹0", "confidence": 100} and STOP.
+        2. Analyze the symptoms and/or the image provided to identify the vehicle issue.
+        3. Speak in a friendly, helpful Hinglish style (mix of English and Hindi/Urdu). Use terms like "Bhaiya", "Chinta mat karo", "Dekho".
+        4. Explain the problem simply as if talking to a friend on WhatsApp.
+        5. Provide response in RAW JSON ONLY. Do not use markdown blocks like \`\`\`json. Just the raw JSON object:
         {
           "issue": "Specific Problem Name",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
@@ -130,7 +131,15 @@ router.post('/diagnose', async (req, res) => {
         }
 
         const result = await model.generateContent(parts);
-        const text = result.response.text().replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+        let text = result.response.text();
+        
+        // Robust JSON extraction
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            text = jsonMatch[0];
+        } else {
+            text = text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/gi, '').trim();
+        }
 
         try {
           const diagnostic = JSON.parse(text);
