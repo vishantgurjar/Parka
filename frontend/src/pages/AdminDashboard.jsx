@@ -144,6 +144,11 @@ export default function AdminDashboard({ user }) {
 
             {/* Live SOS Desk */}
             <div className="glass-card" style={{ padding: '2rem', borderRadius: '12px' }}>
+                <div style={{ textAlign: 'right', marginBottom: '-2rem' }}>
+                    <button onClick={fetchMetrics} style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer', fontSize: '0.8rem', padding: '10px' }}>
+                        <RefreshCw size={14} className={loading ? 'spin' : ''} /> Force Sync
+                    </button>
+                </div>
                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: 'var(--fg)', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
                   <ShieldAlert size={20} color="#f59e0b" /> Active SOS Watch
                </h3>

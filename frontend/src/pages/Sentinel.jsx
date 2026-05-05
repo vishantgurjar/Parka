@@ -204,7 +204,7 @@ export default function Sentinel() {
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', letterSpacing: '-1px', margin: '0 0 10px 0' }}>
             Driving <span className="text-gradient">Sentinel Mode</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem' }}>Active Accident Monitoring & Evidence Protection</p>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem' }}>v2.5.0 - Enhanced Cloud Protection</p>
         </header>
 
         <div className="sentinel-grid" style={{ display: 'grid', gridTemplateColumns: isActive ? '1fr 340px' : '1fr', gap: '2rem' }}>
