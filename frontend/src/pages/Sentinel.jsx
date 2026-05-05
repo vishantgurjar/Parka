@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import { Shield, Radio, Activity, Camera, AlertCircle, X, MapPin, Gauge } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../App';
@@ -18,20 +18,20 @@ export default function Sentinel() {
   const [logs, setLogs] = useState([]);
 
   // Mock logging function
-  const addLog = (msg) => {
+  const addLog = useCallback((msg) => {
     setLogs(prev => [{ time: new Date().toLocaleTimeString(), msg }, ...prev].slice(0, 5));
-  };
+  }, []);
 
-  const triggerImpact = () => {
+  const triggerImpact = useCallback(() => {
     setIsImpactDetected(true);
     addLog("CRITICAL IMPACT DETECTED!");
     setCountdown(10);
-  };
+  }, [addLog]);
 
   const sosIdRef = useRef(null);
   const [currentSosId, setCurrentSosId] = useState(null);
 
-  const sendSOS = async () => {
+  const sendSOS = useCallback(async () => {
     addLog("SOS DISPATCHED TO EMERGENCY CLOUD.");
     
     try {
@@ -64,9 +64,9 @@ export default function Sentinel() {
     }
 
     setIsImpactDetected(false);
-  };
+  }, [addLog, user]);
 
-  const uploadEvidence = async (blob, sosId) => {
+  const uploadEvidence = useCallback(async (blob, sosId) => {
     setIsUploading(true);
     addLog("UPLOADING EVIDENCE TO CLOUD...");
     try {
@@ -90,7 +90,7 @@ export default function Sentinel() {
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [addLog, user]);
 
   const cancelSOS = () => {
     setIsImpactDetected(false);
