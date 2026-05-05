@@ -107,8 +107,9 @@ export default function Sentinel() {
         }
       } else {
         console.error("Cloudinary error:", cloudData);
-        addLog(`CLOUD ERROR: ${cloudData.error?.message || 'Upload failed'}`);
-        toast.error("Cloud upload failed. Check Preset.");
+        const errorMsg = cloudData.error?.message || 'Upload failed';
+        addLog(`CLOUD ERROR: ${errorMsg}`);
+        toast.error(`Cloud Fail: ${errorMsg}`);
       }
     } catch (err) {
       console.error("Upload failed:", err);
