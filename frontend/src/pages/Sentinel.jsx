@@ -68,25 +68,51 @@ export default function Sentinel() {
 
   const uploadEvidence = useCallback(async (blob, sosId) => {
     setIsUploading(true);
-    addLog("UPLOADING EVIDENCE TO CLOUD...");
+    addLog("DIRECT CLOUD UPLOAD INITIALIZED...");
+    
     try {
-      const formData = new FormData();
-      if (sosId) formData.append('sosId', sosId);
-      formData.append('userId', user?._id || 'guest');
-      formData.append('video', blob, 'sentinel-evidence.webm');
+      // 1. Upload Directly to Cloudinary from Browser (Bypasses Vercel Limits)
+      const cloudName = 'dosb2aa9f';
+      const uploadPreset = 'parxee city'; // Provided by user
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence`, {
+      const formData = new FormData();
+      formData.append('file', blob);
+      formData.append('upload_preset', uploadPreset);
+      formData.append('resource_type', 'video');
+
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
         method: 'POST',
         body: formData
       });
 
-      if (res.ok) {
-        addLog("EVIDENCE SECURED IN CLOUD VAULT.");
-        toast.success("SOS & Video Evidence Uploaded!");
+      const cloudData = await cloudRes.json();
+
+      if (cloudRes.ok && cloudData.secure_url) {
+        addLog("EVIDENCE SECURED IN CLOUD.");
+        
+        // 2. Link the URL to the SOS in our database
+        const linkRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-link`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sosId: sosId || null,
+            userId: user?._id || 'guest',
+            evidenceUrl: cloudData.secure_url
+          })
+        });
+
+        if (linkRes.ok) {
+          addLog("EVIDENCE LINKED TO SOS RECORD.");
+          toast.success("SOS & Video Evidence Secured!");
+        }
+      } else {
+        console.error("Cloudinary error:", cloudData);
+        addLog(`CLOUD ERROR: ${cloudData.error?.message || 'Upload failed'}`);
+        toast.error("Cloud upload failed. Check Preset.");
       }
     } catch (err) {
       console.error("Upload failed:", err);
-      addLog("UPLOAD FAILED. CHECK INTERNET.");
+      addLog("NETWORK ERROR DURING UPLOAD.");
     } finally {
       setIsUploading(false);
     }

@@ -179,5 +179,29 @@ module.exports = function(io) {
         }
     });
 
+    // @route   POST /api/sos/evidence-link
+    // @desc    Link an already uploaded Cloudinary URL to an SOS
+    router.post('/evidence-link', async (req, res) => {
+        try {
+            const { sosId, userId, evidenceUrl } = req.body;
+            let targetSos = null;
+
+            if (sosId) {
+                targetSos = await SOSRequest.findById(sosId);
+            } else if (userId) {
+                targetSos = await SOSRequest.findOne({ userId, status: 'pending' }).sort({ createdAt: -1 });
+            }
+
+            if (targetSos) {
+                targetSos.evidenceUrl = evidenceUrl;
+                await targetSos.save();
+                return res.json({ success: true, message: "Evidence linked successfully" });
+            }
+            res.status(404).json({ message: "SOS record not found for linking" });
+        } catch (err) {
+            res.status(500).json({ message: "Linking error" });
+        }
+    });
+
     return router;
 };
