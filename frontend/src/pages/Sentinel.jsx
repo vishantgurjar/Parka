@@ -71,45 +71,55 @@ export default function Sentinel() {
     addLog("DIRECT CLOUD UPLOAD INITIALIZED...");
     
     try {
-      // 1. Upload Directly to Cloudinary from Browser (Bypasses Vercel Limits)
       const cloudName = 'dosb2aa9f';
-      const uploadPreset = 'parxee city'; // Provided by user
+      const uploadPreset = 'parxee city';
 
-      const formData = new FormData();
-      formData.append('file', blob);
-      formData.append('upload_preset', uploadPreset);
-      formData.append('resource_type', 'video');
+      // Try primary and fallback presets
+      const presets = [uploadPreset, uploadPreset.replace(' ', '_'), uploadPreset.replace(' ', '')];
+      let success = false;
+      let lastError = '';
 
-      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const cloudData = await cloudRes.json();
-
-      if (cloudRes.ok && cloudData.secure_url) {
-        addLog("EVIDENCE SECURED IN CLOUD.");
+      for (const preset of presets) {
+        if (success) break;
         
-        // 2. Link the URL to the SOS in our database
-        const linkRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-link`, {
+        const formData = new FormData();
+        formData.append('file', blob);
+        formData.append('upload_preset', preset);
+        formData.append('resource_type', 'video');
+
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sosId: sosId || null,
-            userId: user?._id || 'guest',
-            evidenceUrl: cloudData.secure_url
-          })
+          body: formData
         });
 
-        if (linkRes.ok) {
-          addLog("EVIDENCE LINKED TO SOS RECORD.");
-          toast.success("SOS & Video Evidence Secured!");
+        const cloudData = await cloudRes.json();
+
+        if (cloudRes.ok && cloudData.secure_url) {
+          success = true;
+          addLog(`EVIDENCE SECURED (${preset})`);
+          
+          const linkRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-link`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sosId: sosId || null,
+              userId: user?._id || 'guest',
+              evidenceUrl: cloudData.secure_url
+            })
+          });
+
+          if (linkRes.ok) {
+            addLog("EVIDENCE LINKED TO SOS.");
+            toast.success("SOS & Evidence Secured!");
+          }
+        } else {
+          lastError = cloudData.error?.message || `HTTP ${cloudRes.status}`;
         }
-      } else {
-        console.error("Cloudinary error:", cloudData);
-        const errorMsg = cloudData.error?.message || 'Upload failed';
-        addLog(`CLOUD ERROR: ${errorMsg}`);
-        toast.error(`Cloud Fail: ${errorMsg}`);
+      }
+
+      if (!success) {
+        addLog(`CLOUD ERROR: ${lastError}`);
+        toast.error(`Cloud Fail: ${lastError}`);
       }
     } catch (err) {
       console.error("Upload failed:", err);
