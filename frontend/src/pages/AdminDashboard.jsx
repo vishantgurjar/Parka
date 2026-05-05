@@ -144,6 +144,22 @@ export default function AdminDashboard({ user }) {
 
             {/* Live SOS Desk */}
             <div className="glass-card" style={{ padding: '2rem', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '10px' }}>
+                    <button onClick={async () => {
+                         if(window.confirm("Delete all active SOS requests?")) {
+                            await fetch(`${API_BASE}/api/admin/clear-sos`, {
+                               method: 'POST',
+                               headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
+                            });
+                            fetchMetrics();
+                         }
+                      }} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', padding: '6px 12px', borderRadius: '4px' }}>
+                         🧹 Clear Junk SOS
+                    </button>
+                    <button onClick={fetchMetrics} style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem' }}>
+                        <RefreshCw size={14} className={loading ? 'spin' : ''} /> Force Sync
+                    </button>
+                </div>
                 <div style={{ textAlign: 'right', marginBottom: '-2rem' }}>
                     <button onClick={fetchMetrics} style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer', fontSize: '0.8rem', padding: '10px' }}>
                         <RefreshCw size={14} className={loading ? 'spin' : ''} /> Force Sync

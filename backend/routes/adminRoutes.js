@@ -86,4 +86,15 @@ router.post('/broadcast', protect, isAdmin, async (req, res) => {
     }
 });
 
+// @route   POST /api/admin/clear-sos
+// @desc    Emergency clear of all SOS records (Debug)
+router.post('/clear-sos', protect, isAdmin, async (req, res) => {
+    try {
+        await SOSRequest.deleteMany({});
+        res.json({ success: true, message: "All SOS records cleared." });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to clear records." });
+    }
+});
+
 module.exports = router;
