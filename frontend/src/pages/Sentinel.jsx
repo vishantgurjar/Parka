@@ -126,8 +126,22 @@ export default function Sentinel() {
       setStream(mediaStream);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       
-      // Setup MediaRecorder
-      const recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
+      // Setup MediaRecorder with cross-browser mimeType support
+      const supportedMime = [
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm',
+        'video/mp4'
+      ].find(type => MediaRecorder.isTypeSupported(type)) || '';
+
+      if (!supportedMime) {
+        addLog("Critical: No supported video format found.");
+        toast.error("Video recording not supported on this device.");
+        return;
+      }
+
+      addLog(`Recorder active: ${supportedMime}`);
+      const recorder = new MediaRecorder(mediaStream, { mimeType: supportedMime });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
@@ -139,7 +153,7 @@ export default function Sentinel() {
         }
       };
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+        const blob = new Blob(chunksRef.current, { type: supportedMime });
         uploadEvidence(blob, sosIdRef.current);
       };
       
