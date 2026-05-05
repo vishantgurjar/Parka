@@ -71,8 +71,8 @@ export default function Sentinel() {
     addLog("DIRECT CLOUD UPLOAD INITIALIZED...");
     
     try {
-      const cloudName = 'dosb2aa9f';
-      const uploadPreset = 'parxee city';
+      const cloudName = document.getElementById('debugCloud')?.value || 'dosb2aa9f';
+      const uploadPreset = document.getElementById('debugPreset')?.value || 'parxee city';
 
       // Try primary and fallback presets
       const presets = [uploadPreset, uploadPreset.replace(' ', '_'), uploadPreset.replace(' ', '')];
@@ -270,6 +270,36 @@ export default function Sentinel() {
         </header>
 
         <div className="sentinel-grid" style={{ display: 'grid', gridTemplateColumns: isActive ? '1fr 340px' : '1fr', gap: '2rem' }}>
+          
+          {/* Debug Settings (Only for Dev/Admin) */}
+          {!isActive && (
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '1.5rem' }}>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#38bdf8' }}>Cloud Debugger</h4>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input 
+                  id="debugCloud" 
+                  defaultValue="dosb2aa9f" 
+                  placeholder="Cloud Name" 
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid #444', color: '#fff', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', width: '150px' }} 
+                />
+                <input 
+                  id="debugPreset" 
+                  defaultValue="parxee city" 
+                  placeholder="Upload Preset" 
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid #444', color: '#fff', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', flex: 1 }} 
+                />
+                <button 
+                  onClick={() => {
+                    toast.success("Settings applied to this session!");
+                    addLog("Custom Config Applied.");
+                  }} 
+                  style={{ background: '#38bdf8', color: '#000', border: 'none', padding: '5px 15px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
           
           {/* Main Display */}
           <div className="main-display glass" style={{ position: 'relative', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
