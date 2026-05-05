@@ -203,5 +203,29 @@ module.exports = function(io) {
         }
     });
 
+    // @route   POST /api/sos/evidence-error
+    // @desc    Log a failed upload attempt for debugging
+    router.post('/evidence-error', async (req, res) => {
+        try {
+            const { sosId, userId, errorMessage } = req.body;
+            let targetSos = null;
+
+            if (sosId) {
+                targetSos = await SOSRequest.findById(sosId);
+            } else if (userId) {
+                targetSos = await SOSRequest.findOne({ userId, status: 'pending' }).sort({ createdAt: -1 });
+            }
+
+            if (targetSos) {
+                targetSos.debugLogs = `Upload Error: ${errorMessage}`;
+                await targetSos.save();
+                return res.json({ success: true });
+            }
+            res.status(404).json({ message: "No record found to log error" });
+        } catch (err) {
+            res.status(500).json({ message: "Logging error" });
+        }
+    });
+
     return router;
 };

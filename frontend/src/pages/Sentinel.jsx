@@ -120,6 +120,17 @@ export default function Sentinel() {
       if (!success) {
         addLog(`CLOUD ERROR: ${lastError}`);
         toast.error(`Cloud Fail: ${lastError}`);
+        
+        // Log error to backend for remote debugging
+        await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-error`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sosId: sosId || null,
+            userId: user?._id || 'guest',
+            errorMessage: lastError
+          })
+        });
       }
     } catch (err) {
       console.error("Upload failed:", err);
