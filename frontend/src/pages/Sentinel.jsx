@@ -83,11 +83,12 @@ export default function Sentinel() {
         if (success) break;
         
         const formData = new FormData();
-        formData.append('file', blob);
+        // Force filename with extension to help Cloudinary recognize the video from mobile blobs
+        formData.append('file', blob, 'evidence.mp4');
         formData.append('upload_preset', preset);
-        formData.append('resource_type', 'video');
+        formData.append('resource_type', 'auto');
 
-        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
           method: 'POST',
           body: formData
         });
@@ -118,19 +119,46 @@ export default function Sentinel() {
       }
 
       if (!success) {
-        addLog(`CLOUD ERROR: ${lastError}`);
-        toast.error(`Cloud Fail: ${lastError}`);
+        addLog(`CLOUD DIRECT FAILED: Trying backend fallback...`);
         
-        // Log error to backend for remote debugging
-        await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-error`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sosId: sosId || null,
-            userId: user?._id || 'guest',
-            errorMessage: lastError
-          })
-        });
+        try {
+          const backendFormData = new FormData();
+          backendFormData.append('video', blob, 'evidence.mp4');
+          if (sosId) backendFormData.append('sosId', sosId);
+          backendFormData.append('userId', user?._id || 'guest');
+
+          const backendRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence`, {
+            method: 'POST',
+            body: backendFormData
+          });
+
+          const backendData = await backendRes.json();
+          if (backendRes.ok && backendData.url) {
+            success = true;
+            addLog("EVIDENCE SECURED (Backend Fallback)");
+            toast.success("SOS & Evidence Secured!");
+          } else {
+            lastError = backendData.message || 'Backend upload failed';
+          }
+        } catch (backendErr) {
+          lastError = backendErr.message;
+        }
+
+        if (!success) {
+          addLog(`UPLOAD ERROR: ${lastError}`);
+          toast.error(`Upload Fail: ${lastError}`);
+          
+          // Log error to backend for remote debugging
+          await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-error`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sosId: sosId || null,
+              userId: user?._id || 'guest',
+              errorMessage: lastError
+            })
+          });
+        }
       }
     } catch (err) {
       console.error("Upload failed:", err);
