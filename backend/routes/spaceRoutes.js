@@ -11,7 +11,7 @@ router.post('/', protect, async (req, res) => {
     const { address, location, pricePerHour, description } = req.body;
 
     const newSpace = new Space({
-      hostId: req.user._id,
+      hostId: req.user.userId || req.user.id || req.user._id,
       address,
       location,
       pricePerHour,

@@ -70,7 +70,8 @@ function App() {
 
   const [token, setToken] = useState(() => {
     try {
-      return localStorage.getItem('parkeToken') || null;
+      const saved = localStorage.getItem('parkeToken');
+      return (saved && saved !== 'undefined' && saved !== 'null') ? saved : null;
     } catch (err) {
       return null;
     }

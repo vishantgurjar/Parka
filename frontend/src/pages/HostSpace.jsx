@@ -18,7 +18,7 @@ export default function HostSpace() {
   const [isLocating, setIsLocating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!user) {
+  if (!user || !token) {
     return (
       <div className="container" style={{ padding: '8rem 0', textAlign: 'center' }}>
         <h2>Please Login to Host a Space</h2>
