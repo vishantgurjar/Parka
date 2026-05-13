@@ -67,7 +67,7 @@ export default function Header({ onOpenPayment, installPrompt }) {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="nav-desktop" style={{ gap: '1.5rem' }}>
+        <nav className="nav-desktop" style={{ gap: '1rem', alignItems: 'center' }}>
           <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Home</a>
           <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
@@ -76,13 +76,8 @@ export default function Header({ onOpenPayment, installPrompt }) {
           <Link to="/host-space" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
           <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
           <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Sentinel AI</Link>
-          {installPrompt && (
-            <button onClick={handleInstallClick} className="btn-gradient shimmer-text" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              Install App
-            </button>
-          )}
           
-          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 10px' }}></div>
+          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 5px' }}></div>
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
