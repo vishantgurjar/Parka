@@ -139,43 +139,42 @@ module.exports = function(io) {
                 return res.status(400).json({ message: 'No video file provided' });
             }
 
-            // Stream upload to Cloudinary
-            const uploadStream = cloudinary.uploader.upload_stream(
-                { resource_type: 'auto', folder: 'sentinel_evidence' },
-                async (error, result) => {
-                    if (error) {
-                        console.error('Cloudinary Upload Error:', error);
-                        return res.status(500).json({ message: 'Error uploading video to cloud' });
+            // Wrap stream in a Promise so Vercel waits for it!
+            const uploadPromise = new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'auto', folder: 'sentinel_evidence' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
                     }
+                );
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
 
-                    // Save the URL to the corresponding SOS request
-                    const { sosId, userId } = req.body;
-                    let targetSos = null;
+            const result = await uploadPromise;
 
-                    if (sosId) {
-                        targetSos = await SOSRequest.findById(sosId);
-                    } else if (userId) {
-                        // Fallback: If sosId is missing, find the latest pending SOS for this user
-                        targetSos = await SOSRequest.findOne({ userId, status: 'pending' }).sort({ createdAt: -1 });
-                    }
+            // Save the URL to the corresponding SOS request
+            const { sosId, userId } = req.body;
+            let targetSos = null;
 
-                    if (targetSos) {
-                        targetSos.evidenceUrl = result.secure_url;
-                        await targetSos.save();
-                        console.log('Evidence linked to SOS:', targetSos._id);
-                    } else {
-                        console.warn('Evidence uploaded but no matching SOS found for ID:', sosId, 'or User:', userId);
-                    }
+            if (sosId) {
+                targetSos = await SOSRequest.findById(sosId);
+            } else if (userId) {
+                targetSos = await SOSRequest.findOne({ userId, status: 'pending' }).sort({ createdAt: -1 });
+            }
 
-                    res.json({ message: 'Evidence uploaded successfully', url: result.secure_url });
-                }
-            );
+            if (targetSos) {
+                targetSos.evidenceUrl = result.secure_url;
+                await targetSos.save();
+                console.log('Evidence linked to SOS:', targetSos._id);
+            }
 
-            streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+            res.json({ message: 'Evidence uploaded successfully', url: result.secure_url });
 
         } catch (err) {
             console.error('Evidence Route Error:', err);
-            res.status(500).json({ message: 'Server error processing evidence' });
+            // Return the exact error message so we can debug on frontend!
+            res.status(500).json({ message: `Server error: ${err.message || err.toString()}` });
         }
     });
 
