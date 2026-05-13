@@ -255,7 +255,7 @@ function App() {
   return (
     <HelmetProvider>
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-          <AuthContext.Provider value={{ user, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
+          <AuthContext.Provider value={{ user, token, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
             <Router>
               <Toaster position="top-center" toastOptions={{ style: { background: '#111827', color: '#f3f4f6', borderRadius: '8px', border: '1px solid #374151' } }} />
               <Header onOpenPayment={handleOpenPayment} />
