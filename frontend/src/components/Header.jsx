@@ -64,6 +64,8 @@ export default function Header({ onOpenPayment }) {
           <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
           <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Mechanics</Link>
+          <Link to="/find-parking" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: '#a855f7', whiteSpace: 'nowrap' }}>Find Parking</Link>
+          <Link to="/host-space" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
           <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
           <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Sentinel AI</Link>
           
@@ -122,6 +124,8 @@ export default function Header({ onOpenPayment }) {
         <Link to="/community-help" onClick={(e) => { setIsMenuOpen(false); }}>Community</Link>
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
+        <Link to="/find-parking" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#a855f7'}}>Find Parking</Link>
+        <Link to="/host-space" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#10b981'}}>Host Space</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
         <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Sentinel Mode 🛡️</Link>
         {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}

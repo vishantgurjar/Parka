@@ -267,6 +267,7 @@ const userRoutes = require('./routes/userRoutes');
 const sosRoutes = require('./routes/sosRoutes')(io);
 const communityRoutes = require('./routes/communityRoutes')(io);
 const aiRoutes = require('./routes/aiRoutes');
+const spaceRoutes = require('./routes/spaceRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/mechanics', mechanicRoutes);
@@ -275,6 +276,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/sos', sosRoutes);
 app.use('/api/community-help', communityRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/spaces', spaceRoutes);
 
 // --- UNGROUPED ROUTES (Payments, Incidents, Alerts, Reviews) ---
 

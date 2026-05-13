@@ -26,6 +26,8 @@ import Sentinel from './pages/Sentinel';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import GlobalTrackingWidget from './components/GlobalTrackingWidget';
+import HostSpace from './pages/HostSpace';
+import FindParking from './pages/FindParking';
 
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -277,6 +279,8 @@ function App() {
                   <Route path="/sentinel" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
+                  <Route path="/host-space" element={<HostSpace />} />
+                  <Route path="/find-parking" element={<FindParking />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
