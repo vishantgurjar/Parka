@@ -142,7 +142,7 @@ module.exports = function(io) {
             // Wrap stream in a Promise so Vercel waits for it!
             const uploadPromise = new Promise((resolve, reject) => {
                 const stream = cloudinary.uploader.upload_stream(
-                    { resource_type: 'video', folder: 'sentinel_evidence' },
+                    { resource_type: 'auto', folder: 'sentinel_evidence' },
                     (error, result) => {
                         if (error) reject(error);
                         else resolve(result);

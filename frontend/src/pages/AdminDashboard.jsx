@@ -10,6 +10,7 @@ export default function AdminDashboard({ user }) {
   const [loading, setLoading] = useState(true);
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [broadcastSending, setBroadcastSending] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'panwarvishant9@gmail.com';
@@ -181,12 +182,12 @@ export default function AdminDashboard({ user }) {
                               <p style={{ margin: '0', fontSize: '0.9rem', color: '#10b981' }}><strong>Mechanic:</strong> {sos.assignedBid.mechanicName} ({sos.assignedBid.phone})</p>
                            )}
                            {sos.evidenceUrl && (
-                              <div style={{ marginTop: '10px' }}>
-                                 <a href={sos.evidenceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid #38bdf8', padding: '6px 12px', borderRadius: '4px', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 'bold' }}>
-                                    🎥 View Dashcam Evidence
-                                 </a>
-                              </div>
-                           )}
+                               <div style={{ marginTop: '10px' }}>
+                                  <button onClick={() => setSelectedVideo(sos.evidenceUrl)} style={{ display: 'inline-block', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid #38bdf8', padding: '6px 12px', borderRadius: '4px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                                     🎥 Play Dashcam Evidence
+                                  </button>
+                               </div>
+                            )}
                         </div>
                      ))}
                   </div>
@@ -195,6 +196,19 @@ export default function AdminDashboard({ user }) {
 
          </div>
       </div>
+      {selectedVideo && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '800px', background: '#111', borderRadius: '12px', overflow: 'hidden' }}>
+            <button onClick={() => setSelectedVideo(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'white', color: 'black', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', zIndex: 10, fontWeight: 'bold' }}>X</button>
+            <video src={selectedVideo} controls autoPlay style={{ width: '100%', display: 'block' }}>
+               Your browser does not support the video tag.
+            </video>
+            <div style={{ padding: '15px', textAlign: 'center' }}>
+               <a href={selectedVideo} target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', fontSize: '0.9rem' }}>Download / Open Original</a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

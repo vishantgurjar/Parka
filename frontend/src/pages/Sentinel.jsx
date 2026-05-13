@@ -87,9 +87,9 @@ export default function Sentinel() {
         // Force correct filename extension to help Cloudinary recognize the video from mobile blobs
         formData.append('file', blob, `evidence.${ext}`);
         formData.append('upload_preset', preset);
-        formData.append('resource_type', 'video');
+        formData.append('resource_type', 'auto');
 
-        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
           method: 'POST',
           body: formData
         });
@@ -229,10 +229,7 @@ export default function Sentinel() {
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
             chunksRef.current.push(e.data);
-            // Keep only last 10 seconds to ensure file size is small enough for Vercel
-            if (chunksRef.current.length > 10) {
-                chunksRef.current.shift();
-            }
+            // No shifting chunks here to ensure full recording is preserved
         }
       };
       recorder.onstop = () => {
@@ -240,7 +237,7 @@ export default function Sentinel() {
         uploadEvidence(blob, sosIdRef.current);
       };
       
-      recorder.start(1000); // Capture in 1s chunks
+      recorder.start(); // Remove timeslice (e.g. 1000ms) to avoid corrupted blobs on mobile
       mediaRecorderRef.current = recorder;
 
       setIsActive(true);
