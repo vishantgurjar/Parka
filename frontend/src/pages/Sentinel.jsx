@@ -217,7 +217,12 @@ export default function Sentinel() {
       }
 
       addLog(`Recorder active: ${supportedMime}`);
-      const recorder = new MediaRecorder(mediaStream, { mimeType: supportedMime });
+      // Force 1 Mbps bitrate to keep 10s video around 1.25MB (Well below Vercel's 4.5MB limit)
+      const recorderOptions = { mimeType: supportedMime };
+      if (MediaRecorder.isTypeSupported(supportedMime)) {
+         recorderOptions.videoBitsPerSecond = 1000000;
+      }
+      const recorder = new MediaRecorder(mediaStream, recorderOptions);
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {

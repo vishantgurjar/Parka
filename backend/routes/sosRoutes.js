@@ -141,7 +141,7 @@ module.exports = function(io) {
 
             // Stream upload to Cloudinary
             const uploadStream = cloudinary.uploader.upload_stream(
-                { resource_type: 'video', folder: 'sentinel_evidence' },
+                { resource_type: 'auto', folder: 'sentinel_evidence' },
                 async (error, result) => {
                     if (error) {
                         console.error('Cloudinary Upload Error:', error);
