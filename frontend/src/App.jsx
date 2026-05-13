@@ -185,38 +185,16 @@ function App() {
     }
   };
 
-  // --- MOBILE PWA INJECTOR ---
+  // --- PWA SERVICE WORKER REGISTRATION ---
   useEffect(() => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    const shouldActivatePWA = isMobile;
-
-    const manifestId = 'pwa-manifest-tag';
-    let manifestLink = document.getElementById(manifestId);
-
-    if (shouldActivatePWA) {
-      // 1. Inject Manifest
-      if (!manifestLink) {
-        manifestLink = document.createElement('link');
-        manifestLink.id = manifestId;
-        manifestLink.rel = 'manifest';
-        manifestLink.href = '/manifest.json';
-        document.head.appendChild(manifestLink);
-      }
-
-      // 2. Register Service Worker
-      if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-          .then(() => console.log('PWA Service Worker Registered (Premium Mobile)'))
+          .then(() => console.log('PWA Service Worker Registered'))
           .catch(err => console.error('PWA Registration Error:', err));
-      }
-    } else {
-      // Cleanup for Desktop or Guest/Standard users
-      if (manifestLink) {
-        manifestLink.remove();
-      }
-      // Note: We don't unregister SW here as it's complex, but the manifest removal prevents the prompt.
+      });
     }
-  }, [user, isPro]);
+  }, []);
 
   // --- PUSH NOTIFICATIONS REGISTRATION ---
   useEffect(() => {
