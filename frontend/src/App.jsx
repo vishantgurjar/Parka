@@ -127,6 +127,21 @@ function App() {
   const [activeCall, setActiveCall] = useState(false);
   
   const [socket, setSocket] = useState(null);
+  
+  // PWA Install Prompt State
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setInstallPrompt(e);
+      console.log('PWA Install Prompt ready');
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
 
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app');
@@ -191,11 +206,9 @@ function App() {
   // --- PWA SERVICE WORKER REGISTRATION ---
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(() => console.log('PWA Service Worker Registered'))
-          .catch(err => console.error('PWA Registration Error:', err));
-      });
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => console.log('PWA Service Worker Registered', reg.scope))
+        .catch(err => console.error('PWA Registration Error:', err));
     }
   }, []);
 
@@ -259,7 +272,7 @@ function App() {
           <AuthContext.Provider value={{ user, token, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
             <Router>
               <Toaster position="top-center" toastOptions={{ style: { background: '#111827', color: '#f3f4f6', borderRadius: '8px', border: '1px solid #374151' } }} />
-              <Header onOpenPayment={handleOpenPayment} />
+              <Header onOpenPayment={handleOpenPayment} installPrompt={installPrompt} />
               <main>
                 <Routes>
                   {/* Public Routes */}

@@ -3,12 +3,20 @@ import { Moon, Sun, Menu, X, Car, Package } from 'lucide-react';
 import { ThemeContext, AuthContext } from '../App';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-export default function Header({ onOpenPayment }) {
+export default function Header({ onOpenPayment, installPrompt }) {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { user, logout } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    setIsMenuOpen(false);
+  };
 
   const handleScroll = (e, targetId) => {
     e.preventDefault();
@@ -68,6 +76,11 @@ export default function Header({ onOpenPayment }) {
           <Link to="/host-space" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
           <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
           <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Sentinel AI</Link>
+          {installPrompt && (
+            <button onClick={handleInstallClick} className="btn-gradient shimmer-text" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              Install App
+            </button>
+          )}
           
           <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 10px' }}></div>
 
@@ -158,6 +171,12 @@ export default function Header({ onOpenPayment }) {
           <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn-gradient full-width" style={{ marginTop: '1rem', padding: '12px', borderRadius: '6px', textAlign: 'center', fontWeight: 'bold' }}>
             Login / Register
           </Link>
+        )}
+
+        {installPrompt && (
+          <button onClick={handleInstallClick} className="btn-gradient full-width light-sweep" style={{ marginTop: '1rem', padding: '12px', borderRadius: '6px', fontWeight: 'bold', border: 'none' }}>
+            📱 Install App
+          </button>
         )}
 
       </nav>
