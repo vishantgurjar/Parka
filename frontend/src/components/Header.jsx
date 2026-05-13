@@ -67,29 +67,29 @@ export default function Header({ onOpenPayment, installPrompt }) {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="nav-desktop" style={{ gap: '1rem', alignItems: 'center' }}>
-          <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Home</a>
-          <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
-          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
-          <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Mechanics</Link>
-          <Link to="/find-parking" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: '#a855f7', whiteSpace: 'nowrap' }}>Find Parking</Link>
-          <Link to="/host-space" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
-          <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
-          <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Sentinel AI</Link>
+        <nav className="nav-desktop" style={{ gap: '1.2rem', alignItems: 'center', marginLeft: 'auto', paddingLeft: '2rem' }}>
+          <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Home</a>
+          <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
+          <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
+          <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Mechanics</Link>
+          <Link to="/find-parking" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: '#a855f7', whiteSpace: 'nowrap' }}>Find Parking</Link>
+          <Link to="/host-space" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
+          <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
+          <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Sentinel AI</Link>
           
           <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 5px' }}></div>
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
               {(user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') && (
-                <Link to="/sentinel-ops" className="glass shimmer-text" style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', whiteSpace: 'nowrap' }}>
+                <Link to="/sentinel-ops" className="glass shimmer-text" style={{ padding: '6px 12px', borderRadius: '50px', fontSize: '0.7rem', fontWeight: '800', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', whiteSpace: 'nowrap' }}>
                   ADMIN OPS
                 </Link>
               )}
               <Link to="/profile" className="glass light-sweep" style={{ 
-                padding: '8px 16px', 
+                padding: '6px 12px', 
                 borderRadius: '50px', 
-                fontSize: '0.8rem', 
+                fontSize: '0.7rem', 
                 fontWeight: '700',
                 background: 'rgba(255,255,255,0.05)',
                 display: 'flex', 
@@ -100,7 +100,7 @@ export default function Header({ onOpenPayment, installPrompt }) {
                 <span style={{ opacity: 0.7 }}>Account</span>
                 <span style={{ color: 'var(--primary)' }}>{user.name?.split(' ')[0]}</span>
               </Link>
-              <button onClick={() => { logout(); navigate('/'); }} style={{ background: 'transparent', color: 'var(--muted)', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => { logout(); navigate('/'); }} style={{ background: 'transparent', color: 'var(--muted)', fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer' }}>
                 Logout
               </button>
             </div>
