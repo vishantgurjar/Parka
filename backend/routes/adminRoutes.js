@@ -28,13 +28,9 @@ router.get('/metrics', protect, isAdmin, async (req, res) => {
     });
 
     // 3. Pro Subscription Revenue
-    const proUsers = await User.find({ subscriptionTier: { $ne: 'Free', $exists: true } });
+    // Set to 0 until actual Razorpay payment gateway integration is complete. 
+    // We don't want to show "fake" estimated revenue based on test subscriptions.
     let revenue = 0;
-    proUsers.forEach(u => {
-       if (u.subscriptionTier === 'Diamond' || u.subscriptionTier === 'diamond') revenue += 50000;
-       if (u.subscriptionTier === 'Gold' || u.subscriptionTier === 'gold') revenue += 25000;
-       if (u.subscriptionTier === 'Silver' || u.subscriptionTier === 'silver') revenue += 15000;
-    });
 
     // 4. Live SOS - Showing only actionable requests
     const activeSOS = await SOSRequest.find({
