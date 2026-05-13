@@ -83,8 +83,9 @@ export default function Sentinel() {
         if (success) break;
         
         const formData = new FormData();
-        // Force filename with extension to help Cloudinary recognize the video from mobile blobs
-        formData.append('file', blob, 'evidence.mp4');
+        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+        // Force correct filename extension to help Cloudinary recognize the video from mobile blobs
+        formData.append('file', blob, `evidence.${ext}`);
         formData.append('upload_preset', preset);
         formData.append('resource_type', 'video');
 
@@ -123,7 +124,8 @@ export default function Sentinel() {
         
         try {
           const backendFormData = new FormData();
-          backendFormData.append('video', blob, 'evidence.mp4');
+          const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+          backendFormData.append('video', blob, `evidence.${ext}`);
           if (sosId) backendFormData.append('sosId', sosId);
           backendFormData.append('userId', user?._id || 'guest');
 
