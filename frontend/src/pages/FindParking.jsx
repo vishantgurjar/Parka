@@ -171,6 +171,35 @@ export default function FindParking() {
             </button>
           </div>
         )}
+
+        {/* Floating Top Header */}
+        <div style={{
+          position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 10, background: 'rgba(3, 7, 18, 0.8)', backdropFilter: 'blur(10px)',
+          padding: '12px 24px', borderRadius: '50px', border: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+        }}>
+          <Navigation size={18} color="var(--primary)" />
+          <span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>PARXÉÉ SPACE RADAR</span>
+        </div>
+
+        {/* Empty State Overlay */}
+        {spaces.length === 0 && (
+          <div className="bento-item glass light-sweep" style={{
+            position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
+            zIndex: 10, padding: '2rem', textAlign: 'center', width: '90%', maxWidth: '400px',
+            background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)'
+          }}>
+            <div style={{ width: '60px', height: '60px', background: 'rgba(168, 85, 247, 0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+              <Navigation size={28} color="#a855f7" />
+            </div>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>No Spaces Nearby</h3>
+            <p style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '1.5rem' }}>We couldn't find any premium parking spots in this area right now.</p>
+            <button onClick={() => navigate('/host-space')} className="btn-gradient full-width light-sweep" style={{ padding: '14px', borderRadius: '12px', fontWeight: 'bold' }}>
+              Host Your Space Instead
+            </button>
+          </div>
+        )}
       </section>
     </>
   );

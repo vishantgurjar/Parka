@@ -91,7 +91,7 @@ export default function HostSpace() {
       <SEO title="Host Space - PARXÉÉ SPACE" description="Rent your empty parking space and earn." />
       <div className="bg-grain"></div>
       
-      <section className="reveal" style={{ padding: '8rem 0', minHeight: '80vh' }}>
+      <section style={{ padding: '8rem 0', minHeight: '80vh' }}>
         <div className="container" style={{ maxWidth: '600px' }}>
           
           <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
