@@ -191,7 +191,7 @@ export default function Home({ onOpenPayment }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.7, letterSpacing: '1px' }}>Emergency Assistance</span>
-          <a href="tel:+919112200000" style={{ fontSize: '0.95rem', fontWeight: '900', color: '#fff' }}>CLICK TO CALL</a>
+          <a href="tel:+919112200000" style={{ fontSize: '0.95rem', fontWeight: '900', color: '#fff' }}>CALL: 91122 00000</a>
         </div>
       </div>
       
@@ -333,7 +333,7 @@ export default function Home({ onOpenPayment }) {
             </div>
             <h3 style={{ fontSize: '2rem', fontWeight: '900', letterSpacing: 'var(--tracking-tight)' }}>Help arrives in minutes.</h3>
             <p style={{ fontSize: '1.1rem', opacity: 0.8, marginBottom: '2rem' }}>Experience the peace of mind that comes with India's fastest roadside network.</p>
-            <a href="tel:+919112200000" className="btn-gradient light-sweep" style={{ background: 'var(--gradient-emergency)', padding: '16px 40px', borderRadius: '50px' }}>Call Emergency Mechanic</a>
+            <a href="tel:+919112200000" className="btn-gradient light-sweep" style={{ background: 'var(--gradient-emergency)', padding: '16px 40px', borderRadius: '50px' }}>Call Mechanic: 91122 00000</a>
             <p className="emergency-location" style={{ marginTop: '1.5rem', fontSize: '0.8rem', opacity: 0.6 }}>
               <MapPin size={14} /> ACTIVE IN: {locationLabel}
             </p>
