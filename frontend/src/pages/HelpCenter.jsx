@@ -19,7 +19,7 @@ export default function HelpCenter() {
           Welcome to the Parxéé City Help Center. Here you can find answers to our most commonly asked questions, instructions on using our services, and ways to contact our support team.
         </p>
         <ul style={{ marginTop: '1rem', marginLeft: '1.5rem', lineHeight: '1.8' }}>
-          <li><strong>Emergency Service:</strong> Call our 24/7 hotline at 789-503-9922.</li>
+          <li><strong>Emergency Service:</strong> Call our 24/7 hotline at 91122 00000.</li>
           <li><strong>Account Issues:</strong> Navigate to the login page and click 'Forgot Password' or contact support directly.</li>
           <li><strong>Payment Issues:</strong> Ensuring your UPI application is updated usually resolves most payment gateway timeouts.</li>
         </ul>
