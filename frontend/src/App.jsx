@@ -288,7 +288,7 @@ function App() {
                   <Route path="/privacy-policy" element={user ? <PrivacyPolicy /> : <Navigate to="/login" />} />
                   <Route path="/terms-of-service" element={user ? <TermsOfService /> : <Navigate to="/login" />} />
                   <Route path="/faq" element={user ? <FAQ /> : <Navigate to="/login" />} />
-                  <Route path="/v/:id" element={<VehicleLandingPage />} />
+                  <Route path="/v/:id" element={user ? <VehicleLandingPage /> : <Navigate to="/login" />} />
                   <Route path="/community-help" element={user ? <CommunityHelp /> : <Navigate to="/login" />} />
                   <Route path="/sentinel" element={user ? <Sentinel /> : <Navigate to="/login" />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
