@@ -99,7 +99,25 @@ export default function HostSpace() {
               <Home size={16} style={{ marginRight: '8px' }}/> PARXÉÉ SPACE
             </div>
             <h2 style={{ fontSize: '2.5rem', letterSpacing: '-1px' }}>List Your <span className="text-gradient">Space.</span></h2>
-            <p style={{ opacity: 0.7, marginTop: '1rem' }}>Turn your empty driveway or garage into a premium parking spot and earn securely.</p>
+            <p style={{ opacity: 0.7, marginTop: '1rem', marginBottom: '2rem' }}>Turn your empty driveway or garage into a premium parking spot and earn securely.</p>
+            <button 
+              onClick={() => navigate('/find-parking')} 
+              className="glass light-sweep" 
+              style={{ 
+                padding: '12px 24px', 
+                borderRadius: '50px', 
+                fontWeight: '800', 
+                color: '#a855f7', 
+                border: '1px solid rgba(168, 85, 247, 0.3)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                background: 'rgba(168, 85, 247, 0.1)'
+              }}
+            >
+              <MapPin size={18} /> Find Parking Location
+            </button>
           </div>
 
           <div className="bento-item light-sweep" style={{ padding: '2rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
