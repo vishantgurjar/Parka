@@ -276,25 +276,25 @@ function App() {
               <main>
                 <Routes>
                   {/* Public Routes */}
-                  <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
+                  <Route path="/" element={user ? <Home onOpenPayment={handleOpenPayment} /> : <Navigate to="/login" />} />
                   <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
                   <Route path="/mechanic-register" element={<MechanicRegistration />} />
                   <Route path="/mechanic-login" element={<MechanicLogin />} />
                   <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
-                  <Route path="/mechanics" element={<MechanicList />} />
-                  <Route path="/ai-doctor" element={<AIAssistant />} />
+                  <Route path="/mechanics" element={user ? <MechanicList /> : <Navigate to="/login" />} />
+                  <Route path="/ai-doctor" element={user ? <AIAssistant /> : <Navigate to="/login" />} />
                   <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<TermsOfService />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
-                  <Route path="/community-help" element={<CommunityHelp />} />
-                  <Route path="/sentinel" element={<Sentinel />} />
+                  <Route path="/community-help" element={user ? <CommunityHelp /> : <Navigate to="/login" />} />
+                  <Route path="/sentinel" element={user ? <Sentinel /> : <Navigate to="/login" />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
-                  <Route path="/host-space" element={<HostSpace />} />
-                  <Route path="/find-parking" element={<FindParking />} />
+                  <Route path="/host-space" element={user ? <HostSpace /> : <Navigate to="/login" />} />
+                  <Route path="/find-parking" element={user ? <FindParking /> : <Navigate to="/login" />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
