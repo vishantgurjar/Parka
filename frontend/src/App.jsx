@@ -284,10 +284,10 @@ function App() {
                   <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
                   <Route path="/mechanics" element={user ? <MechanicList /> : <Navigate to="/login" />} />
                   <Route path="/ai-doctor" element={user ? <AIAssistant /> : <Navigate to="/login" />} />
-                  <Route path="/help-center" element={<HelpCenter />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/help-center" element={user ? <HelpCenter /> : <Navigate to="/login" />} />
+                  <Route path="/privacy-policy" element={user ? <PrivacyPolicy /> : <Navigate to="/login" />} />
+                  <Route path="/terms-of-service" element={user ? <TermsOfService /> : <Navigate to="/login" />} />
+                  <Route path="/faq" element={user ? <FAQ /> : <Navigate to="/login" />} />
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
                   <Route path="/community-help" element={user ? <CommunityHelp /> : <Navigate to="/login" />} />
                   <Route path="/sentinel" element={user ? <Sentinel /> : <Navigate to="/login" />} />
