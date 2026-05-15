@@ -48,7 +48,7 @@ export default function Footer() {
               <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Platform</a>
               <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>SOS Response</a>
               <Link to="/mechanics" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Mechanics</Link>
-              <Link to="/sentinel" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Sentinel AI</Link>
+              <Link to="/sentinel" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Cam Mode</Link>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

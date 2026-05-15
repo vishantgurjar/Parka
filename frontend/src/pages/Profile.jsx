@@ -242,12 +242,12 @@ export default function Profile() {
               </p>
             </div>
 
-            {/* STAT CARD 3: SECURITY SENTINEL */}
+            {/* STAT CARD 3: SECURITY CAM MODE */}
             <div className="glass-card" style={{ padding: '24px', textAlign: 'center', border: '1px solid rgba(244, 63, 94, 0.1)' }}>
               <div style={{ width: '48px', height: '48px', background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                 <ShieldCheck size={24} />
               </div>
-              <p className="hybrid-label" style={{ color: '#f43f5e' }}>SENTINEL MODE</p>
+              <p className="hybrid-label" style={{ color: '#f43f5e' }}>CAM MODE</p>
               <h3 style={{ fontSize: '1.2rem', color: '#f43f5e', margin: '8px 0', fontWeight: 'bold' }}>ACTIVE 🛡️</h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>24/7 AI-Protection Enabled</p>
             </div>
@@ -394,7 +394,7 @@ export default function Profile() {
                         {isLoading ? 'Encrypting & Saving...' : 'Submit Documents for Verification'}
                     </button>
                     <p style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--muted)', marginTop: '15px' }}>
-                        *Your data is encrypted using AES-256 for Parxéé Sentinel Security.
+                        *Your data is encrypted using AES-256 for Parxéé Cam Mode Security.
                     </p>
                 </form>
             </div>

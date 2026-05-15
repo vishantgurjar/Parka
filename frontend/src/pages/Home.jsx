@@ -261,7 +261,7 @@ export default function Home({ onOpenPayment }) {
             <div className="bento-item bento-large light-sweep" style={{ textAlign: 'left', justifyContent: 'flex-end' }}>
                <div className="feature-icon-box" style={{ marginBottom: 'auton', width: '56px', height: '56px' }}><Cpu size={32} /></div>
                <div>
-                  <h4 className="feature-title" style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Sentinel AI Diagnostics</h4>
+                  <h4 className="feature-title" style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Cam Mode Diagnostics</h4>
                   <p style={{ fontSize: '0.9rem' }}>Gemini-powered spectral analysis for your engine's health. Instant insights on every scan.</p>
                </div>
             </div>

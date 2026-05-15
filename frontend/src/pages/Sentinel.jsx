@@ -186,7 +186,7 @@ export default function Sentinel() {
 
   const startSentinel = async () => {
     if (!isPro()) {
-      alert("Sentinel Mode is a PRO feature. Join Diamond PRO for life-saving protection.");
+      alert("Cam Mode is a PRO feature. Join Diamond PRO for life-saving protection.");
       return;
     }
     
@@ -244,7 +244,7 @@ export default function Sentinel() {
       addLog("System Armed. Monitoring Sensors.");
     } catch (e) {
       console.error(e);
-      toast.error("Camera access required for Sentinel Mode.");
+      toast.error("Camera access required for Cam Mode.");
     }
   };
 
@@ -287,16 +287,16 @@ export default function Sentinel() {
 
   return (
     <div className="sentinel-page" style={{ background: '#0a0a0b', minHeight: '100vh', color: '#fff', paddingTop: '80px', paddingBottom: '40px' }}>
-      <SEO title="Parxéé Sentinel - AI Accident Detection" description="Transform your phone into a smart black box with Parxéé Sentinel Mode." />
+      <SEO title="Parxéé Cam Mode - AI Accident Detection" description="Transform your phone into a smart black box with Parxéé Cam Mode." />
       
       <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         <header style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '50px', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid #38bdf8', color: '#38bdf8', fontWeight: 'bold', marginBottom: '1rem' }}>
             <Shield size={18} />
-            Sentinel AI Guardian
+            Cam Mode Guardian
           </div>
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', letterSpacing: '-1px', margin: '0 0 10px 0' }}>
-            Driving <span className="text-gradient">Sentinel Mode</span>
+            Driving <span className="text-gradient">Cam Mode</span>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem' }}>v2.5.0 - Enhanced Cloud Protection</p>
         </header>
@@ -343,7 +343,7 @@ export default function Sentinel() {
                 </div>
                 <h2 style={{ marginBottom: '1rem' }}>Ready to Secure Your Drive?</h2>
                 <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2.5rem', maxWidth: '400px', margin: '0 auto 2.5rem' }}>
-                  Sentinel converts your phone into a black box. Mount it on your dashboard and enjoy 24/7 protection.
+                  Cam Mode converts your phone into a black box. Mount it on your dashboard and enjoy 24/7 protection.
                 </p>
                 <button 
                   onClick={startSentinel}
@@ -351,7 +351,7 @@ export default function Sentinel() {
                   style={{ padding: '18px 40px', fontSize: '1.2rem', borderRadius: '50px', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #38bdf8, #818cf8)', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}
                 >
                   <Activity size={24} />
-                  Activate Sentinel Mode
+                  Activate Cam Mode
                 </button>
               </div>
             ) : (
