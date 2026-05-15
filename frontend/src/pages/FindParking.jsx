@@ -99,23 +99,40 @@ export default function FindParking() {
         <div style={{ flex: 1, position: 'relative' }}>
           <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }}>
             <ChangeView center={mapCenter} zoom={13} />
+            {/* Satellite Map for real-world view */}
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://carto.com/">Carto</a>'
+              url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              attribution="Map data © Google"
+              maxZoom={20}
             />
             
-            {spaces.map(space => (
-              <Marker 
-                key={space._id} 
-                position={[space.location.lat, space.location.lng]}
-                eventHandlers={{ click: () => setSelectedSpace(space) }}
-              >
-                <Popup>
-                  <strong>{space.address}</strong><br/>
-                  ₹{space.pricePerHour} / hour
-                </Popup>
-              </Marker>
-            ))}
+            {spaces.map(space => {
+              // Custom premium marker for parking spots
+              const parkingIcon = new L.DivIcon({
+                html: `<div style="background: linear-gradient(135deg, #10b981, #059669); color: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 0 2px rgba(16, 185, 129, 0.4);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>`,
+                className: 'custom-parking-icon',
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+                popupAnchor: [0, -22]
+              });
+
+              return (
+                <Marker 
+                  key={space._id} 
+                  position={[space.location.lat, space.location.lng]}
+                  icon={parkingIcon}
+                  eventHandlers={{ click: () => setSelectedSpace(space) }}
+                >
+                  <Popup className="premium-popup">
+                    <div style={{ padding: '5px', textAlign: 'center' }}>
+                      <strong style={{ fontSize: '1.1rem', color: '#10b981' }}>Verified Space</strong><br/>
+                      <span style={{ color: '#000' }}>{space.address}</span><br/>
+                      <div style={{ marginTop: '8px', background: '#f3f4f6', padding: '4px', borderRadius: '4px', fontWeight: 'bold' }}>₹{space.pricePerHour} / hour</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
           </MapContainer>
         </div>
 
