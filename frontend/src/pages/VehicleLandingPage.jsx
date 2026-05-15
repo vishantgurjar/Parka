@@ -315,7 +315,7 @@ export default function VehicleLandingPage() {
               <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', padding: '10px', borderRadius: '12px' }}>
                 <Wrench size={24} />
               </div>
-              Nearby Mechanic
+              Nearby Assistance
             </div>
             <ChevronRight size={24} />
           </Link>

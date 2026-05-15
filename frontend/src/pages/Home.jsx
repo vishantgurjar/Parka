@@ -191,7 +191,7 @@ export default function Home({ onOpenPayment }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.7, letterSpacing: '1px' }}>Emergency Assistance</span>
-          <a href="tel:+919112200000" style={{ fontSize: '0.95rem', fontWeight: '900', color: '#fff' }}>CALL: 91122 00000</a>
+          <a href="tel:+919112200000" style={{ fontSize: '0.95rem', fontWeight: '900', color: '#fff' }}>HELPLINE: 91122 00000</a>
         </div>
       </div>
       
@@ -275,7 +275,7 @@ export default function Home({ onOpenPayment }) {
             <div className="bento-item bento-tall light-sweep" style={{ background: 'var(--gradient-primary)', color: 'var(--primary-fg)', borderColor: 'transparent' }}>
                <div className="feature-icon-box" style={{ background: 'rgba(0,0,0,0.2)', color: '#fff', marginTop: 'auto' }}><Zap size={32} /></div>
                <h4 className="feature-title" style={{ color: '#fff', fontSize: '1.2rem', marginTop: '1rem' }}>Live Highway SOS</h4>
-               <p style={{ color: 'rgba(255,255,255,0.8)' }}>Broadcast your emergency to the nearest verified mechanics in real-time.</p>
+               <p style={{ color: 'rgba(255,255,255,0.8)' }}>Broadcast your emergency to the nearest verified helplines in real-time.</p>
             </div>
 
             <div className="bento-item light-sweep">

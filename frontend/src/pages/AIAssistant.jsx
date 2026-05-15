@@ -353,7 +353,7 @@ export default function AIAssistant() {
                   <RefreshCcw size={18} /> Analyze Again
                 </button>
                 <button onClick={() => window.location.href='/mechanics'} className="btn-gradient" style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                  Find Mechanic Nearby
+                  Find Assistance Nearby
                 </button>
               </div>
 
