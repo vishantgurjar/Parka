@@ -168,8 +168,13 @@ export default function HostSpace() {
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.8, marginBottom: '8px', display: 'block' }}>Location Verification</label>
                 {formData.lat ? (
-                  <div style={{ padding: '14px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid #34d399', borderRadius: '12px', color: '#34d399', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CheckCircle size={18} /> GPS Coordinates Locked
+                  <div style={{ padding: '14px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid #34d399', borderRadius: '12px', color: '#34d399', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                      <CheckCircle size={18} /> GPS Coordinates Locked
+                    </div>
+                    <div style={{ fontSize: '0.8rem', opacity: 0.9, marginLeft: '26px' }}>
+                      Lat: {Number(formData.lat).toFixed(6)}, Lng: {Number(formData.lng).toFixed(6)}
+                    </div>
                   </div>
                 ) : (
                   <button 
