@@ -272,7 +272,7 @@ function App() {
           <AuthContext.Provider value={{ user, token, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
             <Router>
               <Toaster position="top-center" toastOptions={{ style: { background: '#111827', color: '#f3f4f6', borderRadius: '8px', border: '1px solid #374151' } }} />
-              <Header onOpenPayment={handleOpenPayment} installPrompt={installPrompt} />
+              {user && <Header onOpenPayment={handleOpenPayment} installPrompt={installPrompt} />}
               <main>
                 <Routes>
                   {/* Public Routes */}
@@ -299,7 +299,7 @@ function App() {
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </main>
-              <Footer />
+              {user && <Footer />}
 
               {/* Modals */}
               {paymentPlan && (
