@@ -9,9 +9,9 @@ const streamifier = require('streamifier');
 
 // Configure Cloudinary with fallbacks to guarantee it works on Vercel even if env vars are missing
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dosb2aa9f',
-  api_key: process.env.CLOUDINARY_API_KEY || '659987677479768',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'VaHv6XHyTz_SLLHDj-Txp29sy1s'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 // Setup Multer (Memory Storage)

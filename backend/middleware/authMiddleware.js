@@ -19,7 +19,7 @@ const protect = (req, res, next) => {
 const isAdmin = (req, res, next) => {
     // Rely on JWT decoded payload for email/role check instead of query param
     // Ideally we'd use a role field from DB, but keeping it simple based on existing logic
-    const adminEmail = process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL;
     if (req.user && req.user.email === adminEmail) {
         next();
     } else {

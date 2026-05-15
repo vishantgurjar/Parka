@@ -81,7 +81,7 @@ function App() {
   const login = (userData, jwtToken) => {
     if (!userData) return;
     // Force Diamond status for owner upon login
-    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL || userData.email === 'panwarvishant9@gmail.com') {
+    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL) {
       userData.subscriptionTier = 'diamond';
     }
     setUser(userData);
@@ -302,7 +302,7 @@ function App() {
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
                   <Route path="/cam" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-                  <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
+                  <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL) ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   <Route path="/host" element={<HostSpace />} />
                   <Route path="/park" element={<FindParking />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}

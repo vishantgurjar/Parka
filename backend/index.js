@@ -25,8 +25,8 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Razorpay Instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E'
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 // Gemini AI Config
@@ -169,7 +169,7 @@ if (!JWT_SECRET) {
 try {
   if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
-      'mailto:' + (process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com'),
+      'mailto:' + process.env.ADMIN_EMAIL,
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY
     );
@@ -309,8 +309,8 @@ app.post('/api/payment/create-order', async (req, res) => {
   try {
     const { amount, currency = 'INR', receipt, entityId } = req.body;
     const rzp = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_SZhRunfEKtZwk4',
-      key_secret: process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E'
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
     });
     const options = {
       amount: Number(amount) * 100, 
@@ -328,7 +328,7 @@ app.post('/api/payment/verify-signature', async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, entityType, entityId, amount } = req.body;
     const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'ufIzR7tT6utmXs43ZWkuUE8E').update(body.toString()).digest("hex");
+    const expectedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(body.toString()).digest("hex");
     if (expectedSignature !== razorpay_signature) return res.status(400).json({ message: 'Invalid signature' });
 
     if (entityType === 'wallet') {

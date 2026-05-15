@@ -81,7 +81,7 @@ export default function Header({ onOpenPayment, installPrompt }) {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-              {(user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') && (
+              {(user.email === import.meta.env.VITE_ADMIN_EMAIL) && (
                 <Link to="/sentinel-ops" className="glass shimmer-text" style={{ padding: '6px 12px', borderRadius: '50px', fontSize: '0.7rem', fontWeight: '800', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', whiteSpace: 'nowrap' }}>
                   ADMIN OPS
                 </Link>
@@ -150,7 +150,7 @@ export default function Header({ onOpenPayment, installPrompt }) {
                 </span>
               )}
             </span>
-            {(user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') && (
+            {(user.email === import.meta.env.VITE_ADMIN_EMAIL) && (
               <Link to="/sentinel-ops" onClick={() => setIsMenuOpen(false)} className="btn-secondary full-width" style={{ padding: '12px', borderRadius: '6px', marginBottom: '8px', textAlign: 'center', fontWeight: 'bold', display: 'block', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
                 ADMIN OPS
               </Link>

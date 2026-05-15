@@ -14,7 +14,7 @@ export default function AdminDashboard({ user }) {
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const API_BASE = getBackendUrl();
-  const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'panwarvishant9@gmail.com';
+  const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
   useEffect(() => {
     // 1. Kick out unauthorized users
