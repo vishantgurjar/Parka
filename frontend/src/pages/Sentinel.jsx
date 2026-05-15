@@ -3,6 +3,7 @@ import { Shield, Radio, Activity, Camera, AlertCircle, X, MapPin, Gauge } from '
 import toast from 'react-hot-toast';
 import { AuthContext } from '../App';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 
 export default function Sentinel() {
   const { isPro, user } = useContext(AuthContext);
@@ -35,8 +36,10 @@ export default function Sentinel() {
     addLog("SOS DISPATCHED TO EMERGENCY CLOUD.");
     
     try {
+      const baseUrl = getBackendUrl();
+      
       // 1. Broadcast the SOS
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/broadcast`, {
+      const res = await fetch(`${baseUrl}/api/sos/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,7 +103,8 @@ export default function Sentinel() {
           success = true;
           addLog(`EVIDENCE SECURED (${preset})`);
           
-          const linkRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-link`, {
+          const baseUrl = getBackendUrl();
+          const linkRes = await fetch(`${baseUrl}/api/sos/evidence-link`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -129,7 +133,8 @@ export default function Sentinel() {
           if (sosId) backendFormData.append('sosId', sosId);
           backendFormData.append('userId', user?._id || 'guest');
 
-          const backendRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence`, {
+          const baseUrl = getBackendUrl();
+          const backendRes = await fetch(`${baseUrl}/api/sos/evidence`, {
             method: 'POST',
             body: backendFormData
           });
@@ -150,8 +155,9 @@ export default function Sentinel() {
           addLog(`UPLOAD ERROR: ${lastError}`);
           toast.error(`Upload Fail: ${lastError}`);
           
+          const baseUrl = getBackendUrl();
           // Log error to backend for remote debugging
-          await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/evidence-error`, {
+          await fetch(`${baseUrl}/api/sos/evidence-error`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -3,6 +3,7 @@ import { User, Mail, Calendar, MapPin, Car, FileText, Bookmark, CreditCard } fro
 import { AuthContext } from '../App';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 
 export default function ExtendedRegistration() {
   const [step, setStep] = useState(1);
@@ -74,7 +75,8 @@ export default function ExtendedRegistration() {
     };
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/auth/register`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

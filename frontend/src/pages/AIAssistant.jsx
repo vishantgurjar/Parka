@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send, Banknote } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 
 export default function AIAssistant() {
   const [status, setStatus] = useState('idle');
@@ -105,7 +106,8 @@ export default function AIAssistant() {
     }, 150);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/ai/diagnose`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/ai/diagnose`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

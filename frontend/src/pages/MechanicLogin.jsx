@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Wrench } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 
 export default function MechanicLogin() {
   const navigate = useNavigate();
@@ -14,7 +15,8 @@ export default function MechanicLogin() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics/login`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/mechanics/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

@@ -169,7 +169,7 @@ if (!JWT_SECRET) {
 try {
   if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
-      process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com',
+      'mailto:' + (process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com'),
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY
     );

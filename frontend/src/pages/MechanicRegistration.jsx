@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { getBackendUrl } from '../utils/api';
 import { User, Mail, MapPin, Wrench, Navigation, CheckCircle, CreditCard, Calendar, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -126,8 +128,8 @@ export default function MechanicRegistration() {
     setLoading(true);
 
     try {
-      // 1. Register the mechanic first (unpaid state)
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics/register`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/mechanics/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

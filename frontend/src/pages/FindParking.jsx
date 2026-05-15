@@ -7,6 +7,7 @@ import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
 import { Navigation, Clock, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getBackendUrl } from '../utils/api';
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -44,7 +45,7 @@ export default function FindParking() {
     // 2. Fetch Spaces from Backend
     const fetchSpaces = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
+        const baseUrl = getBackendUrl();
         const res = await fetch(`${baseUrl}/api/spaces`);
         if (res.ok) {
           const data = await res.json();
@@ -66,7 +67,7 @@ export default function FindParking() {
     
     setIsBooking(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
+      const baseUrl = getBackendUrl();
       const res = await fetch(`${baseUrl}/api/spaces/book/${selectedSpace._id}`, {
         method: 'POST',
         headers: {

@@ -3,6 +3,7 @@ import { AuthContext } from '../App';
 import SEO from '../components/SEO';
 import { MapPin, DollarSign, Home, CheckCircle, Navigation } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getBackendUrl } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function HostSpace() {
@@ -56,7 +57,7 @@ export default function HostSpace() {
     
     setIsSubmitting(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
+      const baseUrl = getBackendUrl();
       const res = await fetch(`${baseUrl}/api/spaces`, {
         method: 'POST',
         headers: {

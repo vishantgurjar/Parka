@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Mic, MicOff, Shield, AlertCircle } from 'lucide-react';
+import { getBackendUrl } from '../utils/api';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
 
@@ -15,7 +16,8 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
 
   useEffect(() => {
     // 1. Setup Socket
-    const socket = io(import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app');
+    const socket = io(getBackendUrl());
+    socket.emit('join-call-room', { userId: user?._id });
     socketRef.current = socket;
 
     const startConnection = async () => {

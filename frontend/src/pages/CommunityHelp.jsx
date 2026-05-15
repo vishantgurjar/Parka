@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { AuthContext } from '../App';
 import { MapPin, Heart, AlertCircle, CheckCircle, Clock, Shield } from 'lucide-react';
 import L from 'leaflet';
+import { getBackendUrl } from '../utils/api';
 
 // Fix Leaflet icon issue
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -47,7 +48,7 @@ export default function CommunityHelp() {
   const [loading, setLoading] = useState(true);
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
+  const API_BASE = getBackendUrl();
 
   useEffect(() => {
     // Get User Location

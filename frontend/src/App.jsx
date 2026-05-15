@@ -7,6 +7,7 @@ import PaymentModal from './components/PaymentModal';
 import IncomingCallModal from './components/IncomingCallModal';
 import SecureCallModal from './components/SecureCallModal';
 import { Toaster, toast } from 'react-hot-toast';
+import { getBackendUrl } from './utils/api';
 
 import Home from './pages/Home';
 import ExtendedRegistration from './pages/ExtendedRegistration';
@@ -144,7 +145,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app');
+    const baseUrl = getBackendUrl();
+    console.log(`Connecting to backend at: ${baseUrl}`);
+    const newSocket = io(baseUrl, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5
+    });
     setSocket(newSocket);
     
     if (user) {
@@ -183,8 +189,8 @@ function App() {
 
   const handlePaymentSuccess = async () => {
     try {
-      const tier = paymentPlan.name.includes('Diamond') ? 'diamond' : (paymentPlan.name.includes('Gold') ? 'gold' : 'silver');
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/user/upgrade`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id, tier })
@@ -227,11 +233,15 @@ function App() {
             if (permission === 'granted') {
                 const existingSub = await registration.pushManager.getSubscription();
                 if (!existingSub) {
-                    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
+                    const baseUrl = getBackendUrl();
                     const vapidRes = await fetch(`${baseUrl}/api/push/vapidPublicKey`);
                     if (!vapidRes.ok) return;
                     
                     const { publicKey } = await vapidRes.json();
+                    if (!publicKey) {
+                      console.warn('VAPID Public Key not found in response');
+                      return;
+                    }
                     const padding = '='.repeat((4 - publicKey.length % 4) % 4);
                     const base64 = (publicKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
                     const rawData = window.atob(base64);

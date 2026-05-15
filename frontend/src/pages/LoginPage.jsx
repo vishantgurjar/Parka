@@ -4,6 +4,7 @@ import { AuthContext } from '../App';
 import { useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { toast } from 'react-hot-toast';
+import { getBackendUrl } from '../utils/api';
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
@@ -16,8 +17,9 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const baseUrl = getBackendUrl();
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/auth/login`, {
+      const res = await fetch(`${baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword })

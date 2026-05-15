@@ -3,6 +3,7 @@ import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
 import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 
 export default function Profile() {
   const { user, login } = useContext(AuthContext);
@@ -40,7 +41,8 @@ export default function Profile() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/user/update-documents`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/update-documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id, ...docData })
@@ -66,7 +68,8 @@ export default function Profile() {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/user/redeem-points`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/redeem-points`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id || user.id, pointsToDeduct: perk.cost, perkName: perk.name })

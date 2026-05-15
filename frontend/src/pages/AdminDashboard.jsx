@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Wrench, IndianRupee, ShieldAlert, KeyRound, Send, Activity, RefreshCw } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 import { toast } from 'react-hot-toast';
 
 export default function AdminDashboard({ user }) {
@@ -12,7 +13,7 @@ export default function AdminDashboard({ user }) {
   const [broadcastSending, setBroadcastSending] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app';
+  const API_BASE = getBackendUrl();
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'panwarvishant9@gmail.com';
 
   useEffect(() => {

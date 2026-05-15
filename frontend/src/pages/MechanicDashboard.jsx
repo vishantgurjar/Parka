@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Power, MapPin, Wrench, PhoneCall, CheckCircle, Radio, Navigation, Wallet } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getBackendUrl } from '../utils/api';
 import { io } from 'socket.io-client';
 import PaymentModal from '../components/PaymentModal';
 
@@ -28,13 +29,14 @@ export default function MechanicDashboard() {
     setIsOnline(parsed.isAvailable !== false);
 
     // Initial Fetch for active SOS
-    fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/sos/active`)
+    const baseUrl = getBackendUrl();
+    fetch(`${baseUrl}/api/sos/active`)
         .then(res => res.json())
         .then(data => setActiveSosRequests(data))
         .catch(err => console.error("Error fetching SOS", err));
 
     // Connect to Socket.IO
-    const newSocket = io(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}`);
+    const newSocket = io(getBackendUrl());
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -93,7 +95,8 @@ export default function MechanicDashboard() {
     setUpdating(true);
     try {
       const newStatus = !isOnline;
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://parka-backend.vercel.app'}/api/mechanics/${mechanic._id}/status`, {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/mechanics/${mechanic._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isAvailable: newStatus })
