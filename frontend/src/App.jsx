@@ -272,34 +272,34 @@ function App() {
           <AuthContext.Provider value={{ user, token, login, logout, isPro, activeSOS, setActiveSOS, userLocation, mechanicLocation }}>
             <Router>
               <Toaster position="top-center" toastOptions={{ style: { background: '#111827', color: '#f3f4f6', borderRadius: '8px', border: '1px solid #374151' } }} />
-              {user && <Header onOpenPayment={handleOpenPayment} installPrompt={installPrompt} />}
+              <Header onOpenPayment={handleOpenPayment} installPrompt={installPrompt} />
               <main>
                 <Routes>
                   {/* Public Routes */}
-                  <Route path="/" element={user ? <Home onOpenPayment={handleOpenPayment} /> : <Navigate to="/login" />} />
+                  <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
                   <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
                   <Route path="/join" element={<MechanicRegistration />} />
                   <Route path="/m-login" element={<MechanicLogin />} />
                   <Route path="/m-dash" element={<MechanicDashboard />} />
-                  <Route path="/mechanics" element={user ? <MechanicList /> : <Navigate to="/login" />} />
-                  <Route path="/ai-doctor" element={user ? <AIAssistant /> : <Navigate to="/login" />} />
-                  <Route path="/help" element={user ? <CommunityHelp /> : <Navigate to="/login" />} />
-                  <Route path="/help-center" element={user ? <HelpCenter /> : <Navigate to="/login" />} />
-                  <Route path="/privacy-policy" element={user ? <PrivacyPolicy /> : <Navigate to="/login" />} />
-                  <Route path="/terms-of-service" element={user ? <TermsOfService /> : <Navigate to="/login" />} />
-                  <Route path="/faq" element={user ? <FAQ /> : <Navigate to="/login" />} />
-                  <Route path="/v/:id" element={user ? <VehicleLandingPage /> : <Navigate to="/login" />} />
-                  <Route path="/cam" element={user ? <Sentinel /> : <Navigate to="/login" />} />
+                  <Route path="/mechanics" element={<MechanicList />} />
+                  <Route path="/ai-doctor" element={<AIAssistant />} />
+                  <Route path="/help" element={<CommunityHelp />} />
+                  <Route path="/help-center" element={<HelpCenter />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/v/:id" element={<VehicleLandingPage />} />
+                  <Route path="/cam" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
-                  <Route path="/host" element={user ? <HostSpace /> : <Navigate to="/login" />} />
-                  <Route path="/park" element={user ? <FindParking /> : <Navigate to="/login" />} />
+                  <Route path="/host" element={<HostSpace />} />
+                  <Route path="/park" element={<FindParking />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </main>
-              {user && <Footer />}
+              <Footer />
 
               {/* Modals */}
               {paymentPlan && (
