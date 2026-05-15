@@ -279,22 +279,22 @@ function App() {
                   <Route path="/" element={user ? <Home onOpenPayment={handleOpenPayment} /> : <Navigate to="/login" />} />
                   <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
-                  <Route path="/mechanic-register" element={<MechanicRegistration />} />
-                  <Route path="/mechanic-login" element={<MechanicLogin />} />
-                  <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
+                  <Route path="/join" element={<MechanicRegistration />} />
+                  <Route path="/m-login" element={<MechanicLogin />} />
+                  <Route path="/m-dash" element={<MechanicDashboard />} />
                   <Route path="/mechanics" element={user ? <MechanicList /> : <Navigate to="/login" />} />
                   <Route path="/ai-doctor" element={user ? <AIAssistant /> : <Navigate to="/login" />} />
+                  <Route path="/help" element={user ? <CommunityHelp /> : <Navigate to="/login" />} />
                   <Route path="/help-center" element={user ? <HelpCenter /> : <Navigate to="/login" />} />
                   <Route path="/privacy-policy" element={user ? <PrivacyPolicy /> : <Navigate to="/login" />} />
                   <Route path="/terms-of-service" element={user ? <TermsOfService /> : <Navigate to="/login" />} />
                   <Route path="/faq" element={user ? <FAQ /> : <Navigate to="/login" />} />
                   <Route path="/v/:id" element={user ? <VehicleLandingPage /> : <Navigate to="/login" />} />
-                  <Route path="/community-help" element={user ? <CommunityHelp /> : <Navigate to="/login" />} />
-                  <Route path="/sentinel" element={user ? <Sentinel /> : <Navigate to="/login" />} />
+                  <Route path="/cam" element={user ? <Sentinel /> : <Navigate to="/login" />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.email === 'panwarvishant9@gmail.com') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
-                  <Route path="/host-space" element={user ? <HostSpace /> : <Navigate to="/login" />} />
-                  <Route path="/find-parking" element={user ? <FindParking /> : <Navigate to="/login" />} />
+                  <Route path="/host" element={user ? <HostSpace /> : <Navigate to="/login" />} />
+                  <Route path="/park" element={user ? <FindParking /> : <Navigate to="/login" />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

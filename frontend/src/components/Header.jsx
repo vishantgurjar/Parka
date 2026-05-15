@@ -69,13 +69,13 @@ export default function Header({ onOpenPayment, installPrompt }) {
         {/* Desktop Nav */}
         <nav className="nav-desktop" style={{ gap: '1.2rem', alignItems: 'center', marginLeft: 'auto', paddingLeft: '2rem' }}>
           <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Home</a>
-          <Link to="/community-help" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
+          <Link to="/help" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Community</Link>
           <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>SOS</a>
           <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Mechanics</Link>
 
-          <Link to="/host-space" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
+          <Link to="/host" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
           <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
-          <Link to="/sentinel" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Cam Mode</Link>
+          <Link to="/cam" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Cam Mode</Link>
           
           <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 5px' }}></div>
 
@@ -129,13 +129,13 @@ export default function Header({ onOpenPayment, installPrompt }) {
       {/* Mobile Nav Overlay */}
       <nav className={`nav-mobile ${isMenuOpen ? 'show' : ''}`}>
         <a href="#home" onClick={(e) => handleScroll(e, 'home')}>Home</a>
-        <Link to="/community-help" onClick={(e) => { setIsMenuOpen(false); }}>Community</Link>
+        <Link to="/help" onClick={(e) => { setIsMenuOpen(false); }}>Community</Link>
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
 
-        <Link to="/host-space" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#10b981'}}>Host Space</Link>
+        <Link to="/host" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#10b981'}}>Host Space</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
-        <Link to="/sentinel" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Cam Mode 🛡️</Link>
+        <Link to="/cam" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Cam Mode 🛡️</Link>
         {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
 
         {user && <a href="#qr" onClick={(e) => handleScroll(e, 'qr')}>QR Access</a>}

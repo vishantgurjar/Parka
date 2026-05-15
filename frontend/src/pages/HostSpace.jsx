@@ -101,7 +101,7 @@ export default function HostSpace() {
             <h2 style={{ fontSize: '2.5rem', letterSpacing: '-1px' }}>List Your <span className="text-gradient">Space.</span></h2>
             <p style={{ opacity: 0.7, marginTop: '1rem', marginBottom: '2rem' }}>Turn your empty driveway or garage into a premium parking spot and earn securely.</p>
             <button 
-              onClick={() => navigate('/find-parking')} 
+              onClick={() => navigate('/park')} 
               className="glass light-sweep" 
               style={{ 
                 padding: '12px 24px', 
