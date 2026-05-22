@@ -21,12 +21,12 @@ const { Server } = require("socket.io");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy_client_id');
 
 // Razorpay Instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
+  key_id: process.env.RAZORPAY_KEY_ID || 'dummy_id',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret'
 });
 
 // Gemini AI Config
