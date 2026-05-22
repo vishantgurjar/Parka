@@ -200,7 +200,8 @@ const connectDB = async () => {
 };
 
 // Connect immediately on startup (for local/persistent servers)
-connectDB();
+connectDB().catch(err => console.error('Initial DB Connection Error on startup:', err.message));
+
 
 // MongoDB Connection Check Middleware
 const checkDbConnection = async (req, res, next) => {
