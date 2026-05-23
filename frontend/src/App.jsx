@@ -295,6 +295,7 @@ function App() {
                   <Route path="/mechanics" element={<MechanicList />} />
                   <Route path="/ai-doctor" element={<AIAssistant />} />
                   <Route path="/help" element={<CommunityHelp />} />
+                  <Route path="/community-help" element={<Navigate to="/help" replace />} />
                   <Route path="/help-center" element={<HelpCenter />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<TermsOfService />} />

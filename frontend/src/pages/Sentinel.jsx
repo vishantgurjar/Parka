@@ -30,6 +30,7 @@ export default function Sentinel() {
   }, [addLog]);
 
   const sosIdRef = useRef(null);
+  const isFakeCrashRef = useRef(false);
   const [currentSosId, setCurrentSosId] = useState(null);
 
   const sendSOS = useCallback(async () => {
@@ -57,9 +58,33 @@ export default function Sentinel() {
         setCurrentSosId(data.sosRequest._id);
         sosIdRef.current = data.sosRequest._id;
         
-        // 2. Stop recording and get the blob (the onstop handler will call uploadEvidence)
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-          mediaRecorderRef.current.stop();
+        // 2. Stop recording and link evidence (mock for fake/test, real camera capture for true impact)
+        if (isFakeCrashRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+          addLog("LINKING MOCK DASHCAM EVIDENCE...");
+          const mockVideoUrl = "https://assets.mixkit.co/videos/preview/mixkit-car-driving-in-the-rain-at-night-40030-large.mp4";
+          
+          try {
+            const linkRes = await fetch(`${baseUrl}/api/sos/evidence-link`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sosId: data.sosRequest._id,
+                userId: user?._id || 'guest',
+                evidenceUrl: mockVideoUrl
+              })
+            });
+            if (linkRes.ok) {
+              addLog("MOCK EVIDENCE SECURED & LINKED.");
+              toast.success("SOS & Demo Evidence Secured!");
+            }
+          } catch (linkErr) {
+            console.error("Failed to link mock evidence:", linkErr);
+          }
+          isFakeCrashRef.current = false; // Reset
+        } else {
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+          }
         }
       }
     } catch (err) {
@@ -178,6 +203,7 @@ export default function Sentinel() {
 
   const cancelSOS = () => {
     setIsImpactDetected(false);
+    isFakeCrashRef.current = false;
     addLog("SOS Manually Cancelled.");
   };
 
@@ -466,7 +492,10 @@ export default function Sentinel() {
               <div className="glass" style={{ padding: '1.5rem', borderRadius: '24px', backgroundColor: 'rgba(15, 15, 18, 0.7)' }}>
                 <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>System Controls</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <button onClick={triggerImpact} style={{ padding: '15px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                  <button onClick={() => {
+                    isFakeCrashRef.current = true;
+                    triggerImpact();
+                  }} style={{ padding: '15px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
                     <MapPin size={16} /> Fake Crash
                   </button>
                   <button style={{ padding: '15px', borderRadius: '12px', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>

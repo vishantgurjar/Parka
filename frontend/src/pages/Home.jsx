@@ -242,7 +242,7 @@ export default function Home({ onOpenPayment }) {
                 <MapPin size={22} />
                 Find Assistance
               </Link>
-              <Link to="/community-help" className="glass" style={{ padding: '20px 40px', borderRadius: '18px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to="/help" className="glass" style={{ padding: '20px 40px', borderRadius: '18px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 Join Community
               </Link>
             </div>
