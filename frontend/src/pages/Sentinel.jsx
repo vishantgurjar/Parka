@@ -217,7 +217,9 @@ export default function Sentinel() {
   };
 
   const startSentinel = async () => {
-    if (!isPro()) {
+    if (!user) {
+      toast("Preview Mode: Activated for Guest testing.", { icon: '🛡️' });
+    } else if (!isPro()) {
       alert("Cam Mode is a PRO feature. Join Diamond PRO for life-saving protection.");
       return;
     }
@@ -275,8 +277,11 @@ export default function Sentinel() {
       setIsActive(true);
       addLog("System Armed. Monitoring Sensors.");
     } catch (e) {
-      console.error(e);
-      toast.error("Camera access required for Cam Mode.");
+      console.warn("Camera failed, entering Simulation Mode:", e);
+      addLog("Camera failed. Armed in Simulation Mode.");
+      toast("Armed in Simulation Mode (No Camera)", { icon: '🛡️' });
+      mediaRecorderRef.current = null;
+      setIsActive(true);
     }
   };
 
