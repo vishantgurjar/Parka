@@ -31,6 +31,7 @@ export default function Sentinel() {
 
   const sosIdRef = useRef(null);
   const isFakeCrashRef = useRef(false);
+  const skipUploadRef = useRef(false);
   const [currentSosId, setCurrentSosId] = useState(null);
 
   const sendSOS = useCallback(async () => {
@@ -61,7 +62,12 @@ export default function Sentinel() {
         // 2. Stop recording and link evidence (mock for fake/test, real camera capture for true impact)
         if (isFakeCrashRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
           addLog("LINKING MOCK DASHCAM EVIDENCE...");
-          const mockVideoUrl = "https://assets.mixkit.co/videos/preview/mixkit-car-driving-in-the-rain-at-night-40030-large.mp4";
+          const mockVideoUrl = "https://www.w3schools.com/html/movie.mp4";
+          
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            skipUploadRef.current = true;
+            mediaRecorderRef.current.stop();
+          }
           
           try {
             const linkRes = await fetch(`${baseUrl}/api/sos/evidence-link`, {
@@ -267,6 +273,11 @@ export default function Sentinel() {
         }
       };
       recorder.onstop = () => {
+        if (skipUploadRef.current) {
+          skipUploadRef.current = false; // Reset the flag
+          addLog("SIMULATION DETECTED: SKIPPING REAL VIDEO UPLOAD.");
+          return;
+        }
         const blob = new Blob(chunksRef.current, { type: supportedMime });
         uploadEvidence(blob, sosIdRef.current);
       };
