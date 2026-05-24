@@ -69,6 +69,8 @@ export default function Sentinel() {
             mediaRecorderRef.current.stop();
           }
           
+          setIsUploading(true);
+          
           try {
             const linkRes = await fetch(`${baseUrl}/api/sos/evidence-link`, {
               method: 'POST',
@@ -81,10 +83,13 @@ export default function Sentinel() {
             });
             if (linkRes.ok) {
               addLog("MOCK EVIDENCE SECURED & LINKED.");
+              await new Promise(resolve => setTimeout(resolve, 1500));
               toast.success("SOS & Demo Evidence Secured!");
             }
           } catch (linkErr) {
             console.error("Failed to link mock evidence:", linkErr);
+          } finally {
+            setIsUploading(false);
           }
           isFakeCrashRef.current = false; // Reset
         } else {
