@@ -270,6 +270,8 @@ const communityRoutes = require('./routes/communityRoutes')(io);
 const aiRoutes = require('./routes/aiRoutes');
 const spaceRoutes = require('./routes/spaceRoutes');
 
+app.use('/api', checkDbConnection);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/mechanics', mechanicRoutes);
 app.use('/api/admin', adminRoutes);

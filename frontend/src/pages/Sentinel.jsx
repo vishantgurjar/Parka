@@ -126,9 +126,9 @@ export default function Sentinel() {
         // Force correct filename extension to help Cloudinary recognize the video from mobile blobs
         formData.append('file', blob, `evidence.${ext}`);
         formData.append('upload_preset', preset);
-        formData.append('resource_type', 'auto');
+        formData.append('resource_type', 'video');
 
-        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
           method: 'POST',
           body: formData
         });

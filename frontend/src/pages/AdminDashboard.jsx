@@ -168,27 +168,60 @@ export default function AdminDashboard({ user }) {
                
                {metrics.liveSos.length === 0 ? (
                   <p style={{ color: '#6b7280', fontStyle: 'italic', textAlign: 'center', padding: '2rem 0' }}>No active distress calls globally.</p>
-               ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                               ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                      {metrics.liveSos.map((sos) => (
-                        <div key={sos._id} style={{ background: 'var(--bg)', border: `1px solid ${sos.status === 'pending' ? '#ef4444' : '#f59e0b'}`, padding: '1rem', borderRadius: '8px' }}>
-                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                              <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>ID: {sos._id.substring(0,8)}</span>
-                              <span style={{ fontSize: '0.8rem', background: sos.status === 'pending' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: sos.status === 'pending' ? '#ef4444' : '#f59e0b', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                        <div key={sos._id} style={{ background: 'rgba(17, 24, 39, 0.7)', border: `1px solid ${sos.status === 'pending' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`, padding: '1.25rem', borderRadius: '12px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)', transition: 'transform 0.2s, border-color 0.2s' }} className="sos-card-hover">
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#9ca3af', fontFamily: 'monospace', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px' }}>ID: {sos._id.substring(0,8)}</span>
+                              <span style={{ fontSize: '0.75rem', background: sos.status === 'pending' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: sos.status === 'pending' ? '#ef4444' : '#f59e0b', padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>
                                  {sos.status}
                               </span>
                            </div>
-                           <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem' }}><strong>Victim:</strong> {sos.userName || 'Unknown'} ({sos.userPhone || 'No Phone'})</p>
-                           {sos.assignedBid?.mechanicName && (
-                              <p style={{ margin: '0', fontSize: '0.9rem', color: '#10b981' }}><strong>Mechanic:</strong> {sos.assignedBid.mechanicName} ({sos.assignedBid.phone})</p>
-                           )}
-                           {sos.evidenceUrl && (
-                               <div style={{ marginTop: '10px' }}>
-                                  <button onClick={() => setSelectedVideo(sos.evidenceUrl)} style={{ display: 'inline-block', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid #38bdf8', padding: '6px 12px', borderRadius: '4px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold' }}>
-                                     🎥 Play Dashcam Evidence
-                                  </button>
-                               </div>
-                            )}
+                           
+                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                              <p style={{ margin: '0', fontSize: '0.9rem', color: '#e5e7eb' }}>
+                                 <strong style={{ color: '#9ca3af' }}>Victim:</strong> {sos.userName || 'Unknown'} 
+                                 <span style={{ fontSize: '0.85rem', color: '#6b7280', marginLeft: '6px' }}>({sos.userPhone || 'No Phone'})</span>
+                              </p>
+                              {sos.assignedBid?.mechanicName && (
+                                 <p style={{ margin: '0', fontSize: '0.9rem', color: '#10b981' }}>
+                                    <strong style={{ color: '#6b7280' }}>Mechanic:</strong> {sos.assignedBid.mechanicName} 
+                                    <span style={{ fontSize: '0.85rem', color: 'rgba(16, 185, 129, 0.7)', marginLeft: '6px' }}>({sos.assignedBid.phone})</span>
+                                 </p>
+                              )}
+                           </div>
+
+                           {/* Evidence Backup Status Block */}
+                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px', marginTop: '4px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                 {sos.evidenceUrl ? (
+                                    <span style={{ fontSize: '0.8rem', color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '50px', fontWeight: '500' }}>
+                                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+                                       Cloud Backup Secured
+                                    </span>
+                                 ) : sos.debugLogs ? (
+                                    <span style={{ fontSize: '0.8rem', color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(239, 68, 68, 0.1)', padding: '2px 8px', borderRadius: '6px', fontWeight: '500' }}>
+                                       ⚠️ {sos.debugLogs}
+                                    </span>
+                                 ) : (
+                                    <span style={{ fontSize: '0.8rem', color: '#f59e0b', display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: '50px', fontWeight: '500' }} className="pulse-anim">
+                                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
+                                       Awaiting Dashcam link...
+                                    </span>
+                                 )}
+                              </div>
+
+                              {sos.evidenceUrl && (
+                                 <button 
+                                    onClick={() => setSelectedVideo(sos.evidenceUrl)} 
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: '600', boxShadow: '0 2px 10px rgba(2, 132, 199, 0.3)', transition: 'all 0.2s' }}
+                                    className="play-btn-hover"
+                                 >
+                                    🎥 Play Dashcam Evidence
+                                 </button>
+                              )}
+                           </div>
                         </div>
                      ))}
                   </div>
@@ -198,18 +231,37 @@ export default function AdminDashboard({ user }) {
          </div>
       </div>
       {selectedVideo && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '800px', background: '#111', borderRadius: '12px', overflow: 'hidden' }}>
-            <button onClick={() => setSelectedVideo(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'white', color: 'black', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', zIndex: 10, fontWeight: 'bold' }}>X</button>
-            <video src={selectedVideo} controls autoPlay style={{ width: '100%', display: 'block' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '780px', background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#1f2937' }}>
+               <span style={{ fontWeight: 'bold', color: '#f3f4f6', fontSize: '0.95rem' }}>🎥 Sentinel Cloud Player</span>
+               <button onClick={() => setSelectedVideo(null)} style={{ background: 'rgba(255,255,255,0.08)', color: '#9ca3af', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', transition: 'all 0.2s' }} className="close-btn-hover">✕</button>
+            </div>
+            <video src={selectedVideo} controls autoPlay style={{ width: '100%', maxHeight: '450px', display: 'block', background: '#000' }}>
                Your browser does not support the video tag.
             </video>
-            <div style={{ padding: '15px', textAlign: 'center' }}>
-               <a href={selectedVideo} target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', fontSize: '0.9rem' }}>Download / Open Original</a>
+            <div style={{ padding: '15px 20px', textAlign: 'center', background: '#1f2937', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Format: Direct Stream</span>
+               <a href={selectedVideo} target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', fontSize: '0.85rem', textDecoration: 'none', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Download / Open Original →</a>
             </div>
           </div>
         </div>
       )}
+      
+      <style>{`
+        .sos-card-hover:hover {
+          transform: translateY(-2px);
+          border-color: rgba(56, 189, 248, 0.4) !important;
+        }
+        .play-btn-hover:hover {
+          transform: scale(1.03);
+          box-shadow: 0 4px 15px rgba(2, 132, 199, 0.5) !important;
+        }
+        .close-btn-hover:hover {
+          background: rgba(239, 68, 68, 0.2) !important;
+          color: #ef4444 !important;
+        }
+      `}</style>
     </div>
   );
 }

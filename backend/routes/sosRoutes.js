@@ -139,10 +139,10 @@ module.exports = function(io) {
                 return res.status(400).json({ message: 'No video file provided' });
             }
 
-            // Wrap stream in a Promise so Vercel waits for it!
+                        // Wrap stream in a Promise so Vercel waits for it!
             const uploadPromise = new Promise((resolve, reject) => {
                 const stream = cloudinary.uploader.upload_stream(
-                    { resource_type: 'auto', folder: 'sentinel_evidence' },
+                    { resource_type: 'video', folder: 'sentinel_evidence' },
                     (error, result) => {
                         if (error) reject(error);
                         else resolve(result);
