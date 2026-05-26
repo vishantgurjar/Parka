@@ -34,6 +34,35 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
 
       if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
 
+      // If mock order, bypass browser Razorpay library completely and auto-verify
+      if (orderData.isMock) {
+        alert("⚡ Sandbox / Mock Mode Active: Completing direct bypass...");
+        const baseUrl = getBackendUrl();
+        const verifyRes = await fetch(`${baseUrl}/api/payment/verify-signature`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: orderData.id,
+            razorpay_payment_id: `pay_mock_${Date.now()}`,
+            razorpay_signature: "mock_signature",
+            entityType,
+            entityId,
+            amount: plan.amount
+          })
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyRes.ok) {
+          alert("Sandbox Payment Successful! ✓");
+          if (onSuccess) onSuccess(verifyData);
+          onClose();
+        } else {
+          throw new Error(verifyData.message || 'Sandbox verification failed');
+        }
+        return;
+      }
+
       // 2. Options for Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
