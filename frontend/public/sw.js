@@ -30,6 +30,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only intercept GET requests and HTTP/HTTPS protocols
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return;
+  }
+  
   // Simple network-first strategy to avoid stale content
   event.respondWith(
     fetch(event.request).catch(() => {
