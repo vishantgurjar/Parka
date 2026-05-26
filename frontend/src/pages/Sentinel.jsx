@@ -59,15 +59,10 @@ export default function Sentinel() {
         setCurrentSosId(data.sosRequest._id);
         sosIdRef.current = data.sosRequest._id;
         
-        // 2. Stop recording and link evidence (mock for fake/test, real camera capture for true impact)
-        if (isFakeCrashRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+        // 2. Stop recording and link evidence (mock only if camera is inactive/simulation, real upload if camera is active)
+        if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
           addLog("LINKING MOCK DASHCAM EVIDENCE...");
           const mockVideoUrl = "https://www.w3schools.com/html/movie.mp4";
-          
-          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            skipUploadRef.current = true;
-            mediaRecorderRef.current.stop();
-          }
           
           setIsUploading(true);
           
@@ -91,12 +86,12 @@ export default function Sentinel() {
           } finally {
             setIsUploading(false);
           }
-          isFakeCrashRef.current = false; // Reset
         } else {
           if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
             mediaRecorderRef.current.stop();
           }
         }
+        isFakeCrashRef.current = false; // Reset anyway
       }
     } catch (err) {
       console.error("SOS Broadcast Failed:", err);
