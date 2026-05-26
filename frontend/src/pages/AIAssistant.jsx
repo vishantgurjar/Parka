@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send, Banknote } from 'lucide-react';
+import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send, Banknote, Wrench } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 
@@ -290,7 +290,7 @@ export default function AIAssistant() {
                   </span>
                 </div>
                 <button 
-                   onClick={() => speakDiagnosis(`${diagnosis.details}. Summary Action is: ${diagnosis.action}`)}
+                   onClick={() => speakDiagnosis(`${diagnosis.details}. ${diagnosis.estimatedCost && diagnosis.estimatedCost !== '₹0' ? 'Expected cost is ' + diagnosis.estimatedCost : ''}. ${diagnosis.suggestedMechanic && diagnosis.suggestedMechanic !== 'N/A' ? 'Recommended specialist is ' + diagnosis.suggestedMechanic : ''}. Action is: ${diagnosis.action}`)}
                    style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid #38bdf8', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}
                 >
                     <Volume2 size={24} />
@@ -317,6 +317,16 @@ export default function AIAssistant() {
                    </div>
                 </div>
               </div>
+
+              {diagnosis.suggestedMechanic && diagnosis.suggestedMechanic !== 'N/A' && (
+                <div style={{ background: 'rgba(249, 115, 22, 0.1)', borderLeft: '4px solid #f97316', padding: '1rem', borderRadius: '0 8px 8px 0', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f97316', marginBottom: '4px' }}>
+                    <Wrench size={18} />
+                    <strong style={{fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px'}}>Recommended Specialist</strong>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>{diagnosis.suggestedMechanic}</p>
+                </div>
+              )}
 
               {diagnosis.estimatedCost && (
                 <div style={{ background: 'rgba(16, 185, 129, 0.1)', borderLeft: '4px solid #10b981', padding: '1rem', borderRadius: '0 8px 8px 0', marginBottom: '1.5rem' }}>
@@ -352,8 +362,8 @@ export default function AIAssistant() {
                 <button onClick={() => setStatus('idle')} className="btn-secondary" style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '8px', cursor: 'pointer' }}>
                   <RefreshCcw size={18} /> Analyze Again
                 </button>
-                <button onClick={() => window.location.href='/mechanics'} className="btn-gradient" style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                  Find Assistance Nearby
+                <button onClick={() => window.location.href='/mechanics'} className="btn-gradient" style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', border: 'none', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Wrench size={16} /> Find {diagnosis.suggestedMechanic && diagnosis.suggestedMechanic !== 'N/A' ? diagnosis.suggestedMechanic.split(' / ')[0] : 'Mechanic'}
                 </button>
               </div>
 
