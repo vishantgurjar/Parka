@@ -37,12 +37,24 @@ export default function AdminDashboard({ user }) {
       const res = await fetch(`${API_BASE}/api/admin/metrics`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
       });
+      
+      if (res.status === 401 || res.status === 403) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem('parkeActiveUser');
+        localStorage.removeItem('parkeToken');
+        navigate('/login');
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         setMetrics(data);
+      } else {
+        toast.error(data.message || "Failed to load metrics");
       }
     } catch (err) {
       console.error("Failed to load metrics", err);
+      toast.error("Connection error. Could not fetch metrics.");
     } finally {
       setLoading(false);
     }
