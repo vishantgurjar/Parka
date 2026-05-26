@@ -31,6 +31,10 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Sanitize and fallback coordinates to prevent NaN MongoDB 2dsphere index crashes
+    const latVal = (latitude && !isNaN(parseFloat(latitude))) ? parseFloat(latitude) : 28.6139;
+    const lngVal = (longitude && !isNaN(parseFloat(longitude))) ? parseFloat(longitude) : 77.2090;
+
     // Create new mechanic
     mechanic = new Mechanic({
       name,
@@ -43,11 +47,11 @@ router.post('/register', async (req, res) => {
       services,
       dateOfBirth,
       idNumber,
-      latitude,
-      longitude,
+      latitude: latVal,
+      longitude: lngVal,
       location: {
         type: 'Point',
-        coordinates: [parseFloat(longitude), parseFloat(latitude)]
+        coordinates: [lngVal, latVal]
       }
     });
 
