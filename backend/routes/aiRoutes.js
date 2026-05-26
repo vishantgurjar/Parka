@@ -183,14 +183,14 @@ const CAR_DIAGNOSTIC_DB = [
     }
 ];
 
-function getSmartDiagnosis(userInput, signature, peaks = []) {
+function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
     const input = (userInput || '').toLowerCase();
     
     const maxPeakBin = peaks.length > 0 ? peaks[0].bin : 0;
     const avgPeakVal = peaks.length > 0 ? peaks.reduce((acc, p) => acc + p.val, 0) / peaks.length : 0;
 
-    // Reject low signal/ambient silence if no text description is provided
-    if (avgPeakVal < 45 && !input.trim()) {
+    // Reject low signal/ambient silence if no text description and no image is provided
+    if (avgPeakVal < 45 && !input.trim() && !hasImage) {
         return {
             issue: "Low Signal / Ambient Noise",
             dangerLevel: "LOW",
@@ -237,7 +237,17 @@ function getSmartDiagnosis(userInput, signature, peaks = []) {
         bestResult = candidates[Math.floor(Math.random() * candidates.length)];
         bestResult.otherPossibilities = candidates.filter(c => c.issue !== bestResult.issue).slice(0, 3).map(c => c.issue);
     } else {
-        if (signature === 'high') {
+        if (hasImage) {
+            bestResult = { 
+                issue: "Visual Evidence Scan", 
+                dangerLevel: "MEDIUM", 
+                details: "System ne aapki upload ki gayi photo ko scan kiya hai. Ye engine leak, coolant fluid level ya engine compartments mein structural wear ki problem ho sakti hai.", 
+                action: "Gaadi ko kisi acche service center par physically dikhayein.", 
+                estimatedCost: "₹1,500 - ₹8,000", 
+                confidence: 80, 
+                suggestedMechanic: "General Mechanic" 
+            };
+        } else if (signature === 'high') {
             bestResult = { issue: "High-Freq Resonance detected", dangerLevel: "MEDIUM", details: "System ne ek teekhi awaz pakdi hai. Ye aksar turbo leak ya alternator bearing ki awaz hoti hai.", action: "Ek baar belt aur turbo hoses check karwao.", estimatedCost: "₹3,000 - ₹10,000", confidence: 85, suggestedMechanic: "Turbo/Engine Specialist" };
         } else if (signature === 'low') {
             bestResult = { issue: "Low-Freq Vibration", dangerLevel: "CRITICAL", details: "Ye engine ke niche se aane wali bhari awaz hai jo kafi khatarnak ho sakti hai.", action: "Gaadi abhi roko aur oil level check karo.", estimatedCost: "₹15,000 - ₹75,000", confidence: 88, suggestedMechanic: "Transmission or Engine Mount Specialist" };
@@ -283,7 +293,7 @@ router.post('/diagnose', async (req, res) => {
 
         if (!model) {
             // Fallback if no Gemini key
-            const diagnostic = getSmartDiagnosis(symptom || '', audioSignature, spectralPeaks);
+            const diagnostic = getSmartDiagnosis(symptom || '', audioSignature, spectralPeaks, !!image);
             return res.json(diagnostic);
         }
 
@@ -351,7 +361,7 @@ router.post('/diagnose', async (req, res) => {
         }
     } catch (error) {
         console.error("AI Route Error:", error);
-        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature, req.body.spectralPeaks);
+        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature, req.body.spectralPeaks, !!req.body.image);
         res.json(diagnostic);
     }
 });

@@ -137,6 +137,12 @@ export default function AIAssistant() {
     }
   };
 
+  const analyzeDirectly = () => {
+    setStatus('analyzing');
+    setProgress(0);
+    analyzeData('mid', []);
+  };
+
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -232,6 +238,21 @@ export default function AIAssistant() {
 
                 <h2>Ready to Diagnose</h2>
                 <p style={{ color: 'var(--muted)' }}>Select an image or record sound for best results.</p>
+                
+                {(selectedImage || symptom) && (
+                   <button 
+                      onClick={analyzeDirectly}
+                      className="btn-gradient" 
+                      style={{ 
+                         width: '100%', padding: '15px', borderRadius: '12px', border: 'none', 
+                         color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer',
+                         boxShadow: '0 10px 25px rgba(56, 189, 248, 0.3)', marginTop: '1.5rem',
+                         background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)'
+                      }}
+                   >
+                      Analyze {selectedImage ? (symptom ? "Photo & Symptom" : "Uploaded Photo") : "Symptom Description"}
+                   </button>
+                )}
               </div>
             </div>
           )}
