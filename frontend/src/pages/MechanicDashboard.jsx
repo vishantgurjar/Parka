@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { Power, MapPin, Wrench, PhoneCall, CheckCircle, Radio, Navigation, Wallet } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
@@ -57,11 +58,11 @@ export default function MechanicDashboard() {
         // data: { sosId, sos }
         setAcceptedSOS(data.sos);
         setActiveSosRequests(prev => prev.filter(req => req._id !== data.sosId));
-        alert("🎉 SOS MATCH CONFIRMED! Drive safe to the customer. Live tracking started.");
+        toast.success("🎉 SOS MATCH CONFIRMED! Drive safe to the customer. Live tracking started.", { duration: 6000 });
     });
 
     newSocket.on('bid-error', (errMessage) => {
-        alert(errMessage);
+        toast.error(errMessage);
     });
 
     return () => {
@@ -107,7 +108,7 @@ export default function MechanicDashboard() {
         setMechanic(updated);
         localStorage.setItem('parkeActiveMechanic', JSON.stringify(updated));
       } else {
-        alert("Failed to update status");
+        toast.error("Failed to update status");
       }
     } catch (error) {
       console.error(error);
@@ -126,7 +127,7 @@ export default function MechanicDashboard() {
 
   const handleBidSubmit = (sosId, userId) => {
       const amount = bidAmounts[sosId];
-      if (!amount || amount <= 0) return alert("Please enter a valid amount.");
+      if (!amount || amount <= 0) return toast.error("Please enter a valid amount.");
       
       const payload = {
           sosId,
@@ -139,7 +140,7 @@ export default function MechanicDashboard() {
       };
       
       socket.emit('submit-bid', payload);
-      alert("Bid sent successfully. Waiting for user response...");
+      toast.success("Bid sent successfully. Waiting for user response...");
   };
 
   return (
@@ -312,7 +313,7 @@ export default function MechanicDashboard() {
               const updated = data.mechanic;
               setMechanic(updated);
               localStorage.setItem('parkeActiveMechanic', JSON.stringify(updated));
-              alert("Wallet Recharge Successful! Your new balance is ₹" + updated.walletBalance);
+              toast.success("Wallet Recharge Successful! Your new balance is ₹" + updated.walletBalance);
           }}
         />
       )}

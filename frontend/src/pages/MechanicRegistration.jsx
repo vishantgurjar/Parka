@@ -62,7 +62,7 @@ export default function MechanicRegistration() {
           longitude: position.coords.longitude
         }));
         setLoading(false);
-        alert("Exact shop location captured successfully! ✅");
+        toast.success("Exact shop location captured successfully! ✅");
       },
       (err) => {
         console.error("Location error:", err);
@@ -152,7 +152,7 @@ export default function MechanicRegistration() {
   };
 
   const handlePaymentSuccess = () => {
-    alert("Registration & Payment Successful! Your profile is now active on the network.");
+    toast.success("Registration & Payment Successful! Your profile is now active on the network.");
     navigate('/');
   };
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { X, ShieldCheck, CreditCard } from 'lucide-react';
 import { AuthContext } from '../App';
 import { getBackendUrl } from '../utils/api';
+import { toast } from 'react-hot-toast';
 
 export default function PaymentModal({ plan, onClose, entityId, entityType = 'user', onSuccess }) {
   const { user } = useContext(AuthContext);
@@ -36,7 +37,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
 
       // If mock order, bypass browser Razorpay library completely and auto-verify
       if (orderData.isMock) {
-        alert("⚡ Sandbox / Mock Mode Active: Completing direct bypass...");
+        console.log("⚡ Sandbox / Mock Mode Active: Completing direct bypass...");
         const baseUrl = getBackendUrl();
         const verifyRes = await fetch(`${baseUrl}/api/payment/verify-signature`, {
           method: 'POST',
@@ -54,7 +55,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
         const verifyData = await verifyRes.json();
 
         if (verifyRes.ok) {
-          alert("Sandbox Payment Successful! ✓");
+          toast.success("Payment Successful! ✓");
           if (onSuccess) onSuccess(verifyData);
           onClose();
         } else {
@@ -92,7 +93,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             const verifyData = await verifyRes.json();
 
             if (verifyRes.ok) {
-              alert("Payment Successful! ✓");
+              toast.success("Payment Successful! ✓");
               if (onSuccess) onSuccess(verifyData);
               onClose();
             } else {
@@ -198,7 +199,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           </p>
           <button 
              onClick={() => {
-               alert("Admin Bypass Activated!");
+               toast.success("Admin Bypass Activated! ✓");
                if (onSuccess) onSuccess({ bypassed: true });
                onClose();
              }} 
