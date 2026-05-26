@@ -289,7 +289,8 @@ function App() {
                   <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
                   <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
-                  <Route path="/join" element={<MechanicRegistration />} />
+                  <Route path="/mechanic-register" element={<MechanicRegistration />} />
+                  <Route path="/join" element={<Navigate to="/mechanic-register" replace />} />
                   <Route path="/m-login" element={<MechanicLogin />} />
                   <Route path="/m-dash" element={<MechanicDashboard />} />
                   <Route path="/mechanics" element={<MechanicList />} />
