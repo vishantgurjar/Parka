@@ -118,6 +118,69 @@ const CAR_DIAGNOSTIC_DB = [
         estimatedCost: "₹2,000 - ₹6,500",
         suggestedMechanic: "Engine Specialist"
     },
+    {
+        keywords: ['steering', 'whine', 'turn', 'power steering', 'fluid', 'ghumna', 'steer', 'whining'],
+        issue: "Power Steering Pump Whine",
+        dangerLevel: "MEDIUM",
+        details: "Aapki gaadi ka steering ghumane par whining (vroom-vroom) awaz aa rahi hai. Ye aksar power steering fluid leak hone ya pump kharab hone se hota hai.",
+        action: "Power steering oil reservoir ka level check karo, leak ho to repair karwao aur fluid top-up karo.",
+        estimatedCost: "₹1,500 - ₹5,500",
+        suggestedMechanic: "Steering & Suspension Specialist"
+    },
+    {
+        keywords: ['starter', 'clicking', 'crank', 'start', 'chabi', 'self', 'ghar-ghar', 'click'],
+        issue: "Starter Motor Solenoid / Solenoid Switch",
+        dangerLevel: "HIGH",
+        details: "Chabi ghumane par gaadi start nahi ho rahi aur sirf 'tick-tick' ya 'ghar-ghar' ki awaz aa rahi hai? Starter motor ka solenoid switch ya battery ki dikkat hai.",
+        action: "Battery connections check karo. Agar battery sahi hai to starter motor repair karwao.",
+        estimatedCost: "₹2,000 - ₹6,000",
+        suggestedMechanic: "Auto Electrician"
+    },
+    {
+        keywords: ['ac', 'compressor', 'cooling', 'grinding ac', 'hawa', 'chilling', 'grinding', 'bearing'],
+        issue: "AC Compressor Clutch Bearing",
+        dangerLevel: "LOW",
+        details: "AC on karne par engine se grinding ya ghisaawat ki awaz aati hai? AC compressor ka clutch bearing wear ho chuka hai.",
+        action: "AC off rakhein aur compressor bearing change karwayein taaki belt tootne se bache.",
+        estimatedCost: "₹2,500 - ₹7,000",
+        suggestedMechanic: "Car AC Specialist"
+    },
+    {
+        keywords: ['clutch', 'pedal', 'rattle', 'clutch bearing', 'gear shift', 'dabane', 'bearing', 'rattling'],
+        issue: "Clutch Release Bearing Wear",
+        dangerLevel: "MEDIUM",
+        details: "Clutch pedal dabane par rattling ya khad-khad awaz aati hai jo chhodne par band ho jaati hai? Clutch release bearing ghis gaya hai.",
+        action: "Jaldi clutch kit change karwayein varna gear shifting band ho sakti hai.",
+        estimatedCost: "₹6,000 - ₹14,000",
+        suggestedMechanic: "Gearbox & Clutch Specialist"
+    },
+    {
+        keywords: ['ev', 'electric', 'motor', 'whining ev', 'battery car', 'inverter', 'silent car', 'whining', 'whistle'],
+        issue: "EV Motor / Reduction Gear Wear",
+        dangerLevel: "MEDIUM",
+        details: "Electric vehicle mein chalte waqt abnormally tez high-pitched whistling/whining awaz aa rahi hai? Reduction gear bearing ya inverter hum.",
+        action: "EV service center par scan karwayein, gearbox lubricant replace karein.",
+        estimatedCost: "₹8,000 - ₹35,000",
+        suggestedMechanic: "EV Specialist / Brand Service Center"
+    },
+    {
+        keywords: ['diesel', 'injector', 'knock diesel', 'smoke', 'injector knock', 'crdi', 'diesel tik-tik', 'clattering', 'ticking'],
+        issue: "Diesel Injector Knocking",
+        dangerLevel: "CRITICAL",
+        details: "Diesel engine se bahut tez tik-tik (clattering) awaz aa rahi hai aur exhaust se kala dhua (black smoke) aa raha hai? Injector chocked hain.",
+        action: "Gaadi zyada mat chalao, nozzle clean karwayein varna piston damage ho sakta hai.",
+        estimatedCost: "₹8,000 - ₹24,000",
+        suggestedMechanic: "Diesel Engine & Fuel Injector Specialist"
+    },
+    {
+        keywords: ['exhaust manifold', 'manifold', 'flutter', 'ticking hot', 'dhua manifold', 'ticking', 'exhaust'],
+        issue: "Exhaust Gasket / Manifold Leak",
+        dangerLevel: "MEDIUM",
+        details: "Engine startup par tez ticking ya phat-phat awaz aati hai jo garam hone par kam ho jaati hai? Exhaust manifold gasket leak hai.",
+        action: "Exhaust manifold gasket badalwao, exhaust gases cabin mein aa sakti hain.",
+        estimatedCost: "₹1,500 - ₹5,000",
+        suggestedMechanic: "Silencer & Exhaust Specialist"
+    }
 ];
 
 function getSmartDiagnosis(userInput, signature, peaks = []) {
@@ -156,8 +219,8 @@ function getSmartDiagnosis(userInput, signature, peaks = []) {
         });
         
         if (avgPeakVal >= 45) {
-            if (maxPeakBin > 40 && item.keywords.some(k => ['belt', 'squeal', 'whistle', 'hissing'].includes(k))) score += 20; 
-            if (maxPeakBin < 10 && item.keywords.some(k => ['knock', 'thud', 'mount', 'heavy'].includes(k))) score += 20; 
+            if (maxPeakBin > 40 && item.keywords.some(k => ['belt', 'squeal', 'whistle', 'hissing', 'ev', 'inverter', 'electric'].includes(k))) score += 20; 
+            if (maxPeakBin < 10 && item.keywords.some(k => ['knock', 'thud', 'mount', 'heavy', 'clank', 'clicking'].includes(k))) score += 20; 
             if (avgPeakVal > 150 && item.keywords.some(k => ['grinding', 'brake', 'bearing'].includes(k))) score += 15; 
         } 
 
@@ -224,25 +287,33 @@ router.post('/diagnose', async (req, res) => {
             return res.json(diagnostic);
         }
 
-        let prompt = `You are "Parxéé Buddy", a friendly, expert car mechanic. 
-        Symptom: "${symptom || 'Visual/Acoustic Scan'}"
-        Spectral Signature: "${audioSignature}"
-        Frequency Peaks: ${JSON.stringify(spectralPeaks || [])}
+        let prompt = `You are "Parxéé Buddy", a world-class automotive diagnostics AI and expert car mechanic. 
+        You have expert-level knowledge of all global vehicle types, makes, and models (Petrol/Diesel engines, Turbos, Hybrids, EVs, Supercars, Bikes).
+        
+        Symptom Description: "${symptom || 'Acoustic/Visual Analysis'}"
+        Acoustic Signature: "${audioSignature}"
+        Spectral Peaks Data (FFT): ${JSON.stringify(spectralPeaks || [])}
 
         Instructions:
-        1. CRITICAL: Evaluate if the Symptom or Image is actually related to a car, vehicle, engine, or mechanical issue. If it is NOT (e.g., just "hello", random text, or unrelated topics), you MUST return this exact JSON: {"issue": "Invalid Query", "dangerLevel": "LOW", "details": "Bhaiya, main ek car mechanic AI hu. Please gaadi se related problem batao.", "action": "Try explaining the car issue again.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100} and STOP.
-        2. Analyze the symptoms and/or the image provided to identify the vehicle issue.
-        3. Speak in a friendly, helpful Hinglish style (mix of English and Hindi/Urdu). Use terms like "Bhaiya", "Chinta mat karo", "Dekho", "Kharcha".
-        4. Explain the problem simply as if talking to a friend on WhatsApp. Tell them how much repair cost they can expect ("kharcha").
-        5. In "suggestedMechanic", specify what kind of mechanic specialist they need (e.g., "Engine Specialist", "Brake Specialist", "Auto Electrician", "Suspension Specialist", "Wheel Alignment Shop").
-        6. Provide response in RAW JSON ONLY. Do not use markdown blocks like \`\`\`json. Just the raw JSON object:
+        1. CRITICAL: Validate if the Symptom, Image, or Peak Data relates to a vehicle, engine, motorcycle, mechanical part, or driving issue. If it's unrelated (e.g. simple greeting, general trivia, gibberish), return EXACTLY: {"issue": "Invalid Query", "dangerLevel": "LOW", "details": "Bhaiya, main ek professional car mechanic AI hu. Please gaadi, engine ya road assistance se related sawal pucho.", "action": "Gaadi se judi dikkaat detail mein batayein ya sound record karein.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100} and STOP.
+        2. Leverage your deep automotive engineering database to perform a highly professional, accurate diagnostic match.
+           - Connect high frequency peaks (whistles, squeals, hisses) to components like serpentine belts, pulleys, intake leaks, turbos, or brake pad friction.
+           - Connect low frequency peaks (knocks, thuds, vibrations) to rods, pistons, mounts, transmission gearbox issues, suspension dampers, or exhaust mounts.
+           - Analyze the typed symptoms and uploaded image (if any) to confirm the exact root cause.
+        3. Make the diagnostic response highly credible and detailed:
+           - Explain *exactly* which part is faulty, why it is making that specific noise, and the mechanical consequences of driving with it.
+           - Make it sound incredibly real, scientific, and helpful so the user trusts your diagnosis.
+        4. Tone and Language: Friendly WhatsApp Hinglish (mix of English and Hindi/Urdu using Latin script). Use terms like "Bhaiya", "Chinta mat karo", "Dekho", "Dhyan se suno".
+        5. In "estimatedCost", provide a realistic repair cost range in Indian Rupees (₹) based on the severity of the issue (e.g. ₹1,200 - ₹3,000 or ₹25,000 - ₹50,000).
+        6. In "suggestedMechanic", specify the precise specialty needed (e.g., "Engine Specialist", "Brake Specialist", "Auto Electrician", "Suspension Specialist", "Gearbox & Clutch Specialist", "Car AC Specialist", "Silencer & Exhaust Specialist"). This must map to the nearby mechanics network.
+        7. Return a RAW JSON ONLY (no markdown blocks, no \`\`\`json):
         {
-          "issue": "Specific Problem Name",
+          "issue": "Accurate Vehicle Problem Title",
           "dangerLevel": "LOW/MEDIUM/CRITICAL",
-          "details": "Friendly Hinglish explanation from Parxéé Buddy",
-          "action": "Immediate Hinglish advice",
+          "details": "Technical yet simple Hinglish analysis showing deep mechanical expertise",
+          "action": "Safety/repair action in Hinglish",
           "estimatedCost": "₹X - ₹Y",
-          "suggestedMechanic": "Type of Mechanic Specialist",
+          "suggestedMechanic": "Specialist Mechanic Category",
           "confidence": 0-100
         }`;
 
