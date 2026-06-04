@@ -7,9 +7,41 @@ import EmergencyCard from '../components/EmergencyCard';
 import CustomerCard from '../components/CustomerCard';
 import { toPng } from 'html-to-image';
 import { toast } from 'react-hot-toast';
+import QRCode from 'qrcode';
+
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
+  const [iosQrCodeDataUrl, setIosQrCodeDataUrl] = useState('');
+  const [iosModalImage, setIosModalImage] = useState(null);
+
+  const isIOSDevice = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+  };
+
+  useEffect(() => {
+    if (isIOSDevice()) {
+      const dataToEncode = user 
+        ? `${window.location.origin}/v/${user._id}` 
+        : 'GUEST_PREVIEW';
+      
+      QRCode.toDataURL(dataToEncode, {
+        margin: 1,
+        width: 200,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      })
+      .then(url => {
+        setIosQrCodeDataUrl(url);
+      })
+      .catch(err => {
+        console.error("Failed to generate QR Code locally:", err);
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     // Reveal animation observer
@@ -133,10 +165,31 @@ export default function Home({ onOpenPayment }) {
 
       const dataUrl = await toPng(clonedCard, options);
       
-      const link = document.createElement('a');
-      link.download = `parxee-city-${name}.png`;
-      link.href = dataUrl;
-      link.click();
+      if (isIOSDevice()) {
+        // iOS/iPhone specific flow: Show custom visual instructions modal & try download
+        setIosModalImage(dataUrl);
+        
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = `parxee-city-${name}.png`;
+          link.href = blobUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+        } catch (downloadErr) {
+          console.warn("Direct blob download failed on iOS:", downloadErr);
+        }
+      } else {
+        // Original Android / Desktop flow
+        const link = document.createElement('a');
+        link.download = `parxee-city-${name}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
     } catch (err) {
       console.error('Final Download Error:', err);
       toast.error("Mobile render failed. Please use a screenshot if this continues.");
@@ -450,13 +503,13 @@ export default function Home({ onOpenPayment }) {
                             <EmergencyCard 
                               ref={qrRef}
                               user={displayUser} 
-                              qrUrl={user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW'} 
+                              qrUrl={isIOSDevice() ? (iosQrCodeDataUrl || (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')) : (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')} 
                             />
                           ) : (
                             <CustomerCard 
                               ref={qrRef}
                               user={displayUser} 
-                              qrUrl={user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW'} 
+                              qrUrl={isIOSDevice() ? (iosQrCodeDataUrl || (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')) : (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')} 
                             />
                           )}
                         </div>
@@ -536,7 +589,193 @@ export default function Home({ onOpenPayment }) {
           </div>
         </div>
       </section>
+
+      {/* ========== iOS SAVE MODAL ========== */}
+      {iosModalImage && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(3, 7, 18, 0.85)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 10005,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          animation: 'fadeIn 0.3s ease-out'
+        }}
+        onClick={() => setIosModalImage(null)}
+        >
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(244, 63, 94, 0.4)',
+            borderRadius: '24px',
+            width: '100%',
+            maxWidth: '480px',
+            padding: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(244, 63, 94, 0.2)',
+            textAlign: 'center',
+            position: 'relative',
+            animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button 
+              onClick={() => setIosModalImage(null)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: 'none',
+                color: '#fff',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                lineHeight: '1'
+              }}
+            >
+              ×
+            </button>
+
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', padding: '6px 16px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', marginBottom: '1.25rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              <ShieldCheck size={14} /> iPhone Save Instructions
+            </div>
+
+            <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: '900', marginBottom: '8px', letterSpacing: '-0.5px' }}>
+              Save Your Smart QR Card
+            </h3>
+            
+            <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '20px' }}>
+              Due to iOS Safari security policies, programmatic downloads are restricted. Please follow the instructions below to save your card:
+            </p>
+
+            {/* Generated Image Preview */}
+            <div style={{ 
+              borderRadius: '16px', 
+              overflow: 'hidden', 
+              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              marginBottom: '20px',
+              background: '#030712',
+              position: 'relative'
+            }}>
+              <img 
+                src={iosModalImage} 
+                alt="Smart QR Card Preview" 
+                style={{ 
+                  width: '100%', 
+                  height: 'auto', 
+                  display: 'block',
+                  WebkitTouchCallout: 'default'
+                }} 
+              />
+            </div>
+
+            {/* Step-by-Step Instructions */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              borderRadius: '16px',
+              padding: '16px',
+              textAlign: 'left',
+              marginBottom: '20px'
+            }}>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'flex-start' }}>
+                <span style={{ background: '#f43f5e', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', flexShrink: 0 }}>1</span>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.3' }}>
+                  <strong>Tap and hold</strong> (long-press) the card image above.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'flex-start' }}>
+                <span style={{ background: '#f43f5e', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', flexShrink: 0 }}>2</span>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.3' }}>
+                  Select <strong>"Save to Photos"</strong> or <strong>"Add to Photos"</strong>.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <span style={{ background: '#f43f5e', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', flexShrink: 0 }}>3</span>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.3' }}>
+                  Alternatively, you can take a <strong>screenshot</strong> of the card.
+                </p>
+              </div>
+            </div>
+
+            {/* Hindi Translation Helper */}
+            <div style={{
+              fontSize: '0.8rem',
+              color: '#94a3b8',
+              lineHeight: '1.4',
+              fontStyle: 'italic',
+              marginBottom: '20px',
+              padding: '0 8px'
+            }}>
+              <strong>हिंदी सहायता:</strong> कार्ड इमेज पर कुछ सेकंड दबाकर रखें, फिर <strong>"Save to Photos"</strong> चुनें, या स्क्रीनशॉट लें।
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={async () => {
+                  try {
+                    const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
+                    const res = await fetch(iosModalImage);
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `parxee-city-${name}.png`;
+                    link.href = blobUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                    toast.success("Download triggered!");
+                  } catch (e) {
+                    toast.error("Download blocked. Please use Tap & Hold.");
+                  }
+                }}
+                className="btn-gradient light-sweep" 
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', fontWeight: 'bold', fontSize: '0.9rem' }}
+              >
+                Force Download
+              </button>
+              <button 
+                onClick={() => setIosModalImage(null)}
+                style={{ 
+                  flex: 1, 
+                  background: 'rgba(255,255,255,0.05)', 
+                  border: '1px solid rgba(255,255,255,0.1)', 
+                  color: '#fff', 
+                  padding: '14px', 
+                  borderRadius: '14px', 
+                  fontWeight: 'bold', 
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          
+          <style>{`
+            @keyframes scaleUp {
+              from { transform: scale(0.9); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </>
   );
 }
-
