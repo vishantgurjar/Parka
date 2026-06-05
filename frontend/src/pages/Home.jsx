@@ -12,7 +12,7 @@ import QRCode from 'qrcode';
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
-  const [iosQrCodeDataUrl, setIosQrCodeDataUrl] = useState('');
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [iosModalImage, setIosModalImage] = useState(null);
 
   const isIOSDevice = () => {
@@ -21,26 +21,24 @@ export default function Home({ onOpenPayment }) {
   };
 
   useEffect(() => {
-    if (isIOSDevice()) {
-      const dataToEncode = user 
-        ? `${window.location.origin}/v/${user._id}` 
-        : 'GUEST_PREVIEW';
-      
-      QRCode.toDataURL(dataToEncode, {
-        margin: 1,
-        width: 200,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      })
-      .then(url => {
-        setIosQrCodeDataUrl(url);
-      })
-      .catch(err => {
-        console.error("Failed to generate QR Code locally:", err);
-      });
-    }
+    const dataToEncode = user 
+      ? `${window.location.origin}/v/${user._id}` 
+      : `${window.location.origin}/v/GUEST_PREVIEW`;
+    
+    QRCode.toDataURL(dataToEncode, {
+      margin: 1,
+      width: 200,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    })
+    .then(url => {
+      setQrCodeDataUrl(url);
+    })
+    .catch(err => {
+      console.error("Failed to generate QR Code locally:", err);
+    });
   }, [user]);
 
   useEffect(() => {
@@ -100,7 +98,7 @@ export default function Home({ onOpenPayment }) {
   }, []);
 
   // Point: QR URL Generation (Stable Restored)
-  const qrUrl = user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "";
+  const qrUrl = qrCodeDataUrl || (user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "");
 
   useEffect(() => {
     if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -166,22 +164,33 @@ export default function Home({ onOpenPayment }) {
       const dataUrl = await toPng(clonedCard, options);
       
       if (isIOSDevice()) {
-        // iOS/iPhone specific flow: Show custom visual instructions modal & try download
+        // iOS/iPhone specific flow: Show custom visual instructions modal & try native sharing
         setIosModalImage(dataUrl);
         
         try {
           const res = await fetch(dataUrl);
           const blob = await res.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.download = `parxee-city-${name}.png`;
-          link.href = blobUrl;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+          const file = new File([blob], `parxee-city-${name}.png`, { type: 'image/png' });
+          
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: `Parxéé City ID Card`,
+              text: `My Parxéé City Smart QR Card`
+            });
+            toast.success("Share sheet opened!");
+          } else {
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `parxee-city-${name}.png`;
+            link.href = blobUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+          }
         } catch (downloadErr) {
-          console.warn("Direct blob download failed on iOS:", downloadErr);
+          console.warn("iOS sharing/download failed:", downloadErr);
         }
       } else {
         // Original Android / Desktop flow
@@ -503,13 +512,13 @@ export default function Home({ onOpenPayment }) {
                             <EmergencyCard 
                               ref={qrRef}
                               user={displayUser} 
-                              qrUrl={isIOSDevice() ? (iosQrCodeDataUrl || (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')) : (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')} 
+                              qrUrl={qrCodeDataUrl} 
                             />
                           ) : (
                             <CustomerCard 
                               ref={qrRef}
                               user={displayUser} 
-                              qrUrl={isIOSDevice() ? (iosQrCodeDataUrl || (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')) : (user ? qrUrl : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GUEST_PREVIEW')} 
+                              qrUrl={qrCodeDataUrl} 
                             />
                           )}
                         </div>
@@ -731,23 +740,35 @@ export default function Home({ onOpenPayment }) {
                     const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
                     const res = await fetch(iosModalImage);
                     const blob = await res.blob();
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `parxee-city-${name}.png`;
-                    link.href = blobUrl;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                    toast.success("Download triggered!");
+                    const file = new File([blob], `parxee-city-${name}.png`, { type: 'image/png' });
+                    
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({
+                        files: [file],
+                        title: `Parxéé City ID Card`,
+                        text: `My Parxéé City Smart QR Card`
+                      });
+                      toast.success("Share sheet opened!");
+                    } else {
+                      const blobUrl = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.download = `parxee-city-${name}.png`;
+                      link.href = blobUrl;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                      toast.success("Download triggered!");
+                    }
                   } catch (e) {
-                    toast.error("Download blocked. Please use Tap & Hold.");
+                    console.error("Save/Share failed:", e);
+                    toast.error("Blocked by browser. Please use Tap & Hold.");
                   }
                 }}
                 className="btn-gradient light-sweep" 
                 style={{ flex: 1, padding: '14px', borderRadius: '14px', fontWeight: 'bold', fontSize: '0.9rem' }}
               >
-                Force Download
+                Share / Save (शेयर / सेव करें)
               </button>
               <button 
                 onClick={() => setIosModalImage(null)}
