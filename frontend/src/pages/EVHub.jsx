@@ -108,8 +108,53 @@ const EV_MODELS = [
 ];
 
 export default function EVHub() {
-  const { user } = useContext(AuthContext);
+  const { user, isPro } = useContext(AuthContext);
   
+  // Subscription Protection Check
+  if (!user || !isPro(user)) {
+    return (
+      <>
+        <SEO title="Premium Feature - Parxéé EV Hub" description="Subscribe to unlock EV Hub." />
+        <div className="bg-grain"></div>
+        <div style={{ paddingTop: '120px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '5rem' }}>
+          <div className="glass bento-item" style={{ maxWidth: '500px', width: '100%', padding: '3.5rem 2.5rem', textAlign: 'center', borderRadius: '32px', border: '1px solid rgba(45, 212, 191, 0.3)', boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(45, 212, 191, 0.15)' }}>
+            <div style={{ width: '70px', height: '70px', background: 'rgba(45, 212, 191, 0.1)', color: '#2dd4bf', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <Zap size={36} style={{ fill: '#2dd4bf' }} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '900', letterSpacing: '-1px', marginBottom: '8px' }}>
+              Unlock EV Smart Hub
+            </h2>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(239, 68, 68, 0.1)', color: '#f43f5e', padding: '4px 12px', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>
+              🔒 Subscribed Members Only
+            </div>
+            
+            <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+              Bhai, EV Smart Hub access karne ke liye aapke paas active **Silver, Gold PRO, ya Diamond** membership honi chahiye. Upgrade karne par aapko live charger radar, safe P2P charger sharing, aur AI diagnostics access milega!
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button 
+                onClick={() => window.location.href = '/#pricing'} 
+                className="btn-gradient light-sweep" 
+                style={{ padding: '15px', borderRadius: '12px', fontWeight: 'bold', background: 'var(--gradient-premium)', border: 'none', color: '#000' }}
+              >
+                Upgrade Plan Now (मेम्बरशिप लें)
+              </button>
+              <button 
+                onClick={() => window.location.href = '/'} 
+                className="btn-secondary" 
+                style={{ padding: '12px', borderRadius: '12px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: '#fff' }}
+              >
+                Go Back Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   // Navigation tabs
   const [activeTab, setActiveTab] = useState('grid-share'); // 'grid-share', 'host-charger', 'wallet', 'sos', 'calculator', 'diagnostics'
   
