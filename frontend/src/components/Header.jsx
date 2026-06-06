@@ -1,5 +1,4 @@
-import { useContext, useState } from 'react';
-import { Moon, Sun, Menu, X, Car, Package } from 'lucide-react';
+import { Moon, Sun, Menu, X, Car, Package, Zap } from 'lucide-react';
 import { ThemeContext, AuthContext } from '../App';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -74,6 +73,9 @@ export default function Header({ onOpenPayment, installPrompt }) {
           <Link to="/mechanics" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', whiteSpace: 'nowrap' }}>Mechanics</Link>
 
           <Link to="/host" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: '#10b981', whiteSpace: 'nowrap' }}>Host Space</Link>
+          <Link to="/ev-hub" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: '#2dd4bf', textShadow: '0 0 10px rgba(45, 212, 191, 0.4)', display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
+            <Zap size={13} style={{ fill: '#2dd4bf' }} /> EV Hub
+          </Link>
           <Link to="/ai-doctor" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>AI Doctor</Link>
           <Link to="/cam" style={{ letterSpacing: '0.02em', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: '700', color: '#38bdf8', whiteSpace: 'nowrap' }}>Cam Mode</Link>
           
@@ -134,6 +136,7 @@ export default function Header({ onOpenPayment, installPrompt }) {
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
 
         <Link to="/host" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#10b981'}}>Host Space</Link>
+        <Link to="/ev-hub" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px'}}><Zap size={14} style={{ fill: '#2dd4bf' }} /> EV Hub ⚡</Link>
         <Link to="/ai-doctor" onClick={(e) => { setIsMenuOpen(false); }} className="shimmer-text" style={{fontWeight: 'bold'}}>AI Doctor</Link>
         <Link to="/cam" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#38bdf8'}}>Cam Mode 🛡️</Link>
         {!user && <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="shimmer-text" style={{fontWeight: 'bold'}}>Get PRO</a>}
