@@ -1,3 +1,4 @@
+import { useContext, useState } from 'react';
 import { Moon, Sun, Menu, X, Car, Package, Zap } from 'lucide-react';
 import { ThemeContext, AuthContext } from '../App';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
