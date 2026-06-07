@@ -110,7 +110,7 @@ export default function AdminDashboard({ user }) {
 
   useEffect(() => {
     // 1. Kick out unauthorized users
-    if (!user || user.email !== ADMIN_EMAIL) {
+    if (!user || (user.email !== ADMIN_EMAIL && user.role !== 'admin')) {
       toast.error("UNAUTHORIZED ACCESS DETECTED. IPs LOGGED.");
       navigate('/');
       return;

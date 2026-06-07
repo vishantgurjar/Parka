@@ -59,7 +59,7 @@ function App() {
       const saved = localStorage.getItem('parkeActiveUser');
       let u = (saved && saved !== 'undefined') ? JSON.parse(saved) : null;
       // Force Diamond status for owner on startup/refresh
-      if (u && u.email === import.meta.env.VITE_ADMIN_EMAIL) {
+      if (u && (u.email === import.meta.env.VITE_ADMIN_EMAIL || u.role === 'admin')) {
         u.subscriptionTier = 'diamond';
       }
       return u;
@@ -82,7 +82,7 @@ function App() {
   const login = (userData, jwtToken) => {
     if (!userData) return;
     // Force Diamond status for owner upon login
-    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL) {
+    if (userData.email === import.meta.env.VITE_ADMIN_EMAIL || userData.role === 'admin') {
       userData.subscriptionTier = 'diamond';
     }
     setUser(userData);
@@ -103,7 +103,7 @@ function App() {
   const isPro = (u = user) => {
     if (!u) return false;
     // Hardcoded bypass for owner for absolute reliability
-    if (u.email === import.meta.env.VITE_ADMIN_EMAIL) return true;
+    if (u.email === import.meta.env.VITE_ADMIN_EMAIL || u.role === 'admin') return true;
     if (!u.subscriptionTier) return false;
     return ['silver', 'gold', 'diamond'].includes(u.subscriptionTier.toLowerCase());
   };
@@ -305,7 +305,7 @@ function App() {
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
                   <Route path="/cam" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-                  <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL) ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
+                  <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.role === 'admin') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   <Route path="/host" element={<HostSpace />} />
                   <Route path="/park" element={<FindParking />} />
                   <Route path="/ev-hub" element={<EVHub />} />

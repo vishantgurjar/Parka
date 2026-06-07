@@ -20,7 +20,8 @@ const isAdmin = (req, res, next) => {
     // Rely on JWT decoded payload for email/role check instead of query param
     // Ideally we'd use a role field from DB, but keeping it simple based on existing logic
     const adminEmail = process.env.ADMIN_EMAIL;
-    if (req.user && req.user.email === adminEmail) {
+    const founderEmail = process.env.FOUNDER_EMAIL;
+    if (req.user && (req.user.email === adminEmail || req.user.email === founderEmail)) {
         next();
     } else {
         res.status(403).json({ message: 'Forbidden. Admin access required.' });
