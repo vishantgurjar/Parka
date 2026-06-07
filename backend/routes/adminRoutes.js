@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Mechanic = require('../models/Mechanic');
 const SOSRequest = require('../models/SOSRequest');
+const EVCharger = require('../models/EVCharger');
 const webpush = require('web-push');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
@@ -91,6 +92,68 @@ router.post('/clear-sos', protect, isAdmin, async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Failed to clear records." });
     }
+});
+
+// @route   GET /api/admin/mechanics
+// @desc    Fetch all mechanics for admin
+router.get('/mechanics', protect, isAdmin, async (req, res) => {
+  try {
+    const mechanics = await Mechanic.find().sort({ createdAt: -1 });
+    res.json({ success: true, mechanics });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching mechanics list." });
+  }
+});
+
+// @route   POST /api/admin/mechanics/:id/approve
+// @desc    Toggle mechanic verification status
+router.post('/mechanics/:id/approve', protect, isAdmin, async (req, res) => {
+  try {
+    const mechanic = await Mechanic.findById(req.params.id);
+    if (!mechanic) return res.status(404).json({ message: "Mechanic not found." });
+    mechanic.isPaid = !mechanic.isPaid;
+    await mechanic.save();
+    res.json({ success: true, message: `Mechanic setup verification status toggled to ${mechanic.isPaid}`, mechanic });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating mechanic verification status." });
+  }
+});
+
+// @route   GET /api/admin/chargers
+// @desc    Fetch all EV chargers for admin
+router.get('/chargers', protect, isAdmin, async (req, res) => {
+  try {
+    const chargers = await EVCharger.find().sort({ createdAt: -1 });
+    res.json({ success: true, chargers });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching chargers list." });
+  }
+});
+
+// @route   POST /api/admin/chargers/:id/approve
+// @desc    Toggle charger approval status
+router.post('/chargers/:id/approve', protect, isAdmin, async (req, res) => {
+  try {
+    const charger = await EVCharger.findById(req.params.id);
+    if (!charger) return res.status(404).json({ message: "Charger not found." });
+    charger.isApproved = !charger.isApproved;
+    await charger.save();
+    res.json({ success: true, message: `Charger approval status toggled to ${charger.isApproved}`, charger });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating charger approval status." });
+  }
+});
+
+// @route   DELETE /api/admin/chargers/:id
+// @desc    Delete charger
+router.delete('/chargers/:id', protect, isAdmin, async (req, res) => {
+  try {
+    const charger = await EVCharger.findByIdAndDelete(req.params.id);
+    if (!charger) return res.status(404).json({ message: "Charger not found." });
+    res.json({ success: true, message: "Charger deleted successfully." });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting charger." });
+  }
 });
 
 module.exports = router;

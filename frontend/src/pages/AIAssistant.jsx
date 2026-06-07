@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send, Banknote, Wrench } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 
 export default function AIAssistant() {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialMode = queryParams.get('mode') === 'ev' ? 'ev' : 'ice';
+  const [activeTab, setActiveTab] = useState(initialMode);
+
   const [status, setStatus] = useState('idle');
   const [progress, setProgress] = useState(0);
   const [diagnosis, setDiagnosis] = useState(null);
@@ -12,6 +18,11 @@ export default function AIAssistant() {
   const [visualizerData, setVisualizerData] = useState(new Array(15).fill(20));
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
+
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const dataArrayRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   // Point 3: Voicebot (Hinglish TTS)
   const speakDiagnosis = (text) => {
@@ -158,16 +169,19 @@ export default function AIAssistant() {
         title="AI Engine Sound Analyzer - Parxéé City"
         description="Diagnose your car's abnormal engine sounds using our AI-powered acoustic analyzer."
       />
-      
-      <div className="container" style={{ maxWidth: '800px' }}>
+            <div className="container" style={{ maxWidth: '800px' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '6px 16px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '1rem' }}>
               <Volume2 size={16} /> Parxéé AI Labs (Beta)
           </div>
-          <h1 className="ai-assistant-title" style={{ color: 'var(--fg)', marginBottom: '1rem' }}>AI Engine <span style={{color:'#38bdf8'}}>Sound Analyzer</span></h1>
+          <h1 className="ai-assistant-title" style={{ color: 'var(--fg)', marginBottom: '1rem' }}>
+            {activeTab === 'ev' ? "AI EV Cluster" : "AI Engine Sound"} <span style={{color:'#38bdf8'}}>Diagnostics</span>
+          </h1>
           <p style={{ color: 'var(--muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-            Hearing a weird noise? Describe it or hold your phone near the engine, and let our AI Acoustic Engine diagnose the problem.
+            {activeTab === 'ev' 
+              ? "Upload a photo of your EV instrument cluster, warning error code, or logs for instant AI diagnosis."
+              : "Hearing a weird noise? Describe it or hold your phone near the engine, and let our AI Acoustic Engine diagnose the problem."}
           </p>
         </div>
 
@@ -182,62 +196,113 @@ export default function AIAssistant() {
 
           {status === 'idle' && (
             <div className="fadeIn" style={{ width: '100%', maxWidth: '450px' }}>
+              {/* Tab Switcher */}
+              <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '6px', borderRadius: '14px', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                <button 
+                  onClick={() => { setActiveTab('ice'); setSelectedImage(null); setSymptom(''); }}
+                  style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', background: activeTab === 'ice' ? '#38bdf8' : 'transparent', color: activeTab === 'ice' ? '#000' : '#fff', border: 'none', cursor: 'pointer' }}
+                >
+                  🔊 ICE Acoustic Sound
+                </button>
+                <button 
+                  onClick={() => { setActiveTab('ev'); setSelectedImage(null); setSymptom(''); }}
+                  style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', background: activeTab === 'ev' ? '#38bdf8' : 'transparent', color: activeTab === 'ev' ? '#000' : '#fff', border: 'none', cursor: 'pointer' }}
+                >
+                  🔌 EV Dashboard Cluster
+                </button>
+              </div>
+
               <div style={{ marginBottom: '2.5rem' }}>
                 <textarea 
-                  placeholder="Optional: Describe the sound (e.g., 'Ticking from the left side', 'Squealing when braking')"
+                  placeholder={activeTab === 'ev' ? "Describe warning light, error code, or behavior..." : "Optional: Describe the sound (e.g. 'Ticking from left side', 'Squealing when braking')"}
                   value={symptom}
                   onChange={(e) => setSymptom(e.target.value)}
                   style={{
                     width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)',
                     border: '1px solid var(--border)', color: 'var(--fg)', fontSize: '1rem', resize: 'none', marginBottom: '1.5rem'
                   }}
+                  rows="3"
                 />
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
-                    <div style={{ flex: 1 }}>
-                        <button 
-                            onClick={startAnalysis}
-                            className="pulse-anim"
-                            style={{
-                            width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
-                            border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 15px 35px rgba(56, 189, 248, 0.4)', color: 'white', margin: '0 auto 1rem'
-                            }}
-                        >
-                            <Mic size={36} />
-                        </button>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Record Sound</p>
-                    </div>
+                
+                {activeTab === 'ice' ? (
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+                      <div style={{ flex: 1 }}>
+                          <button 
+                              onClick={startAnalysis}
+                              className="pulse-anim"
+                              style={{
+                              width: '90px', height: '90px', borderRadius: '50%', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              boxShadow: '0 15px 35px rgba(56, 189, 248, 0.4)', color: 'white', margin: '0 auto 1rem'
+                              }}
+                          >
+                              <Mic size={36} />
+                          </button>
+                          <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Record Sound</p>
+                      </div>
 
-                    <div style={{ flex: 1 }}>
-                        <input 
-                            type="file" 
-                            accept="image/*" 
-                            capture="environment" 
-                            style={{ display: 'none' }} 
-                            ref={fileInputRef}
-                            onChange={handleImageSelect}
-                        />
-                        <button 
-                            onClick={() => fileInputRef.current.click()}
-                            className={selectedImage ? "" : "pulse-anim"}
-                            style={{
-                            width: '90px', height: '90px', borderRadius: '50%', background: selectedImage ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255,255,255,0.05)',
-                            border: `2px solid ${selectedImage ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: selectedImage ? '#38bdf8' : 'var(--muted)', margin: '0 auto 1rem', overflow: 'hidden'
-                            }}
-                        >
-                            {selectedImage ? (
-                                <img src={selectedImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                <Activity size={36} />
-                            )}
-                        </button>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{selectedImage ? "Image Ready" : "Capture Evidence"}</p>
-                    </div>
-                </div>
+                      <div style={{ flex: 1 }}>
+                          <input 
+                              type="file" 
+                              accept="image/*" 
+                              capture="environment" 
+                              style={{ display: 'none' }} 
+                              ref={fileInputRef}
+                              onChange={handleImageSelect}
+                          />
+                          <button 
+                              onClick={() => fileInputRef.current.click()}
+                              className={selectedImage ? "" : "pulse-anim"}
+                              style={{
+                              width: '90px', height: '90px', borderRadius: '50%', background: selectedImage ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255,255,255,0.05)',
+                              border: `2px solid ${selectedImage ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: selectedImage ? '#38bdf8' : 'var(--muted)', margin: '0 auto 1rem', overflow: 'hidden'
+                              }}
+                          >
+                              {selectedImage ? (
+                                  <img src={selectedImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                  <Activity size={36} />
+                              )}
+                          </button>
+                          <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{selectedImage ? "Image Ready" : "Capture Evidence"}</p>
+                      </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                      <div style={{ width: '150px' }}>
+                          <input 
+                              type="file" 
+                              accept="image/*" 
+                              capture="environment" 
+                              style={{ display: 'none' }} 
+                              ref={fileInputRef}
+                              onChange={handleImageSelect}
+                          />
+                          <button 
+                              onClick={() => fileInputRef.current.click()}
+                              className={selectedImage ? "" : "pulse-anim"}
+                              style={{
+                              width: '90px', height: '90px', borderRadius: '50%', background: selectedImage ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255,255,255,0.05)',
+                              border: `2px solid ${selectedImage ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: selectedImage ? '#38bdf8' : 'var(--muted)', margin: '0 auto 1rem', overflow: 'hidden'
+                              }}
+                          >
+                              {selectedImage ? (
+                                  <img src={selectedImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                  <Activity size={36} />
+                              )}
+                          </button>
+                          <p style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{selectedImage ? "Cluster Photo Ready" : "Upload Log/Photo"}</p>
+                      </div>
+                  </div>
+                )}
 
                 <h2>Ready to Diagnose</h2>
-                <p style={{ color: 'var(--muted)' }}>Select an image or record sound for best results.</p>
+                <p style={{ color: 'var(--muted)' }}>
+                  {activeTab === 'ev' ? "Upload a console photo or describe the symptom to scan." : "Select an image or record sound for best results."}
+                </p>
                 
                 {(selectedImage || symptom) && (
                    <button 
@@ -250,7 +315,7 @@ export default function AIAssistant() {
                          background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)'
                       }}
                    >
-                      Analyze {selectedImage ? (symptom ? "Photo & Symptom" : "Uploaded Photo") : "Symptom Description"}
+                      Analyze {selectedImage ? (symptom ? "Photo & Symptoms" : "Uploaded Photo") : "Symptom Description"}
                    </button>
                 )}
               </div>

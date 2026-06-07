@@ -206,6 +206,44 @@ export default function EVHub() {
     }
   }, []);
 
+  const fetchChargers = async () => {
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/ev/chargers`);
+      if (res.ok) {
+        const data = await res.json();
+        setChargers(data);
+      }
+    } catch (err) {
+      console.error("Failed to load chargers:", err);
+    }
+  };
+
+  const fetchEarnings = async () => {
+    if (!user) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/ev/earnings/${user._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setWalletBalance(data.balance);
+        setWalletTx(data.transactions);
+      }
+    } catch (err) {
+      console.error("Failed to load earnings:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'grid-share') {
+      fetchChargers();
+    } else if (activeTab === 'wallet') {
+      fetchEarnings();
+    } else if (activeTab === 'diagnostics') {
+      window.location.href = '/ai-doctor?mode=ev';
+    }
+  }, [activeTab]);
+
   // Text-To-Speech function for WhatsApp audio feel
   const speakVoice = (text) => {
     if (!('speechSynthesis' in window)) return;
@@ -219,9 +257,9 @@ export default function EVHub() {
   // Charger Filtering logic
   const filteredChargers = chargers.filter(c => {
     if (filterType === 'All') return true;
-    if (filterType === 'CCS2') return c.plugType.includes('CCS2');
-    if (filterType === 'Type 2') return c.plugType.includes('Type 2');
-    if (filterType === 'Fast') return parseFloat(c.speed) >= 15;
+    if (filterType === 'CCS2') return (c.plugType || '').includes('CCS2');
+    if (filterType === 'Type 2') return (c.plugType || '').includes('Type 2');
+    if (filterType === 'Fast') return parseFloat(c.speed || 0) >= 15;
     return true;
   });
 
@@ -236,68 +274,158 @@ export default function EVHub() {
   };
 
   // Confirm and Send request to Host for verification check
-  const confirmBookingRequest = () => {
+  const confirmBookingRequest = async () => {
     setBookingStep('approving');
     speakVoice("Requesting host approval and checking driver credentials verification...");
     
-    // Simulate Host KYC validation & Approval delay
-    setTimeout(() => {
-      const generatedOtp = `PX-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSecureOtp(generatedOtp);
-      setBookingStep('success');
-      speakVoice(`Booking approved! Your secure charger OTP is ${generatedOtp.replace('-', ' ')}`);
-      toast.success("Host approved your booking! OTP generated.");
-      
-      // Update charger status to occupied
-      setChargers(prev => prev.map(c => c.id === selectedCharger.id ? { ...c, status: 'Occupied' } : c));
-    }, 3500);
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/ev/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chargerId: selectedCharger._id,
+          userId: user._id,
+          hours: Number(bookingHours)
+        })
+      });
+
+      const orderData = await res.json();
+      if (!res.ok) throw new Error(orderData.message || 'Failed to create order');
+
+      if (orderData.isMock) {
+        setTimeout(async () => {
+          try {
+            const verifyRes = await fetch(`${baseUrl}/api/ev/verify-booking`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                bookingId: orderData.bookingId,
+                razorpay_order_id: orderData.orderId,
+                razorpay_payment_id: `pay_ev_mock_${Date.now()}`,
+                razorpay_signature: "mock_signature"
+              })
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok) {
+              setSecureOtp(verifyData.otp);
+              setBookingStep('success');
+              speakVoice(`Booking approved! Your secure charger OTP is ${verifyData.otp.replace('-', ' ')}`);
+              toast.success("Host approved your booking! OTP generated.");
+              fetchChargers();
+            } else {
+              throw new Error(verifyData.message || 'Failed to verify booking');
+            }
+          } catch (err) {
+            toast.error(err.message || 'Verification failed');
+            setBookingStep('idle');
+          }
+        }, 2000);
+        return;
+      }
+
+      // Real Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount * 100,
+        currency: 'INR',
+        name: "Parxéé EV Grid",
+        description: `Booking with host ${selectedCharger.host}`,
+        order_id: orderData.orderId,
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch(`${baseUrl}/api/ev/verify-booking`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                bookingId: orderData.bookingId,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok) {
+              setSecureOtp(verifyData.otp);
+              setBookingStep('success');
+              speakVoice(`Booking approved! Your secure charger OTP is ${verifyData.otp.replace('-', ' ')}`);
+              toast.success("Payment verified successfully!");
+              fetchChargers();
+            } else {
+              throw new Error(verifyData.message || 'Failed to verify payment');
+            }
+          } catch (err) {
+            toast.error(err.message || 'Signature verification failed.');
+            setBookingStep('idle');
+          }
+        },
+        prefill: {
+          name: user.name || "",
+          email: user.email || "",
+          contact: user.phone || ""
+        },
+        theme: { color: "#2dd4bf" }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } catch (err) {
+      toast.error(err.message || "Could not complete booking request.");
+      setBookingStep('idle');
+    }
   };
 
   // Host Registration Form Submission
-  const handleHostSubmit = (e) => {
+  const handleHostSubmit = async (e) => {
     e.preventDefault();
     if (!hostForm.address || !hostForm.phone || !hostForm.price) {
       toast.error("Bhaiya, saari fields barabar bharo!");
       return;
     }
 
-    const newId = chargers.length + 1;
-    // Generate slight offset coordinates around current map center to place marker
     const offsetLat = mapCenter[0] + (Math.random() - 0.5) * 0.03;
     const offsetLng = mapCenter[1] + (Math.random() - 0.5) * 0.03;
 
-    const newCharger = {
-      id: newId,
-      host: hostForm.hostName || "Verified Host",
-      address: hostForm.address,
-      plugType: hostForm.plugType,
-      speed: hostForm.speed,
-      price: parseFloat(hostForm.price),
-      timings: hostForm.timings,
-      lat: offsetLat,
-      lng: offsetLng,
-      security: hostForm.security,
-      kycVerified: true, // Auto verified demo
-      rating: 5.0,
-      reviews: 1,
-      status: "Available"
-    };
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/ev/host`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hostId: user._id,
+          hostName: hostForm.hostName,
+          phone: hostForm.phone,
+          address: hostForm.address,
+          plugType: hostForm.plugType,
+          speed: hostForm.speed,
+          price: parseFloat(hostForm.price),
+          timings: hostForm.timings,
+          security: hostForm.security,
+          location: { lat: offsetLat, lng: offsetLng }
+        })
+      });
 
-    setChargers([newCharger, ...chargers]);
-    toast.success("Mubarak ho! Aapka charger live ho gaya hai Grid par!");
-    speakVoice("Your charger has been hosted successfully and is now active on the radar map!");
-    setHostForm({
-      hostName: user?.name || '',
-      phone: '',
-      address: '',
-      plugType: 'CCS2 (7.4 kW AC)',
-      speed: '7.4 kW',
-      price: '15',
-      timings: '9:00 AM - 6:00 PM',
-      security: 'Outer Gate / Driveway (No Home Entry)'
-    });
-    setActiveTab('grid-share');
-    setMapCenter([offsetLat, offsetLng]);
+      if (res.ok) {
+        toast.success("Mubarak ho! Aapka charger live ho gaya hai Grid par!");
+        speakVoice("Your charger has been hosted successfully and is now active on the radar map!");
+        setHostForm({
+          hostName: user?.name || '',
+          phone: '',
+          address: '',
+          plugType: 'CCS2 (7.4 kW AC)',
+          speed: '7.4 kW',
+          price: '15',
+          timings: '9:00 AM - 6:00 PM',
+          security: 'Outer Gate / Driveway (No Home Entry)'
+        });
+        setActiveTab('grid-share');
+        fetchChargers();
+      } else {
+        toast.error("Failed to host charger.");
+      }
+    } catch (err) {
+      toast.error("Network error hosting charger.");
+    }
   };
 
 
@@ -598,6 +726,46 @@ export default function EVHub() {
                 
                 {/* Leaflet Map Area */}
                 <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', height: '100%' }}>
+                  
+                  {/* Floating Search Bar */}
+                  <div style={{
+                    position: 'absolute', top: '15px', left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 10, background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)',
+                    padding: '6px 12px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                    width: '90%', maxWidth: '380px'
+                  }}>
+                    <Navigation size={16} color="#2dd4bf" style={{ flexShrink: 0 }} />
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const query = e.target.search.value;
+                      if (!query.trim()) return;
+                      try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                        const data = await res.json();
+                        if (data && data.length > 0) {
+                          const { lat, lon } = data[0];
+                          setMapCenter([parseFloat(lat), parseFloat(lon)]);
+                          toast.success(`Found: ${data[0].display_name.split(',')[0]}`);
+                        } else {
+                          toast.error("Location not found.");
+                        }
+                      } catch (err) {
+                        toast.error("Search failed.");
+                      }
+                    }} style={{ display: 'flex', width: '100%', gap: '6px' }}>
+                      <input 
+                        name="search"
+                        type="text" 
+                        placeholder="Search Charging Zone..." 
+                        style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.85rem', outline: 'none' }}
+                      />
+                      <button type="submit" className="btn-gradient" style={{ padding: '4px 10px', borderRadius: '15px', fontSize: '0.75rem', border: 'none', color: '#000', fontWeight: 'bold', cursor: 'pointer', background: 'linear-gradient(135deg, #2dd4bf 0%, #0ea5e9 100%)' }}>
+                        Go
+                      </button>
+                    </form>
+                  </div>
+
                   <MapContainer center={mapCenter} zoom={12} style={{ height: '100%', width: '100%', zIndex: 0 }}>
                     <ChangeMapView center={mapCenter} zoom={12} />
                     

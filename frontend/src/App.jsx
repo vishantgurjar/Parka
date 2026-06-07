@@ -352,6 +352,7 @@ function App() {
                 activeSOS={activeSOS}
                 mechanicLocation={mechanicLocation}
                 userLocation={userLocation}
+                socket={socket}
                 onComplete={() => setActiveSOS(null)}
               />
             </Router>

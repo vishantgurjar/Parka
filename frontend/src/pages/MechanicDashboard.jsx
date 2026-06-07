@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { Power, MapPin, Wrench, PhoneCall, CheckCircle, Radio, Navigation, Wallet } from 'lucide-react';
+import { Power, MapPin, Wrench, PhoneCall, CheckCircle, Radio, Navigation, Wallet, Send } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 import { io } from 'socket.io-client';
@@ -12,12 +12,13 @@ export default function MechanicDashboard() {
   const [mechanic, setMechanic] = useState(null);
   const [isOnline, setIsOnline] = useState(false);
   const [updating, setUpdating] = useState(false);
-  
   // SOS State
   const [activeSosRequests, setActiveSosRequests] = useState([]);
   const [socket, setSocket] = useState(null);
   const [bidAmounts, setBidAmounts] = useState({});
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
 
   useEffect(() => {
     const saved = localStorage.getItem('parkeActiveMechanic');
@@ -91,6 +92,70 @@ export default function MechanicDashboard() {
         if(watchId) navigator.geolocation.clearWatch(watchId);
     };
   }, [acceptedSOS, socket]);
+
+  const fetchChatMessages = async (sosId) => {
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/sos/${sosId}/messages`);
+      if (res.ok) {
+        const data = await res.json();
+        setChatMessages(data);
+      }
+    } catch (err) {
+      console.error("Error fetching chat messages:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (acceptedSOS && socket) {
+      fetchChatMessages(acceptedSOS._id);
+
+      const handleReceiveMessage = (msg) => {
+        setChatMessages(prev => [...prev, msg]);
+      };
+
+      socket.on('receive-sos-message', handleReceiveMessage);
+
+      return () => {
+        socket.off('receive-sos-message', handleReceiveMessage);
+      };
+    }
+  }, [acceptedSOS, socket]);
+
+  const sendChatMessage = (e) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim() || !acceptedSOS || !socket) return;
+
+    const msgPayload = {
+      sosId: acceptedSOS._id,
+      senderId: mechanic._id,
+      senderName: mechanic.name,
+      text: chatInput.trim()
+    };
+
+    socket.emit('send-sos-message', msgPayload);
+    setChatInput('');
+  };
+
+  const handleCompleteJob = async () => {
+    if (!acceptedSOS) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/sos/${acceptedSOS._id}/complete`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        toast.success("Job completed successfully!");
+        setAcceptedSOS(null);
+        setChatMessages([]);
+      } else {
+        toast.error("Failed to mark job as complete.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error completing job.");
+    }
+  };
 
   const toggleStatus = async () => {
     setUpdating(true);
@@ -250,11 +315,101 @@ export default function MechanicDashboard() {
                                 <p style={{ fontWeight: 'bold' }}>{acceptedSOS.userPhone}</p>
                             </div>
                         </div>
+
+                        {/* Live Chat Panel */}
+                        <div style={{
+                            borderTop: '1px solid var(--border)',
+                            paddingTop: '1.5rem',
+                            marginTop: '1.5rem',
+                            marginBottom: '1.5rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                        }}>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Live SOS Chat</h4>
+                            <div style={{
+                                background: 'rgba(0, 0, 0, 0.4)',
+                                border: '1px solid var(--border)',
+                                borderRadius: '12px',
+                                padding: '12px',
+                                height: '180px',
+                                overflowY: 'auto',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '8px'
+                            }}>
+                                {chatMessages.length === 0 ? (
+                                    <div style={{ margin: 'auto', color: 'var(--muted)', fontSize: '0.85rem', textAlign: 'center' }}>
+                                        No messages yet. Send a message to coordinate arrival!
+                                    </div>
+                                ) : (
+                                    chatMessages.map((msg, index) => {
+                                        const isSelf = msg.senderId === mechanic._id;
+                                        return (
+                                            <div key={index} style={{
+                                                alignSelf: isSelf ? 'flex-end' : 'flex-start',
+                                                maxWidth: '80%',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: isSelf ? 'flex-end' : 'flex-start'
+                                            }}>
+                                                <div style={{
+                                                    background: isSelf ? '#10b981' : 'rgba(255, 255, 255, 0.08)',
+                                                    color: isSelf ? '#000' : '#fff',
+                                                    padding: '8px 12px',
+                                                    borderRadius: isSelf ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    {msg.text}
+                                                </div>
+                                                <span style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '2px' }}>
+                                                    {isSelf ? 'You' : msg.senderName} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                            <form onSubmit={sendChatMessage} style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Type a message to coordinate..."
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px 14px',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border)',
+                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        color: '#fff',
+                                        fontSize: '0.9rem',
+                                        outline: 'none'
+                                    }}
+                                />
+                                <button type="submit" className="btn-gradient" style={{
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    border: 'none',
+                                    color: '#000',
+                                    fontWeight: 'bold',
+                                    borderRadius: '8px',
+                                    padding: '0 16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                }}>
+                                    <Send size={16} />
+                                </button>
+                            </form>
+                        </div>
+
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <a href={`tel:${acceptedSOS.userPhone}`} className="btn-gradient" style={{ flex: 1, textDecoration: 'none', background: '#10b981' }}>
+                            <a href={`tel:${acceptedSOS.userPhone}`} className="btn-gradient" style={{ flex: 1, textDecoration: 'none', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                 <PhoneCall size={18} /> Call Driver
                             </a>
-                            <button onClick={() => setAcceptedSOS(null)} className="btn-outline-primary" style={{ flex: 1 }}>
+                            <button onClick={handleCompleteJob} className="btn-outline-primary" style={{ flex: 1 }}>
                                 Complete Job
                             </button>
                         </div>

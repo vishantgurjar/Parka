@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import PaymentModal from '../components/PaymentModal';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import TrackingMap from '../components/TrackingMap';
 import { getBackendUrl } from '../utils/api';
@@ -47,12 +47,19 @@ const incidentMarkerIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+function ChangeView({ center, zoom }) {
+  const map = useMap();
+  map.setView(center, zoom);
+  return null;
+}
+
 export default function MechanicList() {
   const [mechanics, setMechanics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('map'); // 'list' or 'map'
   const [userLocation, setUserLocation] = useState(null);
+  const [mapCenter, setMapCenter] = useState([28.6139, 77.2090]); // Default: Delhi
   const [incidents, setIncidents] = useState([]);
   const [showIncidentModal, setShowIncidentModal] = useState(false);
   const [incidentForm, setIncidentForm] = useState({ type: 'traffic', description: '' });
@@ -122,7 +129,10 @@ export default function MechanicList() {
     // Attempt to get user location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (pos) => {
+          setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setMapCenter([pos.coords.latitude, pos.coords.longitude]);
+        },
         (err) => console.log("Geolocation error:", err)
       );
     }
@@ -509,12 +519,53 @@ export default function MechanicList() {
         ) : (
           viewMode === 'map' ? (
             <div className="fadeIn" style={{ position: 'relative', height: '600px', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--border)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              
+              {/* Floating Search Bar */}
+              <div style={{
+                position: 'absolute', top: '15px', left: '50%', transform: 'translateX(-50%)',
+                zIndex: 1000, background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)',
+                padding: '6px 12px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                width: '90%', maxWidth: '380px'
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="m22 2-7 20-4-9-9-4Z"/></svg>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const query = e.target.search.value;
+                  if (!query.trim()) return;
+                  try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                      const { lat, lon } = data[0];
+                      setMapCenter([parseFloat(lat), parseFloat(lon)]);
+                      toast.success(`Found: ${data[0].display_name.split(',')[0]}`);
+                    } else {
+                      toast.error("Location not found.");
+                    }
+                  } catch (err) {
+                    toast.error("Search failed.");
+                  }
+                }} style={{ display: 'flex', width: '100%', gap: '6px' }}>
+                  <input 
+                    name="search"
+                    type="text" 
+                    placeholder="Search Highway/Town..." 
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.85rem', outline: 'none' }}
+                  />
+                  <button type="submit" className="btn-gradient" style={{ padding: '4px 10px', borderRadius: '15px', fontSize: '0.75rem', border: 'none', color: '#000', fontWeight: 'bold', cursor: 'pointer', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                    Go
+                  </button>
+                </form>
+              </div>
+
               {mechanics.length === 0 && (
-                <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '8px 20px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 'bold', backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '8px 20px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 'bold', backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   📍 No mechanics currently online near you
                 </div>
               )}
-              <MapContainer center={defaultCenter} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+              <MapContainer center={mapCenter} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+                <ChangeView center={mapCenter} zoom={11} />
                 <TileLayer
                   url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'

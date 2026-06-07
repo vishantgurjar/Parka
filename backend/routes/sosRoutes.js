@@ -226,5 +226,17 @@ module.exports = function(io) {
         }
     });
 
+    // @route   GET /api/sos/:id/messages
+    // @desc    Fetch matched chat messages for SOS
+    router.get('/:id/messages', async (req, res) => {
+        try {
+            const sos = await SOSRequest.findById(req.params.id);
+            if (!sos) return res.status(404).json({ message: "SOS not found" });
+            res.json(sos.messages || []);
+        } catch (err) {
+            res.status(500).json({ message: "Error fetching messages" });
+        }
+    });
+
     return router;
 };

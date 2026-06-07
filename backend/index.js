@@ -85,7 +85,10 @@ io.on("connection", (socket) => {
 
   socket.on("mechanic-subscribe", (mechanicId) => {
     socket.join(`mechanic_sos`);
-    console.log(`Mechanic ${socket.id} subscribed to SOS alerts`);
+    if (mechanicId) {
+      socket.join(`mechanic_${mechanicId}`);
+    }
+    console.log(`Mechanic ${socket.id} subscribed to SOS alerts and private channel mechanic_${mechanicId}`);
   });
 
   socket.on("submit-bid", async (data) => {
@@ -146,6 +149,33 @@ io.on("connection", (socket) => {
       }
     } catch (err) {
       console.error("Update Location Error:", err);
+    }
+  });
+
+  socket.on("send-sos-message", async (data) => {
+    // data: { sosId, senderId, senderName, text }
+    try {
+      const sos = await SOSRequest.findById(data.sosId);
+      if (sos) {
+        const msg = {
+          senderId: data.senderId,
+          senderName: data.senderName,
+          text: data.text,
+          timestamp: new Date()
+        };
+        sos.messages = sos.messages || [];
+        sos.messages.push(msg);
+        await sos.save();
+
+        // Emit to driver room
+        io.to(`sos_${sos.userId}`).emit("receive-sos-message", msg);
+        // Emit to winning mechanic
+        if (sos.assignedBid && sos.assignedBid.mechanicId) {
+          io.to(`mechanic_${sos.assignedBid.mechanicId}`).emit("receive-sos-message", msg);
+        }
+      }
+    } catch (err) {
+      console.error("SOS Message Error:", err);
     }
   });
 
@@ -269,6 +299,7 @@ const sosRoutes = require('./routes/sosRoutes')(io);
 const communityRoutes = require('./routes/communityRoutes')(io);
 const aiRoutes = require('./routes/aiRoutes');
 const spaceRoutes = require('./routes/spaceRoutes');
+const evRoutes = require('./routes/evRoutes');
 
 app.use('/api', checkDbConnection);
 
@@ -280,6 +311,7 @@ app.use('/api/sos', sosRoutes);
 app.use('/api/community-help', communityRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/spaces', spaceRoutes);
+app.use('/api/ev', evRoutes);
 
 // --- UNGROUPED ROUTES (Payments, Incidents, Alerts, Reviews) ---
 

@@ -30,6 +30,12 @@ const SOSRequestSchema = new mongoose.Schema({
         price: { type: Number },
         phone: { type: String }
     },
+    messages: [{
+        senderId: { type: String },
+        senderName: { type: String },
+        text: { type: String },
+        timestamp: { type: Date, default: Date.now }
+    }],
     evidenceUrl: { type: String },
     debugLogs: { type: String },
     createdAt: { type: Date, default: Date.now, expires: 7200 } // TTL 2 hours

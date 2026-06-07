@@ -190,15 +190,43 @@ export default function FindParking() {
           </div>
         )}
 
-        {/* Floating Top Header */}
+        {/* Floating Top Header & Search Bar */}
         <div style={{
           position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
-          zIndex: 10, background: 'rgba(3, 7, 18, 0.8)', backdropFilter: 'blur(10px)',
-          padding: '12px 24px', borderRadius: '50px', border: '1px solid rgba(255,255,255,0.1)',
-          display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+          zIndex: 10, background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)',
+          padding: '8px 16px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          width: '90%', maxWidth: '450px'
         }}>
-          <Navigation size={18} color="var(--primary)" />
-          <span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>PARXÉÉ SPACE RADAR</span>
+          <Navigation size={18} color="var(--primary)" style={{ flexShrink: 0 }} />
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const query = e.target.search.value;
+            if (!query.trim()) return;
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+              const data = await res.json();
+              if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                setMapCenter([parseFloat(lat), parseFloat(lon)]);
+                toast.success(`Found: ${data[0].display_name.split(',')[0]}`);
+              } else {
+                toast.error("Location not found.");
+              }
+            } catch (err) {
+              toast.error("Search failed.");
+            }
+          }} style={{ display: 'flex', width: '100%', gap: '8px' }}>
+            <input 
+              name="search"
+              type="text" 
+              placeholder="Search Area (e.g. Noida, GK-2)..." 
+              style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
+            />
+            <button type="submit" className="btn-gradient" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', border: 'none', color: '#000', fontWeight: 'bold', cursor: 'pointer' }}>
+              Search
+            </button>
+          </form>
         </div>
 
         {/* Empty State Overlay */}
