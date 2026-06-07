@@ -324,13 +324,32 @@ export default function AIAssistant() {
 
           {status === 'recording' && (
             <div style={{ animation: 'fadeIn 0.5s ease-in', width: '100%', maxWidth: '400px', position: 'relative' }}>
-              <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', height: '100px' }}>
-                {visualizerData.map((height, i) => (
-                  <div key={i} className="sonic-bar" style={{
-                    height: `${Math.max(15, height * 0.8)}px`, 
-                    animationDelay: `${i * 0.05}s`
-                  }} />
-                ))}
+              <div style={{ position: 'relative', height: '100px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', overflow: 'hidden' }}>
+                <svg viewBox="0 0 200 100" style={{ width: '100%', height: '100%', opacity: 0.8 }}>
+                  <path 
+                    d={`M 0 50 Q 50 ${50 - Math.min(48, (visualizerData[3] || 15) * 1.5)} 100 50 T 200 50`} 
+                    fill="none" 
+                    stroke="#38bdf8" 
+                    strokeWidth="2.5" 
+                    style={{ filter: 'drop-shadow(0 0 6px #38bdf8)', transition: 'd 0.1s ease-out' }} 
+                  />
+                  <path 
+                    d={`M 0 50 Q 50 ${50 + Math.min(48, (visualizerData[6] || 10) * 1.2)} 100 50 T 200 50`} 
+                    fill="none" 
+                    stroke="#818cf8" 
+                    strokeWidth="1.5" 
+                    opacity="0.5"
+                    style={{ filter: 'drop-shadow(0 0 4px #818cf8)', transition: 'd 0.1s ease-out' }} 
+                  />
+                  <path 
+                    d={`M 0 50 Q 50 ${50 - Math.min(48, (visualizerData[9] || 8) * 0.8)} 100 50 T 200 50`} 
+                    fill="none" 
+                    stroke="#38bdf8" 
+                    strokeWidth="1" 
+                    opacity="0.3"
+                    style={{ transition: 'd 0.1s ease-out' }} 
+                  />
+                </svg>
               </div>
               <h2 style={{ color: '#38bdf8', letterSpacing: '1px' }}>Listening to Engine...</h2>
               <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginTop: '2rem', overflow: 'hidden' }}>
@@ -341,13 +360,36 @@ export default function AIAssistant() {
 
 
           {status === 'analyzing' && (
-            <div className="fadeIn" style={{ width: '100%', maxWidth: '400px', position: 'relative', overflow: 'hidden', borderRadius: '20px', padding: '2rem' }}>
-              <div className="scanline"></div>
-              <Activity size={80} color="#38bdf8" className="pulse-anim" style={{ marginBottom: '1.5rem' }} />
-              <h2 style={{ color: '#38bdf8' }}>AI Deep Scan Scanning...</h2>
-              <p style={{ color: 'var(--muted)' }}>Analyzing acoustic patterns and technical signatures...</p>
-              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginTop: '2rem', overflow: 'hidden' }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', transition: 'width 0.3s linear' }} />
+            <div className="fadeIn" style={{ width: '100%', maxWidth: '450px', position: 'relative', overflow: 'hidden', borderRadius: '24px', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '2rem', background: 'rgba(3, 7, 18, 0.9)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              {selectedImage ? (
+                <div style={{ position: 'relative', width: '100%', height: '220px', borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <img src={selectedImage} alt="Scanning source" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0,
+                    width: '100%', height: '4px',
+                    background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)',
+                    boxShadow: '0 0 15px #38bdf8, 0 0 5px #38bdf8',
+                    animation: 'laser-scan 2.5s infinite linear'
+                  }} />
+                </div>
+              ) : (
+                <div style={{ position: 'relative', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <Activity size={80} color="#38bdf8" className="pulse-anim" />
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0,
+                    width: '100%', height: '4px',
+                    background: 'linear-gradient(90deg, transparent, #38bdf8, transparent)',
+                    boxShadow: '0 0 15px #38bdf8, 0 0 5px #38bdf8',
+                    animation: 'laser-scan 2s infinite linear'
+                  }} />
+                </div>
+              )}
+              <h2 style={{ color: '#38bdf8', fontSize: '1.4rem', marginBottom: '0.5rem' }}>AI Diagnostics Scan...</h2>
+              <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Analyzing telemetry nodes and spectral signatures...</p>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', transition: 'width 0.2s linear' }} />
               </div>
             </div>
           )}
@@ -456,8 +498,15 @@ export default function AIAssistant() {
             </div>
           )}
 
-        </div>
       </div>
+      </div>
+      <style>{`
+        @keyframes laser-scan {
+          0% { top: 0%; }
+          50% { top: 100%; }
+          100% { top: 0%; }
+        }
+      `}</style>
     </div>
   );
 }

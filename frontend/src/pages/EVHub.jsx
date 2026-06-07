@@ -1429,22 +1429,61 @@ export default function EVHub() {
                       />
                     </div>
                   </div>
-
                 </div>
               </div>
-
               {/* Output displays */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 
-                {/* Range Card */}
-                <div className="bento-item glass light-sweep" style={{ padding: '2.5rem', background: 'rgba(45, 212, 191, 0.03)', borderColor: 'rgba(45, 212, 191, 0.2)' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#2dd4bf' }}>Estimated Range Output</span>
-                  <strong style={{ fontSize: '4rem', color: '#fff', display: 'block', margin: '0.5rem 0', letterSpacing: '-2px' }}>
-                    {estimatedRange} <span style={{ fontSize: '1.5rem', color: 'var(--muted)', letterSpacing: '0' }}>km</span>
-                  </strong>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0 }}>
-                    Estimated based on dynamic coefficient factors. Real conditions will vary depending on gradient climbs.
-                  </p>
+                {/* Range Card with Circular SVG Dial Gauge */}
+                <div className="bento-item glass light-sweep" style={{ 
+                  padding: '2.5rem', 
+                  background: 'rgba(45, 212, 191, 0.02)', 
+                  borderColor: 'rgba(45, 212, 191, 0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative'
+                }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#2dd4bf', marginBottom: '1.5rem', alignSelf: 'flex-start' }}>Estimated Range Output</span>
+                  
+                  <div style={{ position: 'relative', width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="100%" height="100%" viewBox="0 0 100 100">
+                      <circle 
+                        cx="50" cy="50" r="40" 
+                        fill="transparent" 
+                        stroke="rgba(255, 255, 255, 0.05)" 
+                        strokeWidth="7" 
+                      />
+                      <circle 
+                        cx="50" cy="50" r="40" 
+                        fill="transparent" 
+                        stroke={estimatedRange > 250 ? '#10b981' : estimatedRange > 120 ? '#eab308' : '#ef4444'} 
+                        strokeWidth="7" 
+                        strokeDasharray={2 * Math.PI * 40}
+                        strokeDashoffset={2 * Math.PI * 40 * (1 - Math.min(1, estimatedRange / 600))}
+                        strokeLinecap="round"
+                        transform="rotate(-90 50 50)"
+                        style={{
+                          transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.8s ease',
+                          filter: `drop-shadow(0 0 6px ${estimatedRange > 250 ? 'rgba(16, 185, 129, 0.5)' : estimatedRange > 120 ? 'rgba(234, 179, 8, 0.5)' : 'rgba(239, 68, 68, 0.5)'})`
+                        }}
+                      />
+                    </svg>
+                    
+                    <div style={{ position: 'absolute', textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', letterSpacing: '1px' }}>Range</span>
+                      <strong style={{ fontSize: '3.2rem', color: '#fff', display: 'block', lineHeight: 1.1, letterSpacing: '-1.5px' }}>{estimatedRange}</strong>
+                      <span style={{ fontSize: '0.9rem', color: 'var(--muted)', fontWeight: 'bold' }}>KM</span>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '1.5rem', width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--muted)' }}>
+                      <span>Efficiency: <strong style={{ color: '#fff' }}>{calcModel.efficiency} Wh/km</strong></span>
+                      <span>Battery: <strong style={{ color: '#fff' }}>{calcModel.batteryKwh} kWh</strong></span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Charge Time Comparison card */}
