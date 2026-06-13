@@ -230,7 +230,38 @@ export default function AIAssistant() {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setSelectedImage(reader.result);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Max dimension 800px for AI diagnostic (Vite/Gemini doesn't need higher resolution)
+          const MAX_DIM = 800;
+          if (width > height) {
+            if (width > MAX_DIM) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            }
+          } else {
+            if (height > MAX_DIM) {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Compress as JPEG with 0.6 quality (reduces size from 8MB to ~80KB!)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          setSelectedImage(compressedBase64);
+        };
+        img.src = event.target.result;
+      };
       reader.readAsDataURL(file);
     }
   };
