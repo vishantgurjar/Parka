@@ -144,6 +144,16 @@ export default function AIAssistant() {
           }
           const topPeaks = peaks.sort((a,b) => b.val - a.val).slice(0, 5);
           
+          stopRecording(stream);
+
+          // If sound recorded is too low and no other information is provided, abort.
+          const avgPeakVal = topPeaks.length > 0 ? topPeaks.reduce((acc, p) => acc + p.val, 0) / topPeaks.length : 0;
+          if (avgPeakVal < 45 && !symptom && !selectedImage) {
+            setStatus('idle');
+            setError("No significant engine sound detected. Please try recording again closer to the engine, or click the mic button next to the text box to dictate your symptoms.");
+            return;
+          }
+          
           let signature = 'mid'; 
           if (topPeaks.length > 0) {
              const avgPeakBin = topPeaks.reduce((acc, p) => acc + p.bin, 0) / topPeaks.length;
@@ -151,7 +161,6 @@ export default function AIAssistant() {
              else if (avgPeakBin < 10) signature = 'low';
           }
 
-          stopRecording(stream);
           setStatus('analyzing');
           analyzeData(signature, topPeaks);
         }
@@ -208,6 +217,10 @@ export default function AIAssistant() {
   };
 
   const analyzeDirectly = () => {
+    if (!symptom.trim() && !selectedImage) {
+      setError("Please describe your symptoms or upload an image first.");
+      return;
+    }
     setStatus('analyzing');
     setProgress(0);
     analyzeData('mid', []);
