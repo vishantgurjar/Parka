@@ -11,16 +11,16 @@ if (process.env.GEMINI_API_KEY) {
 // --- SMART FALLBACK DIAGNOSTIC ENGINE (No Key Required) ---
 const CAR_DIAGNOSTIC_DB = [
     { 
-        keywords: ['squeal', 'belt', 'high pitch', 'rubber', 'noise', 'awaz', 'chi-chi'], 
+        keywords: ['squeal', 'belt', 'high pitch', 'rubber', 'noise', 'awaz', 'chi-chi', 'teez awaz', 'poly-belt', 'poly belt', 'seeti'], 
         issue: "Worn Serpentine Belt", 
         dangerLevel: "MEDIUM", 
-        details: "Aapki car ki main poly-belt (serpentine belt) ghis gayi hai ya dhili ho gayi hai. Isiliye acceleration par ye tez 'cheekh' jaisi awaz aati hai.", 
+        details: "Aapki car ki main poly-belt (serpentine belt) ghis gayi hai ya dhili ho gayi hai. Isiliye acceleration par ye tez 'cheekh' ya 'seeti' jaisi awaz aati hai.", 
         action: "Belt ko tight karwao ya turant nayi dalwa lo varna battery charging aur AC chalna band ho jayega.", 
         estimatedCost: "₹1,200 - ₹2,500",
         suggestedMechanic: "Engine Specialist / General Mechanic"
     },
     { 
-        keywords: ['grinding', 'brake', 'pad', 'squeak', 'stopping', 'disc', 'ghisna', 'pahiya'], 
+        keywords: ['grinding', 'brake', 'pad', 'squeak', 'stopping', 'disc', 'ghisna', 'pahiya', 'brake pad', 'break pad', 'ghiss', 'braking'], 
         issue: "Worn Brake Pads", 
         dangerLevel: "CRITICAL", 
         details: "Brake pads ekdum khatam ho chuke hain aur disc par metal ghis raha hai. Ye bahut khatarnak hai aur braking power kam kar deta hai.", 
@@ -29,7 +29,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Brake Specialist"
     },
     { 
-        keywords: ['vibration', 'steering', 'shake', 'speed', 'bubble', 'kaanpna', 'vibrate'], 
+        keywords: ['vibration', 'steering', 'shake', 'speed', 'bubble', 'kaanpna', 'vibrate', 'hath kaanpna', 'steering vibration', 'kapkapahat'], 
         issue: "Wheel Balancing/Alignment", 
         dangerLevel: "LOW", 
         details: "Agar steering wheel ya puri gaadi 80-100 ki speed par kaanp (vibrate) rahi hai, toh wheels ka balance bigad gaya hai.", 
@@ -38,7 +38,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Wheel Alignment & Tyre Shop"
     },
     { 
-        keywords: ['bump', 'noise', 'thud', 'suspension', 'jump', 'shocker', 'gud-gud', 'khad-khad'], 
+        keywords: ['bump', 'noise', 'thud', 'suspension', 'jump', 'shocker', 'gud-gud', 'khad-khad', 'jhatka', 'shokers', 'khadkhad'], 
         issue: "Suspension/Shockers Failure", 
         dangerLevel: "LOW", 
         details: "Gaddhon mein 'gud-gud' ya 'thud' awaz aa rahi hai? Aapke shockers ya suspension bushes khatam ho gaye hain.", 
@@ -47,7 +47,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Suspension Specialist"
     },
     { 
-        keywords: ['misfire', 'missing', 'jerk', 'pickup', 'spark', 'jhatka', 'stop', 'missing', 'rough'], 
+        keywords: ['misfire', 'missing', 'jerk', 'pickup', 'spark', 'jhatka', 'stop', 'rough', 'spark plug', 'plug', 'miss kar rahi', 'jhatke'], 
         issue: "Engine Misfire / Spark Plug", 
         dangerLevel: "MEDIUM", 
         details: "Gaadi jhatke (jerks) le rahi hai aur pickup kam ho gaya hai? Shayad spark plug ya ignition coil kharab hai.", 
@@ -56,25 +56,25 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Engine Specialist / Auto Tuner"
     },
     { 
-        keywords: ['hissing', 'steam', 'smoke', 'radiator', 'leak', 'vacuum', 'whistle'], 
+        keywords: ['hissing', 'steam', 'smoke', 'radiator', 'leak', 'vacuum', 'whistle', 'cooling', 'coolant', 'garam', 'overheat', 'paani', 'seeti'], 
         issue: "Radiator Leak / Vacuum Leak", 
         dangerLevel: "CRITICAL", 
-        details: "Engine se 'hissing' ya seeti jaisi awaz aa rahi hai? Ye shayad coolant leak ya vacuum pipe fatne ki wajah se hai.", 
+        details: "Engine se 'hissing' ya seeti jaisi awaz aa rahi hai? Ye shayad coolant leak, radiator fatne, ya vacuum pipe leak hone ki wajah se hai.", 
         action: "Turant radiator check karo aur engine overheat mat hone do.", 
         estimatedCost: "₹2,000 - ₹8,500",
         suggestedMechanic: "Cooling System Specialist"
     },
     { 
-        keywords: ['clunk', 'gear', 'shift', 'transmission', 'jerk'], 
+        keywords: ['clunk', 'gear', 'shift', 'transmission', 'jerk', 'gearbox', 'gear fansna', 'gear lagna', 'clutch gear'], 
         issue: "Transmission/Gearbox Issue", 
         dangerLevel: "CRITICAL", 
-        details: "Gear shift karte waqt 'clunk' awaz aa rahi hai? Gearbox ke synchronizers ya oil me dikkat ho sakti hai.", 
+        details: "Gear shift karte waqt 'clunk' awaz aa rahi hai ya gear fas raha hai? Gearbox ke synchronizers ya oil me dikkat ho sakti hai.", 
         action: "Transmission oil level aur quality check karwayein.", 
         estimatedCost: "₹15,000 - ₹60,000",
         suggestedMechanic: "Gearbox/Transmission Specialist"
     },
     { 
-        keywords: ['humming', 'bearing', 'vroom', 'wheel noise', 'pahiya awaz', 'goonj', 'grinding'], 
+        keywords: ['humming', 'bearing', 'vroom', 'wheel noise', 'pahiya awaz', 'goonj', 'bearing sound', 'wheel bearing'], 
         issue: "Wheel Bearing Wear", 
         dangerLevel: "MEDIUM", 
         details: "Gaadi chalne par 'humm-humm' jaisi awaz pahiye se aa rahi hai? Wheel bearing ghis chuka hai.", 
@@ -83,7 +83,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Wheel & Bearing Specialist"
     },
     { 
-        keywords: ['ticking', 'tapping', 'oil', 'valves', 'tik-tik'], 
+        keywords: ['ticking', 'tapping', 'oil', 'valves', 'tik-tik', 'engine oil', 'tappet', 'tiktik'], 
         issue: "Low Oil / Tappet Noise", 
         dangerLevel: "MEDIUM", 
         details: "Engine se 'tik-tik' awaz aa rahi hai? Shayad engine oil level low hai ya valves (tappets) loose hain.", 
@@ -92,16 +92,16 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "General Engine Mechanic"
     },
     { 
-        keywords: ['alternator', 'charge', 'battery', 'whine', 'electronic'], 
+        keywords: ['alternator', 'charge', 'battery', 'whine', 'electronic', 'charging', 'battery charge', 'whining noise'], 
         issue: "Alternator Failure", 
         dangerLevel: "MEDIUM", 
-        details: "Engine se lagatar 'whining' (vroom-vroom) awaz aa rahi hai? Shayad alternator ki bearings khatam ho rahi hain.", 
+        details: "Engine se lagatar 'whining' (vroom-vroom) awaz aa rahi hai aur battery weak ho rahi hai? Shayad alternator ki bearings khatam ho rahi hain.", 
         action: "Battery charging light check karo aur alternator repair karwao.", 
         estimatedCost: "₹3,000 - ₹7,500",
         suggestedMechanic: "Auto Electrician"
     },
     { 
-        keywords: ['exhaust', 'loud', 'noise', 'smoke', 'silencer', 'fat-fat'], 
+        keywords: ['exhaust', 'loud', 'noise', 'smoke', 'silencer', 'fat-fat', 'dhuwa', 'dhua', 'silencer pipe', 'patpat'], 
         issue: "Exhaust Leak / Silencer", 
         dangerLevel: "LOW", 
         details: "Aapki gaadi ka exhaust system (silencer) kahin se leak hai ya fat gaya hai, isiliye awaz bahut loud ho gayi hai.", 
@@ -110,16 +110,16 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Silencer & Exhaust Specialist"
     },
     { 
-        keywords: ['mount', 'vibration', 'cabin', 'shaking', 'idling'], 
+        keywords: ['mount', 'vibration', 'cabin', 'shaking', 'idling', 'engine mount', 'engine foundation', 'foundation mount'], 
         issue: "Engine Mount Damage", 
         dangerLevel: "MEDIUM", 
-        details: "Agar gaadi khadi (idling) par bahut zyada vibrate kar rahi hai, toh engine ke foundation mounts toot gaye hain.", 
+        details: "Agar gaadi khadi (idling) par bahut zyada vibrate kar rahi hai ya cabin shaking ho rahi hai, toh engine ke foundation mounts toot gaye hain.", 
         action: "Mounts check karwa kar badlo.", 
         estimatedCost: "₹2,000 - ₹6,500",
         suggestedMechanic: "Engine Specialist"
     },
     {
-        keywords: ['steering', 'whine', 'turn', 'power steering', 'fluid', 'ghumna', 'steer', 'whining'],
+        keywords: ['steering', 'whine', 'turn', 'power steering', 'fluid', 'ghumna', 'steer', 'whining', 'steering modna', 'steering oil'],
         issue: "Power Steering Pump Whine",
         dangerLevel: "MEDIUM",
         details: "Aapki gaadi ka steering ghumane par whining (vroom-vroom) awaz aa rahi hai. Ye aksar power steering fluid leak hone ya pump kharab hone se hota hai.",
@@ -128,7 +128,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Steering & Suspension Specialist"
     },
     {
-        keywords: ['starter', 'clicking', 'crank', 'start', 'chabi', 'self', 'ghar-ghar', 'click'],
+        keywords: ['starter', 'clicking', 'crank', 'start', 'chabi', 'self', 'ghar-ghar', 'click', 'start nahi', 'gadi start', 'engine start', 'starter motor'],
         issue: "Starter Motor Solenoid / Solenoid Switch",
         dangerLevel: "HIGH",
         details: "Chabi ghumane par gaadi start nahi ho rahi aur sirf 'tick-tick' ya 'ghar-ghar' ki awaz aa rahi hai? Starter motor ka solenoid switch ya battery ki dikkat hai.",
@@ -137,7 +137,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Auto Electrician"
     },
     {
-        keywords: ['ac', 'compressor', 'cooling', 'grinding ac', 'hawa', 'chilling', 'grinding', 'bearing'],
+        keywords: ['ac', 'compressor', 'cooling', 'grinding ac', 'hawa', 'chilling', 'bearing', 'thanda', 'ac button', 'ac cooling'],
         issue: "AC Compressor Clutch Bearing",
         dangerLevel: "LOW",
         details: "AC on karne par engine se grinding ya ghisaawat ki awaz aati hai? AC compressor ka clutch bearing wear ho chuka hai.",
@@ -146,7 +146,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Car AC Specialist"
     },
     {
-        keywords: ['clutch', 'pedal', 'rattle', 'clutch bearing', 'gear shift', 'dabane', 'bearing', 'rattling'],
+        keywords: ['clutch', 'pedal', 'rattle', 'clutch bearing', 'gear shift', 'dabane', 'bearing', 'rattling', 'clutch plate', 'clutch wire'],
         issue: "Clutch Release Bearing Wear",
         dangerLevel: "MEDIUM",
         details: "Clutch pedal dabane par rattling ya khad-khad awaz aati hai jo chhodne par band ho jaati hai? Clutch release bearing ghis gaya hai.",
@@ -155,7 +155,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Gearbox & Clutch Specialist"
     },
     {
-        keywords: ['ev', 'electric', 'motor', 'whining ev', 'battery car', 'inverter', 'silent car', 'whining', 'whistle'],
+        keywords: ['ev', 'electric', 'motor', 'whining ev', 'battery car', 'inverter', 'silent car', 'whining', 'whistle', 'electric vehicle'],
         issue: "EV Motor / Reduction Gear Wear",
         dangerLevel: "MEDIUM",
         details: "Electric vehicle mein chalte waqt abnormally tez high-pitched whistling/whining awaz aa rahi hai? Reduction gear bearing ya inverter hum.",
@@ -164,7 +164,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "EV Specialist / Brand Service Center"
     },
     {
-        keywords: ['diesel', 'injector', 'knock diesel', 'smoke', 'injector knock', 'crdi', 'diesel tik-tik', 'clattering', 'ticking'],
+        keywords: ['diesel', 'injector', 'knock diesel', 'smoke', 'injector knock', 'crdi', 'diesel tik-tik', 'clattering', 'ticking', 'kala dhua'],
         issue: "Diesel Injector Knocking",
         dangerLevel: "CRITICAL",
         details: "Diesel engine se bahut tez tik-tik (clattering) awaz aa rahi hai aur exhaust se kala dhua (black smoke) aa raha hai? Injector chocked hain.",
@@ -173,7 +173,7 @@ const CAR_DIAGNOSTIC_DB = [
         suggestedMechanic: "Diesel Engine & Fuel Injector Specialist"
     },
     {
-        keywords: ['exhaust manifold', 'manifold', 'flutter', 'ticking hot', 'dhua manifold', 'ticking', 'exhaust'],
+        keywords: ['exhaust manifold', 'manifold', 'flutter', 'ticking hot', 'dhua manifold', 'ticking', 'exhaust', 'gasket leak'],
         issue: "Exhaust Gasket / Manifold Leak",
         dangerLevel: "MEDIUM",
         details: "Engine startup par tez ticking ya phat-phat awaz aati hai jo garam hone par kam ho jaati hai? Exhaust manifold gasket leak hai.",
@@ -184,7 +184,7 @@ const CAR_DIAGNOSTIC_DB = [
 ];
 
 function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
-    const input = (userInput || '').toLowerCase();
+    const input = (userInput || '').toLowerCase().trim();
     
     const maxPeakBin = peaks.length > 0 ? peaks[0].bin : 0;
     const avgPeakVal = peaks.length > 0 ? peaks.reduce((acc, p) => acc + p.val, 0) / peaks.length : 0;
@@ -194,12 +194,12 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
         return {
             issue: "Low Signal / Ambient Noise",
             dangerLevel: "LOW",
-            details: "Bhaiya, sound bahut dheemi hai ya koi car engine ki awaz nahi lag rahi hai. Apni gaadi ke engine ke paas jaakar achhe se record karo taaki main sahi se bata saku aur kharcha bhi accurate baje!",
-            action: "Gaadi ke engine ke paas jaakar microphone se clear sound record karein.",
+            details: "Bhaiya, sound bahut dheemi hai ya koi car engine ki awaz nahi lag rahi hai. Apni gaadi ke engine ke paas jaakar achhe se record karo ya fir text box me detail me apni dikkaat likho (ya bolkar batao)!",
+            action: "Gaadi ke engine ke paas jaakar clear sound record karein ya issue type/dictate karein.",
             estimatedCost: "₹0",
             suggestedMechanic: "N/A (Quiet environment)",
             confidence: 100,
-            version: "5.5-ULTRA"
+            version: "5.6-ULTRA"
         };
     }
 
@@ -215,10 +215,12 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
     CAR_DIAGNOSTIC_DB.forEach(item => {
         let score = 0;
         item.keywords.forEach(kw => {
-            if (input.includes(kw)) score += 10;
+            if (input.includes(kw)) {
+                score += 10;
+            }
         });
         
-        if (avgPeakVal >= 45) {
+        if (avgPeakVal >= 45 && peaks.length > 0) {
             if (maxPeakBin > 40 && item.keywords.some(k => ['belt', 'squeal', 'whistle', 'hissing', 'ev', 'inverter', 'electric'].includes(k))) score += 20; 
             if (maxPeakBin < 10 && item.keywords.some(k => ['knock', 'thud', 'mount', 'heavy', 'clank', 'clicking'].includes(k))) score += 20; 
             if (avgPeakVal > 150 && item.keywords.some(k => ['grinding', 'brake', 'bearing'].includes(k))) score += 15; 
@@ -247,9 +249,9 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
                 confidence: 80, 
                 suggestedMechanic: "General Mechanic" 
             };
-        } else if (signature === 'high') {
+        } else if (signature === 'high' && peaks.length > 0) {
             bestResult = { issue: "High-Freq Resonance detected", dangerLevel: "MEDIUM", details: "System ne ek teekhi awaz pakdi hai. Ye aksar turbo leak ya alternator bearing ki awaz hoti hai.", action: "Ek baar belt aur turbo hoses check karwao.", estimatedCost: "₹3,000 - ₹10,000", confidence: 85, suggestedMechanic: "Turbo/Engine Specialist" };
-        } else if (signature === 'low') {
+        } else if (signature === 'low' && peaks.length > 0) {
             bestResult = { issue: "Low-Freq Vibration", dangerLevel: "CRITICAL", details: "Ye engine ke niche se aane wali bhari awaz hai jo kafi khatarnak ho sakti hai.", action: "Gaadi abhi roko aur oil level check karo.", estimatedCost: "₹15,000 - ₹75,000", confidence: 88, suggestedMechanic: "Transmission or Engine Mount Specialist" };
         } else {
             const randomUnknown = unknownResponses[Math.floor(Math.random() * unknownResponses.length)];

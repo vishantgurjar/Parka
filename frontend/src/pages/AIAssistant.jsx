@@ -24,6 +24,63 @@ export default function AIAssistant() {
   const dataArrayRef = useRef(null);
   const animationFrameRef = useRef(null);
 
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const toggleSpeechRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please try Google Chrome, Microsoft Edge, or Safari.");
+      return;
+    }
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+    } else {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'hi-IN'; // Works for Hindi, Hinglish, and English
+        
+        recognition.onstart = () => {
+          setIsListening(true);
+          setError(null);
+        };
+        
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setSymptom(prev => prev ? `${prev} ${transcript}` : transcript);
+          }
+        };
+        
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          if (event.error === 'not-allowed') {
+            setError("Microphone permission denied. Please allow microphone access in your browser settings to voice type.");
+          } else {
+            setError(`Speech typing error: ${event.error}`);
+          }
+          setIsListening(false);
+        };
+        
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+        
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+        setIsListening(false);
+      }
+    }
+  };
+
   // Point 3: Voicebot (Hinglish TTS)
   const speakDiagnosis = (text) => {
     if (!('speechSynthesis' in window)) return;
@@ -88,9 +145,11 @@ export default function AIAssistant() {
           const topPeaks = peaks.sort((a,b) => b.val - a.val).slice(0, 5);
           
           let signature = 'mid'; 
-          const avgPeakBin = topPeaks.reduce((acc, p) => acc + p.bin, 0) / (topPeaks.length || 1);
-          if (avgPeakBin > 40) signature = 'high';
-          else if (avgPeakBin < 10) signature = 'low';
+          if (topPeaks.length > 0) {
+             const avgPeakBin = topPeaks.reduce((acc, p) => acc + p.bin, 0) / topPeaks.length;
+             if (avgPeakBin > 40) signature = 'high';
+             else if (avgPeakBin < 10) signature = 'low';
+          }
 
           stopRecording(stream);
           setStatus('analyzing');
@@ -213,16 +272,45 @@ export default function AIAssistant() {
               </div>
 
               <div style={{ marginBottom: '2.5rem' }}>
-                <textarea 
-                  placeholder={activeTab === 'ev' ? "Describe warning light, error code, or behavior..." : "Optional: Describe the sound (e.g. 'Ticking from left side', 'Squealing when braking')"}
-                  value={symptom}
-                  onChange={(e) => setSymptom(e.target.value)}
-                  style={{
-                    width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid var(--border)', color: 'var(--fg)', fontSize: '1rem', resize: 'none', marginBottom: '1.5rem'
-                  }}
-                  rows="3"
-                />
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <textarea 
+                    placeholder={activeTab === 'ev' ? "Describe warning light, error code, or behavior..." : "Optional: Describe the sound (e.g. 'Ticking from left side', 'Squealing when braking')"}
+                    value={symptom}
+                    onChange={(e) => setSymptom(e.target.value)}
+                    style={{
+                      width: '100%', padding: '15px 50px 15px 15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--border)', color: 'var(--fg)', fontSize: '1rem', resize: 'none', marginBottom: '1.5rem'
+                    }}
+                    rows="3"
+                  />
+                  <button
+                    onClick={toggleSpeechRecognition}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '12px',
+                      background: isListening ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                      border: `1px solid ${isListening ? '#ef4444' : 'var(--border)'}`,
+                      color: isListening ? '#ef4444' : 'var(--fg)',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      zIndex: 10
+                    }}
+                    title={isListening ? "Stop listening" : "Speak symptom"}
+                  >
+                    <Mic size={18} className={isListening ? "pulse-anim" : ""} />
+                  </button>
+                </div>
+                
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '-1rem', marginBottom: '1.5rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>💡 Tip: Click the mic 🎙️ icon to speak/dictate your symptoms in Hindi or English.</span>
+                </div>
                 
                 {activeTab === 'ice' ? (
                   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
