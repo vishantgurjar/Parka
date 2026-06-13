@@ -190,7 +190,7 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
     const avgPeakVal = peaks.length > 0 ? peaks.reduce((acc, p) => acc + p.val, 0) / peaks.length : 0;
 
     // Reject low signal/ambient silence if no text description and no image is provided
-    if (avgPeakVal < 45 && !input.trim() && !hasImage) {
+    if (avgPeakVal < 70 && !input.trim() && !hasImage) {
         return {
             issue: "Low Signal / Ambient Noise",
             dangerLevel: "LOW",
@@ -199,7 +199,7 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
             estimatedCost: "₹0",
             suggestedMechanic: "N/A (Quiet environment)",
             confidence: 100,
-            version: "5.6-ULTRA"
+            version: "5.7-ULTRA"
         };
     }
 
@@ -263,7 +263,7 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     bestResult.details = prefix + bestResult.details;
     bestResult.confidence = Math.min(96, 75 + (maxScore * 1.5));
-    bestResult.version = "5.5-ULTRA";
+    bestResult.version = "5.7-ULTRA";
 
     return bestResult;
 }
@@ -280,7 +280,7 @@ router.post('/diagnose', async (req, res) => {
         const avgPeakVal = spectralPeaks && spectralPeaks.length > 0 ? spectralPeaks.reduce((acc, p) => acc + p.val, 0) / spectralPeaks.length : 0;
 
         // Proactively reject low-signal/ambient silence before calling model
-        if (!symptom && !image && avgPeakVal < 45) {
+        if (!symptom && !image && avgPeakVal < 70) {
             return res.json({
                 issue: "Low Signal / Ambient Noise",
                 dangerLevel: "LOW",
@@ -289,7 +289,7 @@ router.post('/diagnose', async (req, res) => {
                 estimatedCost: "₹0",
                 suggestedMechanic: "N/A (Quiet environment)",
                 confidence: 100,
-                version: "5.5-ULTRA"
+                version: "5.7-ULTRA"
             });
         }
 

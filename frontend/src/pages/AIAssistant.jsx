@@ -148,9 +148,9 @@ export default function AIAssistant() {
 
           // If sound recorded is too low and no other information is provided, abort.
           const avgPeakVal = topPeaks.length > 0 ? topPeaks.reduce((acc, p) => acc + p.val, 0) / topPeaks.length : 0;
-          if (avgPeakVal < 45 && !symptom && !selectedImage) {
+          if (avgPeakVal < 70 && !symptom && !selectedImage) {
             setStatus('idle');
-            setError("No significant engine sound detected. Please try recording again closer to the engine, or click the mic button next to the text box to dictate your symptoms.");
+            setError("No significant engine sound detected. Please try recording again closer to a running engine, or click the mic button next to the text box to dictate your symptoms.");
             return;
           }
           
