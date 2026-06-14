@@ -277,8 +277,6 @@ export default function EVHub() {
     } else if (activeTab === 'wallet') {
       fetchEarnings();
       fetchActiveBookings();
-    } else if (activeTab === 'diagnostics') {
-      window.location.href = '/ai-doctor?mode=ev';
     }
   }, [activeTab]);
 
