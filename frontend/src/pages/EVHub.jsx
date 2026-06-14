@@ -168,6 +168,12 @@ export default function EVHub() {
   const [bookingHours, setBookingHours] = useState(2);
   const [bookingStep, setBookingStep] = useState('idle'); // 'idle', 'confirming', 'approving', 'success'
   const [secureOtp, setSecureOtp] = useState('');
+  const [currentOrder, setCurrentOrder] = useState(null);
+  const [activeRenterBooking, setActiveRenterBooking] = useState(null);
+  const [activeHostBookings, setActiveHostBookings] = useState([]);
+  const [isCharging, setIsCharging] = useState(false);
+  const [chargePercent, setChargePercent] = useState(0);
+  const [enteredOtp, setEnteredOtp] = useState('');
   
   // Host Charger Form States
   const [hostForm, setHostForm] = useState({
@@ -234,11 +240,35 @@ export default function EVHub() {
     }
   };
 
+  const fetchActiveBookings = async () => {
+    if (!user) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const renterRes = await fetch(`${baseUrl}/api/ev/bookings/renter/active/${user._id}`);
+      if (renterRes.ok) {
+        const renterData = await renterRes.json();
+        setActiveRenterBooking(renterData.booking);
+        if (renterData.booking) {
+          setSecureOtp(renterData.booking.otp || '');
+        }
+      }
+      const hostRes = await fetch(`${baseUrl}/api/ev/bookings/host/active/${user._id}`);
+      if (hostRes.ok) {
+        const hostData = await hostRes.json();
+        setActiveHostBookings(hostData.bookings || []);
+      }
+    } catch (err) {
+      console.error("Failed to load active bookings:", err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'grid-share') {
       fetchChargers();
+      fetchActiveBookings();
     } else if (activeTab === 'wallet') {
       fetchEarnings();
+      fetchActiveBookings();
     } else if (activeTab === 'diagnostics') {
       window.location.href = '/ai-doctor?mode=ev';
     }
@@ -294,33 +324,8 @@ export default function EVHub() {
       if (!res.ok) throw new Error(orderData.message || 'Failed to create order');
 
       if (orderData.isMock) {
-        setTimeout(async () => {
-          try {
-            const verifyRes = await fetch(`${baseUrl}/api/ev/verify-booking`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                bookingId: orderData.bookingId,
-                razorpay_order_id: orderData.orderId,
-                razorpay_payment_id: `pay_ev_mock_${Date.now()}`,
-                razorpay_signature: "mock_signature"
-              })
-            });
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok) {
-              setSecureOtp(verifyData.otp);
-              setBookingStep('success');
-              speakVoice(`Booking approved! Your secure charger OTP is ${verifyData.otp.replace('-', ' ')}`);
-              toast.success("Host approved your booking! OTP generated.");
-              fetchChargers();
-            } else {
-              throw new Error(verifyData.message || 'Failed to verify booking');
-            }
-          } catch (err) {
-            toast.error(err.message || 'Verification failed');
-            setBookingStep('idle');
-          }
-        }, 2000);
+        setCurrentOrder(orderData);
+        setBookingStep('mock_payment_gateway');
         return;
       }
 
@@ -693,6 +698,137 @@ export default function EVHub() {
           {/* ======================================================== */}
           {activeTab === 'grid-share' && (
             <div className="fadeIn" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
+              
+              {/* Active Charging Session for Renters */}
+              {activeRenterBooking && (
+                <div className="glass bento-item fadeIn" style={{
+                  padding: '2rem',
+                  border: '1px solid rgba(45, 212, 191, 0.3)',
+                  background: 'rgba(45, 212, 191, 0.02)',
+                  borderRadius: '24px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                  marginBottom: '1rem'
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <div style={{ 
+                        width: '50px', height: '50px', borderRadius: '12px', 
+                        background: isCharging ? 'rgba(16, 185, 129, 0.1)' : 'rgba(45, 212, 191, 0.1)', 
+                        color: isCharging ? '#10b981' : '#2dd4bf', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                      }}>
+                        <BatteryCharging size={28} className={isCharging ? "pulse-anim" : ""} />
+                      </div>
+                      <div style={{ textAlign: 'left' }}>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: 0, color: '#fff' }}>
+                          {isCharging ? "Charging Session In Progress... ⚡" : "Secure Charger Ready to Unlock"}
+                        </h4>
+                        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '4px 0 0 0' }}>
+                          Charger: <strong>{activeRenterBooking.chargerId?.hostName || "Verified Host"}</strong> ({activeRenterBooking.chargerId?.address})
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      {!isCharging ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ textAlign: 'left' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Key in OTP to Unlock</span>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. PX-1234" 
+                              value={enteredOtp} 
+                              onChange={(e) => setEnteredOtp(e.target.value)}
+                              style={{ 
+                                padding: '8px 12px', borderRadius: '8px', 
+                                background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', 
+                                color: '#fff', fontSize: '0.85rem', width: '120px', textAlign: 'center', fontWeight: 'bold' 
+                              }}
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              const cleanEntered = enteredOtp.trim().toUpperCase();
+                              const cleanExpected = (activeRenterBooking.otp || '').trim().toUpperCase();
+                              if (cleanEntered === cleanExpected) {
+                                setIsCharging(true);
+                                speakVoice("OTP verified successfully. Charging initiated!");
+                                toast.success("OTP Verified! Charging initiated.");
+                                
+                                // Start charging percentage animation
+                                let pct = 0;
+                                const interval = setInterval(() => {
+                                  setChargePercent(prev => {
+                                    if (prev >= 100) {
+                                      return 0; // loop charging simulation
+                                    }
+                                    return prev + 4;
+                                  });
+                                }, 300);
+                                window.chargingTimer = interval;
+                              } else {
+                                toast.error("Invalid OTP code. Please try again!");
+                              }
+                            }}
+                            className="btn-gradient"
+                            style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', color: '#000', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '14px', cursor: 'pointer' }}
+                          >
+                            Unlock Plug
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold', display: 'block' }}>⚡ {chargePercent}% Charged</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Power: 7.4 kW Flowing</span>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              if (window.chargingTimer) {
+                                clearInterval(window.chargingTimer);
+                              }
+                              try {
+                                const baseUrl = getBackendUrl();
+                                const res = await fetch(`${baseUrl}/api/ev/complete-booking`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ bookingId: activeRenterBooking._id })
+                                });
+                                if (res.ok) {
+                                  toast.success("Charging session completed successfully!");
+                                  speakVoice("Charging session completed successfully. Thank you for grid sharing!");
+                                  setActiveRenterBooking(null);
+                                  setIsCharging(false);
+                                  setChargePercent(0);
+                                  setEnteredOtp('');
+                                  fetchChargers();
+                                } else {
+                                  toast.error("Failed to complete booking.");
+                                }
+                              } catch (err) {
+                                toast.error("Error ending session.");
+                              }
+                            }}
+                            className="btn-gradient"
+                            style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--gradient-emergency)', color: '#fff', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                          >
+                            Stop Charging
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Display OTP helper */}
+                      {!isCharging && (
+                        <div style={{ borderLeft: '1px solid rgba(255,255,255,0.08)', paddingLeft: '1.5rem', textAlign: 'left' }}>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase', display: 'block' }}>Your OTP Code:</span>
+                          <strong style={{ fontSize: '1.3rem', color: '#2dd4bf', letterSpacing: '1px' }}>{activeRenterBooking.otp}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>Find A Shared Charger</h3>
@@ -961,6 +1097,80 @@ export default function EVHub() {
                       </div>
                     )}
 
+                    {/* MOCK RAZORPAY PAYMENT GATEWAY */}
+                    {bookingStep === 'mock_payment_gateway' && currentOrder && (
+                      <div className="fadeIn" style={{ padding: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ background: '#2952e3', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', fontFamily: 'sans-serif' }}>razorpay</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Secured Payment</span>
+                          </div>
+                          <span style={{ fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 'bold', background: 'rgba(45,212,191,0.1)', padding: '2px 8px', borderRadius: '20px' }}>TEST MODE</span>
+                        </div>
+
+                        <div style={{ textAlign: 'left', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Amount to Pay</span>
+                          <strong style={{ fontSize: '2rem', color: '#fff', display: 'block', marginBottom: '10px' }}>₹{currentOrder.amount}</strong>
+                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                            <span><strong>Host:</strong> {selectedCharger?.host}</span>
+                            <span><strong>Plug Type:</strong> {selectedCharger?.plugType}</span>
+                            <span><strong>Rate:</strong> ₹{selectedCharger?.price}/unit</span>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1rem' }}>
+                          <button
+                            onClick={async () => {
+                              setBookingStep('approving');
+                              speakVoice("Processing simulation payment. Verifying with Razorpay engine...");
+                              try {
+                                const baseUrl = getBackendUrl();
+                                const verifyRes = await fetch(`${baseUrl}/api/ev/verify-booking`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    bookingId: currentOrder.bookingId,
+                                    razorpay_order_id: currentOrder.orderId,
+                                    razorpay_payment_id: `pay_ev_mock_${Date.now()}`,
+                                    razorpay_signature: "mock_signature"
+                                  })
+                                });
+                                const verifyData = await verifyRes.json();
+                                if (verifyRes.ok) {
+                                  setSecureOtp(verifyData.otp);
+                                  setBookingStep('success');
+                                  speakVoice(`Booking approved! Your secure charger OTP is ${verifyData.otp.replace('-', ' ')}`);
+                                  toast.success("Payment simulated successfully! OTP generated.");
+                                  fetchChargers();
+                                  fetchActiveBookings();
+                                } else {
+                                  throw new Error(verifyData.message || 'Failed to verify booking');
+                                }
+                              } catch (err) {
+                                toast.error(err.message || 'Verification failed');
+                                setBookingStep('idle');
+                              }
+                            }}
+                            className="btn-gradient light-sweep"
+                            style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 'bold', background: '#10b981', border: 'none', color: '#fff', fontSize: '0.9rem', cursor: 'pointer' }}
+                          >
+                            ✔ Pay Successfully (Simulate)
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              toast.error("Payment declined/cancelled.");
+                              setBookingStep('idle');
+                            }}
+                            className="btn-secondary"
+                            style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem', cursor: 'pointer' }}
+                          >
+                            ✕ Cancel/Decline Payment
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* STEP 2: REQUESTING APPROVAL */}
                     {bookingStep === 'approving' && (
                       <div className="fadeIn">
@@ -1146,6 +1356,64 @@ export default function EVHub() {
           {/* ======================================================== */}
           {activeTab === 'wallet' && (
             <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              
+              {/* Host Active Sessions */}
+              {activeHostBookings.length > 0 && (
+                <div className="glass bento-item fadeIn" style={{ padding: '2rem', border: '1px solid rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.02)', borderRadius: '24px', marginBottom: '1rem', textAlign: 'left' }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                    <Zap size={18} color="#10b981" /> Active Rental Sessions on Your Chargers
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {activeHostBookings.map(bk => (
+                      <div key={bk._id} style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ textAlign: 'left' }}>
+                          <strong style={{ fontSize: '1rem', color: '#fff' }}>Renter: {bk.userId?.name || "Verified Driver"}</strong>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block', marginTop: '4px' }}>
+                            Timings: {bk.chargerId?.timings} | Speed: {bk.chargerId?.speed} | Address: {bk.chargerId?.address}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block' }}>
+                            Contact: {bk.userId?.phone || bk.userId?.email || "N/A"}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                          <div style={{ textAlign: 'left' }}>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--muted)', display: 'block', textTransform: 'uppercase' }}>Session OTP Code</span>
+                            <strong style={{ fontSize: '1.25rem', color: '#10b981', fontFamily: 'monospace' }}>{bk.otp}</strong>
+                          </div>
+
+                          <button
+                            onClick={async () => {
+                              try {
+                                const baseUrl = getBackendUrl();
+                                const res = await fetch(`${baseUrl}/api/ev/complete-booking`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ bookingId: bk._id })
+                                });
+                                if (res.ok) {
+                                  toast.success("Charging session completed and balance credited!");
+                                  speakVoice("Session completed. Charging earnings have been credited to your wallet.");
+                                  fetchEarnings();
+                                  fetchActiveBookings();
+                                } else {
+                                  toast.error("Failed to complete session.");
+                                }
+                              } catch (err) {
+                                toast.error("Error completing session.");
+                              }
+                            }}
+                            className="btn-gradient"
+                            style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#10b981', color: '#fff', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                          >
+                            Release Charger (End Session)
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Counter Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr 1.5fr', gap: '1.5rem' }}>

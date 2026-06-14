@@ -222,4 +222,41 @@ router.get('/earnings/:userId', async (req, res) => {
   }
 });
 
+// @route   GET /api/ev/bookings/renter/active/:userId
+// @desc    Get active booking for a renter
+router.get('/bookings/renter/active/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const booking = await EVBooking.findOne({
+      userId,
+      status: { $in: ['pending_approval', 'approved'] }
+    }).populate('chargerId');
+    
+    res.json({ success: true, booking });
+  } catch (err) {
+    console.error("Fetch Renter Active Booking Error:", err);
+    res.status(500).json({ message: "Server error fetching active booking." });
+  }
+});
+
+// @route   GET /api/ev/bookings/host/active/:userId
+// @desc    Get active bookings for chargers owned by a host
+router.get('/bookings/host/active/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const chargers = await EVCharger.find({ hostId: userId });
+    const chargerIds = chargers.map(c => c._id);
+
+    const bookings = await EVBooking.find({
+      chargerId: { $in: chargerIds },
+      status: { $in: ['pending_approval', 'approved'] }
+    }).populate('userId', 'name email phone').populate('chargerId');
+
+    res.json({ success: true, bookings });
+  } catch (err) {
+    console.error("Fetch Host Active Bookings Error:", err);
+    res.status(500).json({ message: "Server error fetching active bookings." });
+  }
+});
+
 module.exports = router;
