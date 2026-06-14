@@ -93,7 +93,13 @@ export default function AIAssistant() {
 
   const startAnalysis = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          autoGainControl: false,
+          noiseSuppression: false,
+          echoCancellation: false
+        } 
+      });
       setStatus('recording');
       setProgress(0);
       setDiagnosis(null);
@@ -197,9 +203,9 @@ export default function AIAssistant() {
           const stdDevVol = Math.sqrt(varianceVol);
           const minVol = volumes.length > 0 ? Math.min(...volumes) : 0;
 
-          // If sound recorded is too low and no other information is provided, abort.
+          // If sound recorded is too low or not significant, and no other information is provided, abort.
           const avgPeakVal = topPeaks.length > 0 ? topPeaks.reduce((acc, p) => acc + p.val, 0) / topPeaks.length : 0;
-          if (avgPeakVal < 70 && !symptom && !selectedImage) {
+          if ((avgPeakVal < 80 || meanVol < 25) && !symptom && !selectedImage) {
             setStatus('idle');
             setError("No significant engine sound detected. Please try recording again closer to a running engine, or click the mic button next to the text box to dictate your symptoms.");
             return;
