@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import SEO from '../components/SEO';
@@ -26,6 +26,16 @@ function ChangeMapView({ center, zoom }) {
   const map = useMap();
   map.setView(center, zoom);
   return null;
+}
+
+// Component to dynamically set marker position on host selection map
+function AddChargerMapMarker({ position, setPosition }) {
+  useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    }
+  });
+  return position ? <Marker position={position} /> : null;
 }
 
 // Initial Mock EV Chargers
@@ -386,9 +396,6 @@ export default function EVHub() {
       return;
     }
 
-    const offsetLat = mapCenter[0] + (Math.random() - 0.5) * 0.03;
-    const offsetLng = mapCenter[1] + (Math.random() - 0.5) * 0.03;
-
     try {
       const baseUrl = getBackendUrl();
       const res = await fetch(`${baseUrl}/api/ev/host`, {
@@ -404,7 +411,7 @@ export default function EVHub() {
           price: parseFloat(hostForm.price),
           timings: hostForm.timings,
           security: hostForm.security,
-          location: { lat: offsetLat, lng: offsetLng }
+          location: { lat: newHostCoords[0], lng: newHostCoords[1] }
         })
       });
 
@@ -628,6 +635,147 @@ export default function EVHub() {
       {/* Background aesthetics */}
       <div className="bg-grain"></div>
       <div className="bg-grid"></div>
+
+      <style>{`
+        /* Leaflet Dark Mode Popup Override */
+        .leaflet-popup-content-wrapper {
+          background: rgba(3, 7, 18, 0.95) !important;
+          backdrop-filter: blur(12px) !important;
+          color: #fff !important;
+          border: 1px solid rgba(45, 212, 191, 0.25) !important;
+          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+          border-radius: 16px !important;
+          font-family: inherit !important;
+          padding: 4px !important;
+        }
+        .leaflet-popup-tip {
+          background: rgba(3, 7, 18, 0.95) !important;
+          border-left: 1px solid rgba(45, 212, 191, 0.25) !important;
+          border-top: 1px solid rgba(45, 212, 191, 0.25) !important;
+        }
+        .leaflet-popup-close-button {
+          color: rgba(255, 255, 255, 0.6) !important;
+          padding: 8px !important;
+        }
+        
+        /* Laser Scanner Line */
+        .scanner-container {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+        }
+        .scanner-laser {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, transparent, #0ea5e9, #2dd4bf, #0ea5e9, transparent);
+          box-shadow: 0 0 12px #2dd4bf, 0 0 20px #0ea5e9;
+          animation: scanLaser 3s ease-in-out infinite;
+          z-index: 5;
+        }
+        @keyframes scanLaser {
+          0% { top: 0%; opacity: 0.1; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0.1; }
+        }
+
+        /* Pulsating circles */
+        @keyframes radarPulse {
+          0% { transform: scale(0.95); opacity: 0.8; }
+          50% { transform: scale(1.1); opacity: 0.4; }
+          100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .pulse-active {
+          animation: radarPulse 2.5s infinite ease-in-out;
+        }
+
+        /* Smooth tab highlight sweep */
+        .switcher-btn {
+          position: relative;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid transparent !important;
+        }
+        .switcher-btn:hover {
+          background: rgba(255, 255, 255, 0.04) !important;
+          color: #fff !important;
+          transform: translateY(-1px);
+        }
+        .switcher-btn.active {
+          background: rgba(45, 212, 191, 0.1) !important;
+          border-color: rgba(45, 212, 191, 0.3) !important;
+          color: #2dd4bf !important;
+          box-shadow: 0 0 15px rgba(45, 212, 191, 0.08) !important;
+        }
+        
+        /* Interactive coordinate selector map hover */
+        .selector-map-container {
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          transition: border-color 0.3s;
+        }
+        .selector-map-container:hover {
+          border-color: rgba(45, 212, 191, 0.3);
+        }
+        
+        /* Premium custom marker icon hover */
+        .custom-ev-icon {
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .custom-ev-icon:hover {
+          transform: scale(1.15) translateY(-2px);
+          filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.8));
+        }
+
+        /* Speed calculator range ring progress */
+        .range-ring {
+          transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Premium Glowing Slider Controls */
+        input[type="range"] {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 6px;
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-radius: 6px;
+          outline: none;
+          transition: background 0.3s;
+          margin: 10px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #2dd4bf !important;
+          cursor: pointer;
+          box-shadow: 0 0 8px rgba(45, 212, 191, 0.8) !important;
+          transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+          transform: scale(1.25);
+          background: #0ea5e9 !important;
+          box-shadow: 0 0 12px rgba(14, 165, 233, 0.8) !important;
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          border: none;
+          border-radius: 50%;
+          background: #2dd4bf !important;
+          cursor: pointer;
+          box-shadow: 0 0 8px rgba(45, 212, 191, 0.8) !important;
+          transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+          transform: scale(1.25);
+          background: #0ea5e9 !important;
+          box-shadow: 0 0 12px rgba(14, 165, 233, 0.8) !important;
+        }
+      `}</style>
 
       <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '5rem' }}>
         <div className="container">
@@ -934,7 +1082,7 @@ export default function EVHub() {
                           eventHandlers={{ click: () => { setSelectedCharger(charger); setBookingStep('confirming'); } }}
                         >
                           <Popup>
-                            <div style={{ color: '#000', fontSize: '0.85rem' }}>
+                            <div style={{ color: '#fff', fontSize: '0.85rem' }}>
                               <strong>{charger.host}</strong><br/>
                               <span>{charger.plugType}</span><br/>
                               <strong>₹{charger.price}/unit</strong>
@@ -953,7 +1101,7 @@ export default function EVHub() {
                     <div 
                       key={c.id} 
                       onClick={() => { setMapCenter([c.lat, c.lng]); setSelectedCharger(c); setBookingStep('confirming'); }}
-                      className="light-sweep"
+                      className="charger-list-item light-sweep"
                       style={{ 
                         padding: '1.25rem', 
                         borderRadius: '16px', 
@@ -1269,6 +1417,51 @@ export default function EVHub() {
                   />
                 </div>
 
+                {/* INTERACTIVE COORDINATE SELECTOR MAP */}
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                      📍 Pinpoint Plug Location on Radar
+                    </label>
+                    <span style={{ fontSize: '0.7rem', color: '#2dd4bf', fontWeight: 'bold' }}>
+                      Click on the map to place your charger pin
+                    </span>
+                  </div>
+                  
+                  <div className="selector-map-container" style={{ height: '220px', borderRadius: '16px', overflow: 'hidden', marginBottom: '10px' }}>
+                    <MapContainer center={newHostCoords} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }}>
+                      <ChangeMapView center={newHostCoords} zoom={13} />
+                      <TileLayer
+                        url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+                        attribution="Map data © Google"
+                        maxZoom={20}
+                      />
+                      <AddChargerMapMarker position={newHostCoords} setPosition={setNewHostCoords} />
+                    </MapContainer>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                    <span>Coordinates: <strong>{newHostCoords[0].toFixed(5)}, {newHostCoords[1].toFixed(5)}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (pos) => {
+                              setNewHostCoords([pos.coords.latitude, pos.coords.longitude]);
+                              toast.success("Marker moved to your GPS coordinates!");
+                            },
+                            () => toast.error("Could not fetch GPS coordinates. Please select manually on map.")
+                          );
+                        }
+                      }}
+                      style={{ background: 'rgba(45, 212, 191, 0.1)', border: '1px solid rgba(45,212,191,0.2)', color: '#2dd4bf', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      Use My GPS Location
+                    </button>
+                  </div>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '6px', display: 'block' }}>Plug Interface Type</label>
@@ -1456,41 +1649,62 @@ export default function EVHub() {
 
               {/* Transactions Log */}
               <div className="glass bento-item" style={{ padding: '2.5rem 2rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', marginBottom: '1.5rem' }}>Completed Renter Transactions</h3>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)', textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                        <th style={{ padding: '12px' }}>Renter Name</th>
-                        <th style={{ padding: '12px' }}>Vehicle Model</th>
-                        <th style={{ padding: '12px' }}>Timestamp</th>
-                        <th style={{ padding: '12px' }}>Duration</th>
-                        <th style={{ padding: '12px' }}>Units Sold</th>
-                        <th style={{ padding: '12px' }}>Payout</th>
-                        <th style={{ padding: '12px' }}>Verification status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {walletTx.map((tx) => (
-                        <tr key={tx.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                          <td style={{ padding: '14px', fontWeight: 'bold' }}>{tx.renter}</td>
-                          <td style={{ padding: '14px' }}>{tx.car}</td>
-                          <td style={{ padding: '14px', color: 'var(--muted)' }}>{tx.date}</td>
-                          <td style={{ padding: '14px' }}>{tx.duration}</td>
-                          <td style={{ padding: '14px' }}>{tx.units}</td>
-                          <td style={{ padding: '14px', color: '#10b981', fontWeight: 'bold' }}>{tx.amount}</td>
-                          <td style={{ padding: '14px' }}>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>
-                              ✔ KYC Checked
-                            </span>
-                          </td>
+                              {walletTx.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3.5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(255,255,255,0.12)', marginBottom: '1.5rem' }}>
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V9a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12" />
+                      <circle cx="9" cy="12" r="1" />
+                      <circle cx="15" cy="12" r="1" />
+                      <path d="M12 2v3M9 2v1M15 2v1" />
+                    </svg>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>No Earning Transactions Yet</h4>
+                    <p style={{ color: 'var(--muted)', fontSize: '0.85rem', maxWidth: '400px', margin: '0 auto 1.5rem', lineHeight: '1.5' }}>
+                      Bhai, jab koi renter aapka grid charger rent karega aur charging session end hoga, toh aapki income yahan show hogi!
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('host-charger')}
+                      className="btn-gradient"
+                      style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: 'rgba(45,212,191,0.1)', color: '#2dd4bf', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                    >
+                      Host Your Charger Now
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                          <th style={{ padding: '12px' }}>Renter Name</th>
+                          <th style={{ padding: '12px' }}>Vehicle Model</th>
+                          <th style={{ padding: '12px' }}>Timestamp</th>
+                          <th style={{ padding: '12px' }}>Duration</th>
+                          <th style={{ padding: '12px' }}>Units Sold</th>
+                          <th style={{ padding: '12px' }}>Payout</th>
+                          <th style={{ padding: '12px' }}>Verification status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {walletTx.map((tx) => (
+                          <tr key={tx.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                            <td style={{ padding: '14px', fontWeight: 'bold' }}>{tx.renter}</td>
+                            <td style={{ padding: '14px' }}>{tx.car}</td>
+                            <td style={{ padding: '14px', color: 'var(--muted)' }}>{tx.date}</td>
+                            <td style={{ padding: '14px' }}>{tx.duration}</td>
+                            <td style={{ padding: '14px' }}>{tx.units}</td>
+                            <td style={{ padding: '14px', color: '#10b981', fontWeight: 'bold' }}>{tx.amount}</td>
+                            <td style={{ padding: '14px' }}>
+                              <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>
+                                ✔ KYC Checked
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-
             </div>
           )}
 
@@ -1531,26 +1745,57 @@ export default function EVHub() {
                     )}
 
                     {sosStatus === 'dispatched' && (
-                      <div className="fadeIn" style={{ maxWidth: '400px', margin: '0 auto' }}>
-                        <div style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', padding: '1rem', borderRadius: '16px', marginBottom: '1.25rem' }}>
+                      <div className="fadeIn" style={{ width: '100%', maxWidth: '460px', margin: '0 auto', textAlign: 'left' }}>
+                        {/* Status Card */}
+                        <div style={{ background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.2)', padding: '1.25rem', borderRadius: '16px', marginBottom: '1.25rem' }}>
                           <span style={{ fontSize: '0.7rem', color: '#f43f5e', fontWeight: 'bold', textTransform: 'uppercase', display: 'block' }}>SOS Tracking Status</span>
-                          <strong style={{ fontSize: '1.1rem', color: '#fff', display: 'block', margin: '4px 0' }}>Van En Route (ETA: 12 min)</strong>
+                          <strong style={{ fontSize: '1.2rem', color: '#fff', display: 'block', margin: '4px 0' }}>Van En Route (ETA: {Math.max(1, Math.round(12 - (sosProgress * 0.12)))} min)</strong>
                           <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden', marginTop: '10px' }}>
                             <div style={{ width: `${sosProgress}%`, height: '100%', background: '#f43f5e', transition: 'width 0.4s linear' }}></div>
                           </div>
                         </div>
-                        <button onClick={() => setSosStatus('idle')} className="btn-secondary" style={{ padding: '8px 20px', fontSize: '0.8rem', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '8px' }}>Cancel SOS</button>
+
+                        {/* Rescuer Info */}
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '16px', display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.25rem' }}>
+                          <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', color: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                            RG
+                          </div>
+                          <div>
+                            <strong style={{ fontSize: '0.9rem', color: '#fff', display: 'block' }}>Ramesh Gujjar (EV Rescue Expert)</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block' }}>Vehicle: Mahindra e-Supro (DL-3C-XX-8742)</span>
+                          </div>
+                        </div>
+
+                        {/* Real-time Telemetry Terminal */}
+                        <div style={{ background: '#090d16', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#f43f5e', marginBottom: '1.5rem', minHeight: '65px' }}>
+                          <span style={{ color: '#fff', opacity: 0.4 }}>[TELEMETRY LOGS]</span>
+                          <p style={{ margin: '6px 0 0 0', lineHeight: '1.4' }}>
+                            {sosProgress < 25 && "» [SYSTEM] Rescuer assigned. Charging van dispatched from Sector-62 depot."}
+                            {sosProgress >= 25 && sosProgress < 50 && "» [TELEMETRY] Driving past toll gate, moving at 65 km/h. Distance: 4.8 km."}
+                            {sosProgress >= 50 && sosProgress < 75 && "» [TELEMETRY] Navigating highway traffic. GPS lock active. ETA: 5 minutes."}
+                            {sosProgress >= 75 && sosProgress < 100 && "» [SYSTEM] Vehicle approaching target coordinates. Preparing HV coupling."}
+                            {sosProgress >= 100 && "» [SUCCESS] Coupler connected. 30 kW DC power flowing safely!"}
+                          </p>
+                        </div>
+
+                        <div style={{ textAlign: 'center' }}>
+                          <button onClick={() => setSosStatus('idle')} className="btn-secondary" style={{ padding: '10px 24px', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>Cancel SOS Dispatch</button>
+                        </div>
                       </div>
                     )}
 
                     {sosStatus === 'arrived' && (
-                      <div className="fadeIn" style={{ maxWidth: '400px', margin: '0 auto' }}>
-                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.25rem' }}>
-                          <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase', display: 'block' }}>Status Check</span>
-                          <strong style={{ fontSize: '1.2rem', color: '#fff', display: 'block', margin: '4px 0' }}>Rescue Unit Arrived! 🎉</strong>
-                          <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: '8px 0 0 0' }}>Van has plugged in the fast charger to your port. Stay safe!</p>
+                      <div className="fadeIn" style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1.75rem', borderRadius: '20px', marginBottom: '1.5rem', textAlign: 'center' }}>
+                          <div style={{ width: '56px', height: '56px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)' }}>
+                            <CheckCircle size={28} />
+                          </div>
+                          <strong style={{ fontSize: '1.3rem', color: '#fff', display: 'block', marginBottom: '6px' }}>Rescue Unit Arrived! 🎉</strong>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0, lineHeight: '1.5' }}>
+                            Ramesh Gujjar has successfully plugged in the fast DC charger. Charging is active. Stay safe inside your car!
+                          </p>
                         </div>
-                        <button onClick={() => setSosStatus('idle')} className="btn-gradient" style={{ padding: '10px 24px', borderRadius: '12px', border: 'none', color: '#fff', background: '#10b981' }}>Finish Charge System</button>
+                        <button onClick={() => setSosStatus('idle')} className="btn-gradient" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', color: '#fff', background: '#10b981', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer' }}>Finish Charging Session</button>
                       </div>
                     )}
                   </div>
@@ -1850,13 +2095,21 @@ export default function EVHub() {
                 )}
 
                 {diagStatus === 'analyzing' && (
-                  <div className="fadeIn" style={{ maxWidth: '350px' }}>
-                    <Activity size={60} color="#2dd4bf" className="pulse-anim" style={{ marginBottom: '1.5rem', margin: '0 auto 1.5rem' }} />
-                    <h3 style={{ color: '#2dd4bf', marginBottom: '8px' }}>Performing Spectral Diagnostics...</h3>
-                    <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Analyzing vehicle parameters and telemetry dashboard warnings via Gemini generative vision...</p>
-                    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', marginTop: '1.5rem', overflow: 'hidden' }}>
-                      <div style={{ width: '70%', height: '100%', background: 'linear-gradient(90deg, #2dd4bf, #0ea5e9)', borderRadius: '10px', animation: 'pulse-ring 2s infinite' }}></div>
-                    </div>
+                  <div className="fadeIn" style={{ width: '100%', maxWidth: '420px', margin: '0 auto' }}>
+                    {diagImage ? (
+                      <div className="scanner-container" style={{ width: '100%', height: '220px', position: 'relative', border: '1px solid rgba(45,212,191,0.3)', boxShadow: '0 0 15px rgba(45,212,191,0.1)', marginBottom: '1.5rem' }}>
+                        <div className="scanner-laser"></div>
+                        <img src={diagImage} alt="Scanning dashboard" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+                      </div>
+                    ) : (
+                      <div className="pulse-active" style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(45,212,191,0.1)', color: '#2dd4bf', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                        <Activity size={32} />
+                      </div>
+                    )}
+                    <h3 style={{ color: '#2dd4bf', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '8px' }}>Performing Spectral Diagnostics...</h3>
+                    <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                      Analyzing vehicle telemetry logs, dashboard indicators, and battery cell health via Gemini Generative Vision.
+                    </p>
                   </div>
                 )}
 
