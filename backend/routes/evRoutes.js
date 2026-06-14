@@ -211,9 +211,12 @@ router.get('/earnings/:userId', async (req, res) => {
       };
     });
 
+    const totalUnits = bookings.reduce((sum, b) => sum + (b.hours * 7.5), 0);
+
     res.json({
       success: true,
-      balance: totalEarnings + 3450, // base starter balance + real db transactions
+      balance: totalEarnings,
+      totalUnits: Number(totalUnits.toFixed(1)),
       transactions
     });
   } catch (err) {

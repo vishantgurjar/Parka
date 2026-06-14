@@ -191,12 +191,9 @@ export default function EVHub() {
   const [newHostCoords, setNewHostCoords] = useState([28.6139, 77.2090]);
 
   // Wallet stats
-  const [walletTx, setWalletTx] = useState([
-    { id: 1, renter: "Rohan Verma", car: "Tata Nexon EV", date: "Today, 11:30 AM", duration: "2 Hours", units: "14.8 kWh", amount: "₹222", status: "Credited" },
-    { id: 2, renter: "Amit Sharma", car: "MG ZS EV", date: "Yesterday, 3:15 PM", duration: "3.5 Hours", units: "25.2 kWh", amount: "₹378", status: "Credited" },
-    { id: 3, renter: "Priya Patel", car: "BYD Atto 3", date: "04 Jun, 6:00 PM", duration: "1.5 Hours", units: "11.1 kWh", amount: "₹166", status: "Credited" }
-  ]);
-  const [walletBalance, setWalletBalance] = useState(3450);
+  const [walletTx, setWalletTx] = useState([]);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [totalUnitsShared, setTotalUnitsShared] = useState(0);
 
   // Geolocation detection on load
   useEffect(() => {
@@ -233,7 +230,8 @@ export default function EVHub() {
       if (res.ok) {
         const data = await res.json();
         setWalletBalance(data.balance);
-        setWalletTx(data.transactions);
+        setWalletTx(data.transactions || []);
+        setTotalUnitsShared(data.totalUnits || 0);
       }
     } catch (err) {
       console.error("Failed to load earnings:", err);
@@ -1425,8 +1423,8 @@ export default function EVHub() {
                 
                 <div className="bento-item glass light-sweep" style={{ padding: '2rem' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Total Units Shared</span>
-                  <strong style={{ fontSize: '2.5rem', color: '#2dd4bf', display: 'block', margin: '0.5rem 0' }}>266.3 kWh</strong>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Across 3 successful transactions</span>
+                  <strong style={{ fontSize: '2.5rem', color: '#2dd4bf', display: 'block', margin: '0.5rem 0' }}>{totalUnitsShared} kWh</strong>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Across {walletTx.length} successful {walletTx.length === 1 ? 'transaction' : 'transactions'}</span>
                 </div>
 
                 {/* Earnings Trend Graphic Sparkline */}
