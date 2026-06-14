@@ -190,7 +190,7 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
     const avgPeakVal = peaks.length > 0 ? peaks.reduce((acc, p) => acc + p.val, 0) / peaks.length : 0;
 
     // Reject low signal/ambient silence if no text description and no image is provided
-    if (avgPeakVal < 70 && !input.trim() && !hasImage) {
+    if (avgPeakVal < 80 && !input.trim() && !hasImage) {
         return {
             issue: "Low Signal / Ambient Noise",
             dangerLevel: "LOW",
@@ -280,7 +280,7 @@ router.post('/diagnose', async (req, res) => {
         const avgPeakVal = spectralPeaks && spectralPeaks.length > 0 ? spectralPeaks.reduce((acc, p) => acc + p.val, 0) / spectralPeaks.length : 0;
 
         // Proactively reject low-signal/ambient silence before calling model
-        if (!symptom && !image && avgPeakVal < 70) {
+        if (!symptom && !image && avgPeakVal < 80) {
             return res.json({
                 issue: "Low Signal / Ambient Noise",
                 dangerLevel: "LOW",
@@ -307,7 +307,7 @@ router.post('/diagnose', async (req, res) => {
         Spectral Peaks Data (FFT): ${JSON.stringify(spectralPeaks || [])}
 
         Instructions:
-        1. CRITICAL: Validate if the Symptom, Image, or Peak Data relates to a vehicle, engine, motorcycle, mechanical part, or driving issue. If it's unrelated (e.g. simple greeting, general trivia, gibberish), return EXACTLY: {"issue": "Invalid Query", "dangerLevel": "LOW", "details": "Bhaiya, main ek professional car mechanic AI hu. Please gaadi, engine ya road assistance se related sawal pucho.", "action": "Gaadi se judi dikkaat detail mein batayein ya sound record karein.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100} and STOP.
+        1. CRITICAL: Validate if the Symptom, Image, or Peak Data relates to a vehicle, engine, motorcycle, mechanical part, or driving issue. If the Symptom is just 'Acoustic/Visual Analysis' and no Image is provided, evaluate the Peak Data. If the Peak Data is weak/empty or doesn't resemble a clear engine/vehicle mechanical acoustic sound, OR if the input relates to unrelated topics (e.g. human voices talking, simple greeting, general trivia, gibberish), return EXACTLY: {"issue": "Invalid Query", "dangerLevel": "LOW", "details": "Bhaiya, main ek professional car mechanic AI hu. Please gaadi, engine ya road assistance se related sawal ya clear engine sound record karke pucho.", "action": "Gaadi se judi dikkaat detail mein batayein ya clear sound record karein.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100} and STOP.
         2. Leverage your deep automotive engineering database to perform a highly professional, accurate diagnostic match.
            - Connect high frequency peaks (whistles, squeals, hisses) to components like serpentine belts, pulleys, intake leaks, turbos, or brake pad friction.
            - Connect low frequency peaks (knocks, thuds, vibrations) to rods, pistons, mounts, transmission gearbox issues, suspension dampers, or exhaust mounts.

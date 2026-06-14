@@ -110,10 +110,39 @@ export default function AIAssistant() {
       analyserRef.current = analyser;
       dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
 
+      // Background Speech Recognition
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      let speechDetectedText = "";
+      let recognizer = null;
+      if (SpeechRecognition) {
+        try {
+          recognizer = new SpeechRecognition();
+          recognizer.continuous = true;
+          recognizer.interimResults = false;
+          recognizer.lang = 'hi-IN'; // Works for Hindi/English/Hinglish
+          recognizer.onresult = (event) => {
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                speechDetectedText += event.results[i][0].transcript + " ";
+              }
+            }
+          };
+          recognizer.start();
+        } catch (recognitionErr) {
+          console.error("Failed to start background speech recognition:", recognitionErr);
+        }
+      }
+
       const spectralSnapshots = [];
+      const volumes = [];
       const updateVisualizer = () => {
         analyser.getByteFrequencyData(dataArrayRef.current);
         
+        // Calculate average volume of current frame
+        const sum = dataArrayRef.current.reduce((a, b) => a + b, 0);
+        const avgVol = sum / dataArrayRef.current.length;
+        volumes.push(avgVol);
+
         // Take a snapshot every ~500ms
         if (Math.random() > 0.9) {
            spectralSnapshots.push(Array.from(dataArrayRef.current.slice(0, 100))); // First 100 bins capture meat of the sound
@@ -134,6 +163,14 @@ export default function AIAssistant() {
         if (recTimer >= 100) {
           clearInterval(recInterval);
           
+          if (recognizer) {
+            try {
+              recognizer.stop();
+            } catch (e) {
+              console.error("Failed to stop background speech recognition:", e);
+            }
+          }
+          
           // Calculate the final fingerprint
           const finalSnapshot = dataArrayRef.current;
           let peaks = [];
@@ -146,11 +183,36 @@ export default function AIAssistant() {
           
           stopRecording(stream);
 
+          // 1. Check if speech was explicitly detected
+          if (speechDetectedText.trim()) {
+            setStatus('idle');
+            setSymptom(speechDetectedText.trim());
+            setError("Bhaiya, ye toh kisi ki baat karne ki awaz (human voice) lag rahi hai. Humne aapki baat ko text box me likh diya hai, ek baar check karke Analyze button dabayein! Agar gaadi ke engine ki awaz record karni hai, toh please bina bole engine ke paas jaakar record karein!");
+            return;
+          }
+
+          // Calculate volume characteristics
+          const meanVol = volumes.length > 0 ? volumes.reduce((a, b) => a + b, 0) / volumes.length : 0;
+          const varianceVol = volumes.length > 0 ? volumes.reduce((a, b) => a + Math.pow(b - meanVol, 2), 0) / volumes.length : 0;
+          const stdDevVol = Math.sqrt(varianceVol);
+          const minVol = volumes.length > 0 ? Math.min(...volumes) : 0;
+
           // If sound recorded is too low and no other information is provided, abort.
           const avgPeakVal = topPeaks.length > 0 ? topPeaks.reduce((acc, p) => acc + p.val, 0) / topPeaks.length : 0;
           if (avgPeakVal < 70 && !symptom && !selectedImage) {
             setStatus('idle');
             setError("No significant engine sound detected. Please try recording again closer to a running engine, or click the mic button next to the text box to dictate your symptoms.");
+            return;
+          }
+
+          // 2. Check for volume stability/fluctuations to detect human speech / erratic noise
+          // An engine is a continuous hum/drone (low stdDev, high minVol ratio).
+          // Speech or music is intermittent/highly variable (high stdDev, low minVol ratio).
+          const isErratic = volumes.length > 0 && (stdDevVol > 8 || (meanVol > 20 && minVol / meanVol < 0.35));
+
+          if (isErratic && !symptom && !selectedImage) {
+            setStatus('idle');
+            setError("Bhaiya, recorded sound gaadi ke engine ki awaz nahi lag rahi hai (voice ya background noise lag raha hai). Apni gaadi ke engine ke paas jaakar clear sound record karo ya fir text box me detail me apni dikkaat likho!");
             return;
           }
           
