@@ -231,12 +231,23 @@ export default function EVHub() {
               setMapCenter(coords2);
               setNewHostCoords(coords2);
             },
-            () => console.log("Default coordinates set to New Delhi."),
+            (err2) => {
+              console.log("Default coordinates set to New Delhi.", err2);
+              if (!window.isSecureContext) {
+                toast.error("Bhai, non-secure (HTTP) browser connection me GPS block ho jata hai. HTTPS use karo ya manually search karo!", { duration: 6000 });
+              } else if (err2.code === err2.PERMISSION_DENIED) {
+                toast.error("Bhaiya, browser settings me location permission block hai. Please manually search karein!", { duration: 6000 });
+              } else {
+                toast.error("GPS signal check failed. Showing Delhi area. Manually search kar lein!", { duration: 4000 });
+              }
+            },
             { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
           );
         },
         { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
       );
+    } else {
+      toast.error("Aapke browser me location support nahi hai!");
     }
   }, []);
 

@@ -50,7 +50,16 @@ export default function FindParking() {
           // Try low accuracy as fallback
           navigator.geolocation.getCurrentPosition(
             (pos2) => setMapCenter([pos2.coords.latitude, pos2.coords.longitude]),
-            () => toast.error("Location access denied. Showing default area."),
+            (err2) => {
+              console.log("FindParking location lookup failed:", err2);
+              if (!window.isSecureContext) {
+                toast.error("Bhai, non-secure (HTTP) browser connection me GPS block ho jata hai. HTTPS use karo ya manually search karo!", { duration: 6000 });
+              } else if (err2.code === err2.PERMISSION_DENIED) {
+                toast.error("Bhaiya, browser settings me location permission block hai. Please manually search karein!", { duration: 6000 });
+              } else {
+                toast.error("GPS signal check failed. Showing Delhi area. Manually search kar lein!", { duration: 4000 });
+              }
+            },
             { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
           );
         },

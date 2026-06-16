@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { AuthContext } from '../App';
 import { MapPin, Heart, AlertCircle, CheckCircle, Clock, Shield } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import L from 'leaflet';
 import { getBackendUrl } from '../utils/api';
 
@@ -73,7 +74,17 @@ export default function CommunityHelp() {
               setUserLocation([pos2.coords.latitude, pos2.coords.longitude]);
               setLoading(false);
             },
-            () => setLoading(false),
+            (err2) => {
+              setLoading(false);
+              console.log("CommunityHelp location lookup failed:", err2);
+              if (!window.isSecureContext) {
+                toast.error("Bhai, non-secure (HTTP) browser connection me GPS block ho jata hai. HTTPS use karo ya manually search karo!", { duration: 6000 });
+              } else if (err2.code === err2.PERMISSION_DENIED) {
+                toast.error("Bhaiya, browser settings me location permission block hai. Please manually search karein!", { duration: 6000 });
+              } else {
+                toast.error("GPS signal check failed. Showing Delhi area. Manually search kar lein!", { duration: 4000 });
+              }
+            },
             { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
           );
         },
