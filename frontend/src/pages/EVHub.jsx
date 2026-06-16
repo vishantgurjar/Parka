@@ -801,6 +801,43 @@ export default function EVHub() {
           background: #0ea5e9 !important;
           box-shadow: 0 0 12px rgba(14, 165, 233, 0.8) !important;
         }
+
+        .ev-hub-grid {
+          display: grid;
+          grid-template-columns: 3fr 2fr;
+          gap: 1.5rem;
+          height: 600px;
+        }
+        .ev-map-wrapper {
+          border-radius: 24px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          position: relative;
+          height: 100%;
+          min-height: 350px;
+        }
+        .ev-list-wrapper {
+          border-radius: 24px;
+          border: 1px solid var(--border) !important;
+          padding: 1.5rem !important;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          overflow-y: auto;
+          height: 100%;
+        }
+        @media (max-width: 991px) {
+          .ev-hub-grid {
+            grid-template-columns: 1fr;
+            height: auto;
+          }
+          .ev-map-wrapper {
+            height: 350px;
+          }
+          .ev-list-wrapper {
+            height: 400px;
+          }
+        }
       `}</style>
 
       <div style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)', paddingBottom: '5rem' }}>
@@ -1030,10 +1067,10 @@ export default function EVHub() {
               </div>
 
               {/* Map & Listings Split */}
-              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '3fr 2fr', gap: '1.5rem', height: '600px' }}>
+              <div className="ev-hub-grid">
                 
                 {/* Leaflet Map Area */}
-                <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', height: '100%' }}>
+                <div className="ev-map-wrapper">
                   
                   {/* Floating Search Bar */}
                   <div style={{
@@ -1121,7 +1158,7 @@ export default function EVHub() {
                 </div>
 
                 {/* List Side View */}
-                <div className="glass" style={{ borderRadius: '24px', border: '1px solid var(--border)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: '100%' }}>
+                <div className="glass ev-list-wrapper">
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Chargers Nearby</h4>
                   {filteredChargers.map(c => (
                     <div 
