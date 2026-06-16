@@ -40,7 +40,8 @@ export default function VehicleLandingPage() {
               (error) => {
                 console.log("Location denied or error:", error);
                 sendScanAlert(null, null, data.phone);
-              }
+              },
+              { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
             );
           } else {
             sendScanAlert(null, null, data.phone);

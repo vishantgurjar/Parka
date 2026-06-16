@@ -133,7 +133,8 @@ export default function MechanicList() {
           setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setMapCenter([pos.coords.latitude, pos.coords.longitude]);
         },
-        (err) => console.log("Geolocation error:", err)
+        (err) => console.log("Geolocation error:", err),
+        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
       );
     }
 

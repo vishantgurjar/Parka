@@ -58,7 +58,8 @@ export default function CommunityHelp() {
           setUserLocation([pos.coords.latitude, pos.coords.longitude]);
           setLoading(false);
         },
-        () => setLoading(false)
+        () => setLoading(false),
+        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
       );
     } else {
       setLoading(false);

@@ -38,7 +38,8 @@ export default function FindParking() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
-        () => toast.error("Location access denied. Showing default area.")
+        () => toast.error("Location access denied. Showing default area."),
+        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
       );
     }
 

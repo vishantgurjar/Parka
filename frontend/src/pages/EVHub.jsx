@@ -214,7 +214,8 @@ export default function EVHub() {
           setMapCenter(coords);
           setNewHostCoords(coords);
         },
-        () => console.log("Default coordinates set to New Delhi.")
+        () => console.log("Default coordinates set to New Delhi."),
+        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
       );
     }
   }, []);
@@ -1449,7 +1450,8 @@ export default function EVHub() {
                               setNewHostCoords([pos.coords.latitude, pos.coords.longitude]);
                               toast.success("Marker moved to your GPS coordinates!");
                             },
-                            () => toast.error("Could not fetch GPS coordinates. Please select manually on map.")
+                            () => toast.error("Could not fetch GPS coordinates. Please select manually on map."),
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                           );
                         }
                       }}

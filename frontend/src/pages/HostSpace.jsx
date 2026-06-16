@@ -40,7 +40,8 @@ export default function HostSpace() {
         (err) => {
           toast.error("Could not get location. Please ensure location services are enabled.");
           setIsLocating(false);
-        }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       toast.error("Geolocation is not supported by your browser.");

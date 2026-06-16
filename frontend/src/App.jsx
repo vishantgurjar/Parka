@@ -118,7 +118,8 @@ function App() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.log("Global location error:", err)
+        (err) => console.log("Global location error:", err),
+        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
       );
     }
   }, []);
