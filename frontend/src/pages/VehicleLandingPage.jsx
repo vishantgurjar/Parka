@@ -30,18 +30,30 @@ export default function VehicleLandingPage() {
 
           // Request location to notify owner (PRO Feature logic is on backend)
           if (navigator.geolocation) {
+            // Try high accuracy first
             navigator.geolocation.getCurrentPosition(
               (position) => {
                 const { latitude, longitude } = position.coords;
                 sendScanAlert(latitude, longitude, data.phone);
                 fetchNearestMechanic(latitude, longitude);
               },
-
               (error) => {
-                console.log("Location denied or error:", error);
-                sendScanAlert(null, null, data.phone);
+                console.warn("High accuracy scan geolocation failed, trying low accuracy:", error);
+                // Try low accuracy as fallback
+                navigator.geolocation.getCurrentPosition(
+                  (pos2) => {
+                    const { latitude, longitude } = pos2.coords;
+                    sendScanAlert(latitude, longitude, data.phone);
+                    fetchNearestMechanic(latitude, longitude);
+                  },
+                  (error2) => {
+                    console.log("Location denied or error:", error2);
+                    sendScanAlert(null, null, data.phone);
+                  },
+                  { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+                );
               },
-              { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+              { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
             );
           } else {
             sendScanAlert(null, null, data.phone);

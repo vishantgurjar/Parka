@@ -49,7 +49,13 @@ const incidentMarkerIcon = new L.Icon({
 
 function ChangeView({ center, zoom }) {
   const map = useMap();
-  map.setView(center, zoom);
+  useEffect(() => {
+    map.setView(center, zoom);
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [center, zoom, map]);
   return null;
 }
 
@@ -128,13 +134,25 @@ export default function MechanicList() {
   useEffect(() => {
     // Attempt to get user location
     if (navigator.geolocation) {
+      // Try high accuracy first
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setMapCenter([pos.coords.latitude, pos.coords.longitude]);
         },
-        (err) => console.log("Geolocation error:", err),
-        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+        (err) => {
+          console.warn("High accuracy MechanicList geolocation failed, trying low accuracy:", err);
+          // Try low accuracy as fallback
+          navigator.geolocation.getCurrentPosition(
+            (pos2) => {
+              setUserLocation({ lat: pos2.coords.latitude, lng: pos2.coords.longitude });
+              setMapCenter([pos2.coords.latitude, pos2.coords.longitude]);
+            },
+            (err2) => console.log("Geolocation error:", err2),
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
       );
     }
 

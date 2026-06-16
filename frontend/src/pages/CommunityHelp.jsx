@@ -35,7 +35,13 @@ const userIcon = new L.Icon({
 
 function ChangeView({ center }) {
   const map = useMap();
-  map.setView(center, 13);
+  useEffect(() => {
+    map.setView(center, 13);
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [center, map]);
   return null;
 }
 
@@ -53,13 +59,25 @@ export default function CommunityHelp() {
   useEffect(() => {
     // Get User Location
     if (navigator.geolocation) {
+      // Try high accuracy first
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserLocation([pos.coords.latitude, pos.coords.longitude]);
           setLoading(false);
         },
-        () => setLoading(false),
-        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+        (err) => {
+          console.warn("High accuracy CommunityHelp geolocation failed, trying low accuracy:", err);
+          // Try low accuracy as fallback
+          navigator.geolocation.getCurrentPosition(
+            (pos2) => {
+              setUserLocation([pos2.coords.latitude, pos2.coords.longitude]);
+              setLoading(false);
+            },
+            () => setLoading(false),
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
       );
     } else {
       setLoading(false);

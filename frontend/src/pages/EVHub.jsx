@@ -24,7 +24,14 @@ L.Icon.Default.mergeOptions({
 // Component to dynamically center map on coords
 function ChangeMapView({ center, zoom }) {
   const map = useMap();
-  map.setView(center, zoom);
+  useEffect(() => {
+    map.setView(center, zoom);
+    // Force Leaflet to recalculate container bounds and redraw tiles
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [center, zoom, map]);
   return null;
 }
 
@@ -208,14 +215,27 @@ export default function EVHub() {
   // Geolocation detection on load
   useEffect(() => {
     if (navigator.geolocation) {
+      // Try high accuracy first
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const coords = [pos.coords.latitude, pos.coords.longitude];
           setMapCenter(coords);
           setNewHostCoords(coords);
         },
-        () => console.log("Default coordinates set to New Delhi."),
-        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+        (err) => {
+          console.warn("High accuracy EV geolocation failed, trying low accuracy:", err);
+          // Try low accuracy as fallback
+          navigator.geolocation.getCurrentPosition(
+            (pos2) => {
+              const coords2 = [pos2.coords.latitude, pos2.coords.longitude];
+              setMapCenter(coords2);
+              setNewHostCoords(coords2);
+            },
+            () => console.log("Default coordinates set to New Delhi."),
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
       );
     }
   }, []);
@@ -226,10 +246,17 @@ export default function EVHub() {
       const res = await fetch(`${baseUrl}/api/ev/chargers`);
       if (res.ok) {
         const data = await res.json();
-        setChargers(data);
+        if (data && data.length > 0) {
+          setChargers(data);
+        } else {
+          setChargers(INITIAL_CHARGERS);
+        }
+      } else {
+        setChargers(INITIAL_CHARGERS);
       }
     } catch (err) {
       console.error("Failed to load chargers:", err);
+      setChargers(INITIAL_CHARGERS);
     }
   };
 

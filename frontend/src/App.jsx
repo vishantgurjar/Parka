@@ -118,8 +118,15 @@ function App() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.log("Global location error:", err),
-        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+        (err) => {
+          console.warn("Global high accuracy location failed, trying low accuracy:", err);
+          navigator.geolocation.getCurrentPosition(
+            (pos2) => setUserLocation({ lat: pos2.coords.latitude, lng: pos2.coords.longitude }),
+            (err2) => console.log("Global location error:", err2),
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
       );
     }
   }, []);

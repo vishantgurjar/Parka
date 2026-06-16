@@ -20,7 +20,13 @@ L.Icon.Default.mergeOptions({
 // Component to dynamically center map
 function ChangeView({ center, zoom }) {
   const map = useMap();
-  map.setView(center, zoom);
+  useEffect(() => {
+    map.setView(center, zoom);
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [center, zoom, map]);
   return null;
 }
 
@@ -36,10 +42,19 @@ export default function FindParking() {
   useEffect(() => {
     // 1. Get User Location Automatically
     if (navigator.geolocation) {
+      // Try high accuracy first
       navigator.geolocation.getCurrentPosition(
         (pos) => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
-        () => toast.error("Location access denied. Showing default area."),
-        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+        (err) => {
+          console.warn("High accuracy FindParking geolocation failed, trying low accuracy:", err);
+          // Try low accuracy as fallback
+          navigator.geolocation.getCurrentPosition(
+            (pos2) => setMapCenter([pos2.coords.latitude, pos2.coords.longitude]),
+            () => toast.error("Location access denied. Showing default area."),
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
       );
     }
 
