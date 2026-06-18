@@ -582,6 +582,21 @@ export default function EVHub() {
 
   const mockDiagnostics = (symptom) => {
     const sym = symptom.toLowerCase();
+    
+    // Fallback: Reject ICE vehicle queries if requested on EV tab
+    const iceTerms = ['spark', 'plug', 'radiator', 'exhaust', 'silencer', 'clutch', 'belt', 'diesel', 'petrol', 'cng', 'engine oil', 'tappet', 'carburetor', 'misfire', 'combustion', 'piston'];
+    if (iceTerms.some(term => sym.includes(term))) {
+      return {
+        issue: "ICE Vehicle Query Detected",
+        dangerLevel: "LOW",
+        details: "Bhaiya, ye EV Diagnostics console hai aur aapki query ICE (Petrol/Diesel/CNG) gaadi se related lag rahi hai. Please 'AI Engine Sound Doctor' page par jaakar ise check karein. EV Hub me sirf EV ki battery, electric motor, regenerative braking aur EV console alerts diagnose hote hain.",
+        action: "AI Engine Sound Doctor page open karein aur wahan input karein.",
+        estimatedCost: "₹0",
+        suggestedMechanic: "N/A",
+        confidence: 100
+      };
+    }
+
     if (sym.includes('temp') || sym.includes('overheat') || sym.includes('garam')) {
       return {
         issue: "EV Battery Core Thermal Spike",
@@ -636,7 +651,8 @@ export default function EVHub() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             symptom: diagSymptom || "EV Dashboard Error code", 
-            image: diagImage 
+            image: diagImage,
+            vehicleType: 'ev'
         })
       });
       const data = await res.json();

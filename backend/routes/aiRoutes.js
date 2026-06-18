@@ -183,8 +183,39 @@ const CAR_DIAGNOSTIC_DB = [
     }
 ];
 
-function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
+function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false, vehicleType = 'ice') {
     const input = (userInput || '').toLowerCase().trim();
+    
+    // Enforce EV vs ICE separation in smart fallback
+    if (vehicleType === 'ev') {
+        const iceTerms = ['spark', 'plug', 'radiator', 'exhaust', 'silencer', 'clutch', 'belt', 'diesel', 'petrol', 'cng', 'engine oil', 'tappet', 'carburetor', 'misfire', 'combustion', 'piston'];
+        if (iceTerms.some(term => input.includes(term))) {
+            return {
+                issue: "ICE Vehicle Query Detected",
+                dangerLevel: "LOW",
+                details: "Bhaiya, ye EV Diagnostics console hai aur aapki query ICE (Petrol/Diesel/CNG) gaadi se related lag rahi hai. Please 'AI Engine Sound Doctor' page par jaakar ise check karein. EV Hub me sirf EV ki battery, electric motor, regenerative braking aur EV console alerts diagnose hote hain.",
+                action: "AI Engine Sound Doctor page open karein aur wahan input karein.",
+                estimatedCost: "₹0",
+                suggestedMechanic: "N/A",
+                confidence: 100,
+                version: "5.7-ULTRA"
+            };
+        }
+    } else {
+        const evTerms = ['ev', 'electric', 'inverter', 'regen', 'regenerative', 'charging station', 'cell temp', 'battery cell', 'charging socket', 'lithium ion', 'bms', 'charging port'];
+        if (evTerms.some(term => input.includes(term))) {
+            return {
+                issue: "EV Query Detected",
+                dangerLevel: "LOW",
+                details: "Bhaiya, ye AI Engine Sound Doctor page hai jo sirf Petrol, Diesel, aur CNG cars ke liye hai. Aapki query EV (Electric Vehicle) se related lag rahi hai. Please 'EV Hub' page par jaakar 'AI Diagnostics' tab me ise check karein.",
+                action: "EV Hub page open karein aur AI Diagnostics tab use karein.",
+                estimatedCost: "₹0",
+                suggestedMechanic: "N/A",
+                confidence: 100,
+                version: "5.7-ULTRA"
+            };
+        }
+    }
     
     const maxPeakBin = peaks.length > 0 ? peaks[0].bin : 0;
     const avgPeakVal = peaks.length > 0 ? peaks.reduce((acc, p) => acc + p.val, 0) / peaks.length : 0;
@@ -271,7 +302,7 @@ function getSmartDiagnosis(userInput, signature, peaks = [], hasImage = false) {
 // --- AI DIAGNOSTIC ROUTE (Upgraded with Vision & Buddy Persona) ---
 router.post('/diagnose', async (req, res) => {
     try {
-        const { symptom, audioSignature, spectralPeaks, image } = req.body;
+        const { symptom, audioSignature, spectralPeaks, image, vehicleType } = req.body;
 
         if (!symptom && !audioSignature && !spectralPeaks && !image) {
             return res.status(400).json({ message: "No input provided for analysis." });
@@ -293,41 +324,69 @@ router.post('/diagnose', async (req, res) => {
             });
         }
 
-        if (!model) {
-            // Fallback if no Gemini key
-            const diagnostic = getSmartDiagnosis(symptom || '', audioSignature, spectralPeaks, !!image);
-            return res.json(diagnostic);
+        // Perform smart fallback/direct check first to catch mismatched vehicles (EV on ICE screen or ICE on EV screen)
+        const checkSmart = getSmartDiagnosis(symptom || '', audioSignature, spectralPeaks, !!image, vehicleType || 'ice');
+        if (checkSmart.issue === "ICE Vehicle Query Detected" || checkSmart.issue === "EV Query Detected") {
+            return res.json(checkSmart);
         }
 
-        let prompt = `You are "Parxéé Buddy", a world-class automotive diagnostics AI and expert car mechanic. 
-        You have expert-level knowledge of all global vehicle types, makes, and models (Petrol/Diesel engines, Turbos, Hybrids, EVs, Supercars, Bikes).
-        
-        Symptom Description: "${symptom || 'Acoustic/Visual Analysis'}"
-        Acoustic Signature: "${audioSignature}"
-        Spectral Peaks Data (FFT): ${JSON.stringify(spectralPeaks || [])}
+        if (!model) {
+            // Fallback if no Gemini key
+            return res.json(checkSmart);
+        }
 
-        Instructions:
-        1. CRITICAL: Validate if the Symptom, Image, or Peak Data relates to a vehicle, engine, motorcycle, mechanical part, or driving issue. If the Symptom is just 'Acoustic/Visual Analysis' and no Image is provided, evaluate the Peak Data. If the Peak Data is weak/empty or doesn't resemble a clear engine/vehicle mechanical acoustic sound, OR if the input relates to unrelated topics (e.g. human voices talking, simple greeting, general trivia, gibberish), return EXACTLY: {"issue": "Invalid Query", "dangerLevel": "LOW", "details": "Bhaiya, main ek professional car mechanic AI hu. Please gaadi, engine ya road assistance se related sawal ya clear engine sound record karke pucho.", "action": "Gaadi se judi dikkaat detail mein batayein ya clear sound record karein.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100} and STOP.
-        2. Leverage your deep automotive engineering database to perform a highly professional, accurate diagnostic match.
-           - Connect high frequency peaks (whistles, squeals, hisses) to components like serpentine belts, pulleys, intake leaks, turbos, or brake pad friction.
-           - Connect low frequency peaks (knocks, thuds, vibrations) to rods, pistons, mounts, transmission gearbox issues, suspension dampers, or exhaust mounts.
-           - Analyze the typed symptoms and uploaded image (if any) to confirm the exact root cause.
-        3. Make the diagnostic response highly credible and detailed:
-           - Explain *exactly* which part is faulty, why it is making that specific noise, and the mechanical consequences of driving with it.
-           - Make it sound incredibly real, scientific, and helpful so the user trusts your diagnosis.
-        4. Tone and Language: Friendly WhatsApp Hinglish (mix of English and Hindi/Urdu using Latin script). Use terms like "Bhaiya", "Chinta mat karo", "Dekho", "Dhyan se suno".
-        5. In "estimatedCost", provide a realistic repair cost range in Indian Rupees (₹) based on the severity of the issue (e.g. ₹1,200 - ₹3,000 or ₹25,000 - ₹50,000).
-        6. In "suggestedMechanic", specify the precise specialty needed (e.g., "Engine Specialist", "Brake Specialist", "Auto Electrician", "Suspension Specialist", "Gearbox & Clutch Specialist", "Car AC Specialist", "Silencer & Exhaust Specialist"). This must map to the nearby mechanics network.
-        7. Return a RAW JSON ONLY (no markdown blocks, no \`\`\`json):
-        {
-          "issue": "Accurate Vehicle Problem Title",
-          "dangerLevel": "LOW/MEDIUM/CRITICAL",
-          "details": "Technical yet simple Hinglish analysis showing deep mechanical expertise",
-          "action": "Safety/repair action in Hinglish",
-          "estimatedCost": "₹X - ₹Y",
-          "suggestedMechanic": "Specialist Mechanic Category",
-          "confidence": 0-100
-        }`;
+        let prompt = `You are "Parxéé Buddy", a world-class automotive diagnostics AI and expert car mechanic. `;
+        
+        if (vehicleType === 'ev') {
+            prompt += `You have expert-level knowledge of Electric Vehicles (EVs) (including EV batteries, electric motors, battery management systems, regenerative braking, EV charging, cell temperatures, and EV dashboard console codes).
+            
+            Symptom Description: "${symptom || 'Acoustic/Visual Analysis'}"
+            Acoustic/Visual Data: image provided: ${!!image}
+            
+            Instructions:
+            1. CRITICAL: This diagnostics request is STRICTLY for EV (Electric Vehicles) like Tesla, Tata Nexon/Punch EV, MG ZS EV, Ola Scooters, etc. If the symptom, image, or query relates to Petrol/Diesel/CNG engine components (like spark plugs, fuel injectors, engine oil level, radiator coolant, silencer exhaust, engine combustion noise/knocking, turbos, diesel clattering, clutch release bearing, or serpentine belt/poly-belt), you MUST reject it by returning exactly:
+               {"issue": "ICE Vehicle Query Detected", "dangerLevel": "LOW", "details": "Bhaiya, ye EV Diagnostics console hai aur aapki query ICE (Petrol/Diesel/CNG) gaadi se related lag rahi hai. Please 'AI Engine Sound Doctor' page par jaakar ise check karein. EV Hub me sirf EV ki battery, electric motor, regenerative braking aur EV console alerts diagnose hote hain.", "action": "AI Engine Sound Doctor page open karein aur wahan input karein.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100}
+            2. Leverage your deep automotive engineering database to perform a highly professional, accurate EV diagnostic match.
+            3. Tone and Language: Friendly WhatsApp Hinglish (mix of English and Hindi/Urdu using Latin script). Use terms like "Bhaiya", "Chinta mat karo", "Dekho", "Dhyan se suno".
+            4. In "estimatedCost", provide a realistic repair cost range in Indian Rupees (₹) based on severity.
+            5. In "suggestedMechanic", specify the precise specialty needed (e.g., "EV Specialist", "EV Electrical Specialist", "EV Wiring Specialist", "EV Battery Specialist").
+            6. Return a RAW JSON ONLY (no markdown blocks, no \`\`\`json):
+            {
+              "issue": "Accurate EV Problem Title",
+              "dangerLevel": "LOW/MEDIUM/CRITICAL",
+              "details": "Technical yet simple Hinglish analysis showing deep EV mechanical expertise",
+              "action": "Safety/repair action in Hinglish",
+              "estimatedCost": "₹X - ₹Y",
+              "suggestedMechanic": "Specialist Mechanic Category",
+              "confidence": 0-100
+            }`;
+        } else {
+            prompt += `You have expert-level knowledge of Internal Combustion Engine (ICE) vehicles (Petrol, Diesel, and CNG cars, bikes, and turbos).
+            
+            Symptom Description: "${symptom || 'Acoustic/Visual Analysis'}"
+            Acoustic Signature: "${audioSignature}"
+            Spectral Peaks Data (FFT): ${JSON.stringify(spectralPeaks || [])}
+            
+            Instructions:
+            1. CRITICAL: This diagnostics request is STRICTLY for Petrol, Diesel, or CNG (ICE) vehicles. If the symptom, image, or query relates to EV specific systems (like electric motors, EV battery pack cells, EV charging issues, regenerative braking, inverter, battery management system alerts), you MUST reject it by returning exactly:
+               {"issue": "EV Query Detected", "dangerLevel": "LOW", "details": "Bhaiya, ye AI Engine Sound Doctor page hai jo sirf Petrol, Diesel, aur CNG cars ke liye hai. Aapki query EV (Electric Vehicle) se related lag rahi hai. Please 'EV Hub' page par jaakar 'AI Diagnostics' tab me ise check karein.", "action": "EV Hub page open karein aur AI Diagnostics tab use karein.", "estimatedCost": "₹0", "suggestedMechanic": "N/A", "confidence": 100}
+            2. Leverage your deep automotive engineering database to perform a highly professional, accurate diagnostic match.
+               - Connect high frequency peaks (whistles, squeals, hisses) to serpentine belts, pulleys, intake leaks, turbos, or brake pad friction.
+               - Connect low frequency peaks (knocks, thuds, vibrations) to rods, pistons, mounts, transmission gearbox issues, suspension dampers, or exhaust mounts.
+            3. Tone and Language: Friendly WhatsApp Hinglish (mix of English and Hindi/Urdu using Latin script). Use terms like "Bhaiya", "Chinta mat karo", "Dekho", "Dhyan se suno".
+            4. In "estimatedCost", provide a realistic repair cost range in Indian Rupees (₹).
+            5. In "suggestedMechanic", specify the precise specialty needed (e.g., "Engine Specialist", "Brake Specialist", "Auto Electrician", "Suspension Specialist", "Gearbox & Clutch Specialist", "Car AC Specialist", "Silencer & Exhaust Specialist").
+            6. Return a RAW JSON ONLY (no markdown blocks, no \`\`\`json):
+            {
+              "issue": "Accurate Vehicle Problem Title",
+              "dangerLevel": "LOW/MEDIUM/CRITICAL",
+              "details": "Technical yet simple Hinglish analysis showing deep mechanical expertise",
+              "action": "Safety/repair action in Hinglish",
+              "estimatedCost": "₹X - ₹Y",
+              "suggestedMechanic": "Specialist Mechanic Category",
+              "confidence": 0-100
+            }`;
+        }
 
         let parts = [prompt];
         
@@ -363,7 +422,7 @@ router.post('/diagnose', async (req, res) => {
         }
     } catch (error) {
         console.error("AI Route Error:", error);
-        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature, req.body.spectralPeaks, !!req.body.image);
+        const diagnostic = getSmartDiagnosis(req.body.symptom || '', req.body.audioSignature, req.body.spectralPeaks, !!req.body.image, req.body.vehicleType || 'ice');
         res.json(diagnostic);
     }
 });

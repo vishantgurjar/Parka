@@ -257,7 +257,8 @@ export default function AIAssistant() {
             symptom: symptom, 
             audioSignature: signature,
             spectralPeaks: peaks,
-            image: selectedImage
+            image: selectedImage,
+            vehicleType: 'ice'
         })
       });
 
