@@ -40,31 +40,65 @@ export default function FindParking() {
   const [isBooking, setIsBooking] = useState(false);
 
   useEffect(() => {
+    const onSuccess = (pos) => {
+      setMapCenter([pos.coords.latitude, pos.coords.longitude]);
+    };
+
+    const onError = async (err) => {
+      console.warn("FindParking GPS lookup failed, attempting IP fallback:", err);
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.latitude && data.longitude) {
+            setMapCenter([data.latitude, data.longitude]);
+            toast.success(`Location detected: ${data.city || 'Your Area'} 🌐`);
+            return;
+          }
+        }
+      } catch (ipErr) {
+        console.error("FindParking IP fallback failed:", ipErr);
+      }
+
+      // Final fallback
+      setMapCenter([28.6139, 77.2090]);
+      if (!window.isSecureContext) {
+        toast.error("GPS is blocked on insecure (HTTP) connections. Please use HTTPS or search manually!", { duration: 6000 });
+      } else if (err && err.code === err.PERMISSION_DENIED) {
+        toast.error("Location permission is blocked in your browser settings. Please search manually!", { duration: 6000 });
+      } else {
+        toast.error("GPS signal check failed. Showing Delhi area. Please search manually!", { duration: 4000 });
+      }
+    };
+
     // 1. Get User Location Automatically
     if (navigator.geolocation) {
-      // Try high accuracy first
+      // Try cached position first (fastest)
       navigator.geolocation.getCurrentPosition(
-        (pos) => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
-        (err) => {
-          console.warn("High accuracy FindParking geolocation failed, trying low accuracy:", err);
-          // Try low accuracy as fallback
+        (pos) => {
+          onSuccess(pos);
+          // Try to get fresh high-accuracy position in background
+          navigator.geolocation.getCurrentPosition(onSuccess, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+        },
+        () => {
+          // If no cached, try high accuracy
           navigator.geolocation.getCurrentPosition(
-            (pos2) => setMapCenter([pos2.coords.latitude, pos2.coords.longitude]),
-            (err2) => {
-              console.log("FindParking location lookup failed:", err2);
-              if (!window.isSecureContext) {
-                toast.error("GPS is blocked on insecure (HTTP) connections. Please use HTTPS or search manually!", { duration: 6000 });
-              } else if (err2.code === err2.PERMISSION_DENIED) {
-                toast.error("Location permission is blocked in your browser settings. Please search manually!", { duration: 6000 });
-              } else {
-                toast.error("GPS signal check failed. Showing Delhi area. Please search manually!", { duration: 4000 });
-              }
+            onSuccess,
+            (err) => {
+              // Try low accuracy fallback
+              navigator.geolocation.getCurrentPosition(
+                onSuccess,
+                (err2) => onError(err2),
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+              );
             },
-            { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        { enableHighAccuracy: false, timeout: 2000, maximumAge: Infinity }
       );
+    } else {
+      onError(new Error("Not supported"));
     }
 
     // 2. Fetch Spaces from Backend

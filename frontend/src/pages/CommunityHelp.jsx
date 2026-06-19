@@ -58,40 +58,68 @@ export default function CommunityHelp() {
   const API_BASE = getBackendUrl();
 
   useEffect(() => {
+    const onSuccess = (pos) => {
+      setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+      setLoading(false);
+    };
+
+    const onError = async (err) => {
+      console.warn("CommunityHelp GPS lookup failed, attempting IP fallback:", err);
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.latitude && data.longitude) {
+            setUserLocation([data.latitude, data.longitude]);
+            setLoading(false);
+            toast.success(`Location detected: ${data.city || 'Your Area'} 🌐`);
+            return;
+          }
+        }
+      } catch (ipErr) {
+        console.error("CommunityHelp IP fallback failed:", ipErr);
+      }
+
+      // Final fallback
+      setLoading(false);
+      setUserLocation([28.6139, 77.2090]);
+      if (!window.isSecureContext) {
+        toast.error("GPS is blocked on insecure (HTTP) connections. Please use HTTPS or search manually!", { duration: 6000 });
+      } else if (err && err.code === err.PERMISSION_DENIED) {
+        toast.error("Location permission is blocked in your browser settings. Please search manually!", { duration: 6000 });
+      } else {
+        toast.error("GPS signal check failed. Showing Delhi area. Please search manually!", { duration: 4000 });
+      }
+    };
+
     // Get User Location
     if (navigator.geolocation) {
-      // Try high accuracy first
+      // Try cached position first (fastest)
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
-          setLoading(false);
+          onSuccess(pos);
+          // Try to get fresh high-accuracy position in background
+          navigator.geolocation.getCurrentPosition(onSuccess, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
         },
-        (err) => {
-          console.warn("High accuracy CommunityHelp geolocation failed, trying low accuracy:", err);
-          // Try low accuracy as fallback
+        () => {
+          // If no cached, try high accuracy
           navigator.geolocation.getCurrentPosition(
-            (pos2) => {
-              setUserLocation([pos2.coords.latitude, pos2.coords.longitude]);
-              setLoading(false);
+            onSuccess,
+            (err) => {
+              // Try low accuracy fallback
+              navigator.geolocation.getCurrentPosition(
+                onSuccess,
+                (err2) => onError(err2),
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+              );
             },
-            (err2) => {
-              setLoading(false);
-              console.log("CommunityHelp location lookup failed:", err2);
-              if (!window.isSecureContext) {
-                toast.error("GPS is blocked on insecure (HTTP) connections. Please use HTTPS or search manually!", { duration: 6000 });
-              } else if (err2.code === err2.PERMISSION_DENIED) {
-                toast.error("Location permission is blocked in your browser settings. Please search manually!", { duration: 6000 });
-              } else {
-                toast.error("GPS signal check failed. Showing Delhi area. Please search manually!", { duration: 4000 });
-              }
-            },
-            { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        { enableHighAccuracy: false, timeout: 2000, maximumAge: Infinity }
       );
     } else {
-      setLoading(false);
+      onError(new Error("Not supported"));
     }
     fetchNearbyHelp();
   }, []);
