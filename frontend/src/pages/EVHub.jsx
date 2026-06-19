@@ -1509,17 +1509,17 @@ export default function EVHub() {
 
                 {/* INTERACTIVE COORDINATE SELECTOR MAP */}
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
-                      📍 Pinpoint Plug Location on Radar
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', margin: 0 }}>
+                      📍 Charger ki Location Radar Par Set Karein
                     </label>
                     <span style={{ fontSize: '0.7rem', color: '#2dd4bf', fontWeight: 'bold' }}>
-                      Click on the map to place your charger pin
+                      Map par click karke apna charger pin set karein
                     </span>
                   </div>
                   
                   <div className="selector-map-container" style={{ height: '220px', borderRadius: '16px', overflow: 'hidden', marginBottom: '10px' }}>
-                    <MapContainer center={newHostCoords} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }}>
+                    <MapContainer key={activeTab} center={newHostCoords} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }}>
                       <ChangeMapView center={newHostCoords} zoom={13} />
                       <TileLayer
                         url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
@@ -1539,9 +1539,9 @@ export default function EVHub() {
                           navigator.geolocation.getCurrentPosition(
                             (pos) => {
                               setNewHostCoords([pos.coords.latitude, pos.coords.longitude]);
-                              toast.success("Marker moved to your GPS coordinates!");
+                              toast.success("Mubarak ho! GPS location coordinates set ho gaye hain! 🎯");
                             },
-                            () => toast.error("Could not fetch GPS coordinates. Please select manually on map."),
+                            () => toast.error("Bhai, GPS location nahi mil payi. Manually select karein! 🗺"),
                             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                           );
                         }
