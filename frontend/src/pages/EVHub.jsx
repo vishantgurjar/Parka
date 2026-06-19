@@ -234,20 +234,20 @@ export default function EVHub() {
             (err2) => {
               console.log("Default coordinates set to New Delhi.", err2);
               if (!window.isSecureContext) {
-                toast.error("Bhai, non-secure (HTTP) browser connection me GPS block ho jata hai. HTTPS use karo ya manually search karo!", { duration: 6000 });
+                toast.error("GPS is blocked on insecure (HTTP) connections. Please use HTTPS or search manually!", { duration: 6000 });
               } else if (err2.code === err2.PERMISSION_DENIED) {
-                toast.error("Bhaiya, browser settings me location permission block hai. Please manually search karein!", { duration: 6000 });
+                toast.error("Location permission is blocked in your browser settings. Please search manually!", { duration: 6000 });
               } else {
-                toast.error("GPS signal check failed. Showing Delhi area. Manually search kar lein!", { duration: 4000 });
+                toast.error("GPS signal check failed. Showing Delhi area. Please search manually!", { duration: 4000 });
               }
             },
-            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
       );
     } else {
-      toast.error("Aapke browser me location support nahi hai!");
+      toast.error("Location support is not available on your browser!");
     }
   }, []);
 
@@ -1511,10 +1511,10 @@ export default function EVHub() {
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', margin: 0 }}>
-                      📍 Charger ki Location Radar Par Set Karein
+                      📍 Pinpoint Plug Location on Radar
                     </label>
                     <span style={{ fontSize: '0.7rem', color: '#2dd4bf', fontWeight: 'bold' }}>
-                      Map par click karke apna charger pin set karein
+                      Click on the map to place your charger pin
                     </span>
                   </div>
                   
@@ -1539,9 +1539,9 @@ export default function EVHub() {
                           navigator.geolocation.getCurrentPosition(
                             (pos) => {
                               setNewHostCoords([pos.coords.latitude, pos.coords.longitude]);
-                              toast.success("Mubarak ho! GPS location coordinates set ho gaye hain! 🎯");
+                              toast.success("GPS Coordinates detected! 🎯");
                             },
-                            () => toast.error("Bhai, GPS location nahi mil payi. Manually select karein! 🗺"),
+                            () => toast.error("Could not fetch GPS coordinates. Please select manually on map. 🗺"),
                             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                           );
                         }

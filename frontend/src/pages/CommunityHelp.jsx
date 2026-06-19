@@ -78,17 +78,17 @@ export default function CommunityHelp() {
               setLoading(false);
               console.log("CommunityHelp location lookup failed:", err2);
               if (!window.isSecureContext) {
-                toast.error("Bhai, non-secure (HTTP) browser connection me GPS block ho jata hai. HTTPS use karo ya manually search karo!", { duration: 6000 });
+                toast.error("GPS is blocked on insecure (HTTP) connections. Please use HTTPS or search manually!", { duration: 6000 });
               } else if (err2.code === err2.PERMISSION_DENIED) {
-                toast.error("Bhaiya, browser settings me location permission block hai. Please manually search karein!", { duration: 6000 });
+                toast.error("Location permission is blocked in your browser settings. Please search manually!", { duration: 6000 });
               } else {
-                toast.error("GPS signal check failed. Showing Delhi area. Manually search kar lein!", { duration: 4000 });
+                toast.error("GPS signal check failed. Showing Delhi area. Please search manually!", { duration: 4000 });
               }
             },
-            { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
       );
     } else {
       setLoading(false);
