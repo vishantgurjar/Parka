@@ -341,7 +341,7 @@ export default function EVHub() {
   // Start Booking Flow
   const triggerBooking = (charger) => {
     if (!user) {
-      toast.error("Bhaiya, booking karne ke liye login karna padega!");
+      toast.error("Please log in to book a charger slot!");
       return;
     }
     setSelectedCharger(charger);
@@ -429,7 +429,7 @@ export default function EVHub() {
   const handleHostSubmit = async (e) => {
     e.preventDefault();
     if (!hostForm.address || !hostForm.phone || !hostForm.price) {
-      toast.error("Bhaiya, saari fields barabar bharo!");
+      toast.error("Please fill in all the fields correctly!");
       return;
     }
 
@@ -453,7 +453,7 @@ export default function EVHub() {
       });
 
       if (res.ok) {
-        toast.success("Mubarak ho! Aapka charger live ho gaya hai Grid par!");
+        toast.success("Congratulations! Your charger is now active on the radar grid!");
         speakVoice("Your charger has been hosted successfully and is now active on the radar map!");
         setHostForm({
           hostName: user?.name || '',
