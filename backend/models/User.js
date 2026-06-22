@@ -53,6 +53,10 @@ const UserSchema = new mongoose.Schema({
   
   // Push Notifications
   pushSubscription: { type: Object },
+  
+  // Password Reset OTP
+  resetOtp: { type: String },
+  resetOtpExpires: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -178,4 +178,140 @@ router.get('/vehicle/:id', async (req, res) => {
     }
 });
 
+const nodemailer = require('nodemailer');
+
+// @route   POST /api/auth/forgot-password
+// @desc    Request password reset OTP
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user) {
+            return res.status(404).json({ message: 'No user registered with this email address' });
+        }
+
+        // Generate a 6-digit numeric OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Save OTP and expiration time (10 minutes)
+        user.resetOtp = otp;
+        user.resetOtpExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+
+        let emailSent = false;
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS;
+        const emailService = process.env.EMAIL_SERVICE || 'gmail';
+
+        console.log(`[Forgot Password] Generated OTP for user ${email}: ${otp}`);
+
+        if (emailUser && emailPass) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    service: emailService,
+                    auth: {
+                        user: emailUser,
+                        pass: emailPass
+                    }
+                });
+
+                const mailOptions = {
+                    from: `"Parxéé City Support" <${emailUser}>`,
+                    to: user.email,
+                    subject: 'Parxéé City - Password Recovery OTP',
+                    html: `
+                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="color: #14b8a6; margin: 0;">PARXÉÉ CITY</h1>
+                                <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Secure. Intelligent. Connected.</p>
+                            </div>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                            <h2 style="font-size: 20px; font-weight: 600;">Password Recovery Request</h2>
+                            <p style="color: #d1d5db; line-height: 1.6;">Hello ${user.name || 'User'},</p>
+                            <p style="color: #d1d5db; line-height: 1.6;">We received a request to reset the password for your Parxéé City account. Please use the following 6-digit verification code to complete your password reset:</p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #14b8a6; background: rgba(20, 184, 166, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(20, 184, 166, 0.2); display: inline-block;">
+                                    ${otp}
+                                </span>
+                            </div>
+                            
+                            <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>10 minutes</strong>. If you did not make this request, you can safely ignore this email.</p>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                            <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+                        </div>
+                    `
+                };
+
+                await transporter.sendMail(mailOptions);
+                emailSent = true;
+            } catch (mailErr) {
+                console.error('[Forgot Password] Mail sending failed:', mailErr);
+            }
+        }
+
+        // Response payload
+        const responsePayload = { 
+            message: emailSent 
+                ? 'Verification OTP has been sent to your email.' 
+                : 'Verification code generated.' 
+        };
+
+        // For local development and easy testing when SMTP is not configured,
+        // we expose the OTP in response if we are not in production environment or if email failed to send.
+        if (process.env.NODE_ENV !== 'production' || !emailSent) {
+            responsePayload.devOtp = otp;
+        }
+
+        res.json(responsePayload);
+    } catch (error) {
+        console.error('Forgot Password Error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   POST /api/auth/reset-password
+// @desc    Verify OTP and reset password
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: 'All fields (email, otp, newPassword) are required.' });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Check if OTP matches and is not expired
+        if (!user.resetOtp || user.resetOtp !== otp.trim()) {
+            return res.status(400).json({ message: 'Invalid verification code.' });
+        }
+
+        if (user.resetOtpExpires && user.resetOtpExpires < Date.now()) {
+            return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
+        }
+
+        // Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password and clear OTP fields
+        user.password = hashedPassword;
+        user.resetOtp = undefined;
+        user.resetOtpExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Password has been reset successfully. You can now login with your new password.' });
+    } catch (error) {
+        console.error('Reset Password Error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 module.exports = router;
