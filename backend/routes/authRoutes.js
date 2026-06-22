@@ -75,9 +75,10 @@ router.post('/login', async (req, res) => {
         delete userResponse.password;
 
         // Founder Bypass based on ENV
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const founderEmail = process.env.FOUNDER_EMAIL;
-        if (user.email === adminEmail || user.email === founderEmail) {
+        const adminEmail = (process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com').toLowerCase().trim();
+        const founderEmail = (process.env.FOUNDER_EMAIL || 'panwarvishant9@gmail.com').toLowerCase().trim();
+        const userEmail = (user.email || '').toLowerCase().trim();
+        if (userEmail && (userEmail === adminEmail || userEmail === founderEmail)) {
             userResponse.subscriptionTier = 'diamond';
             userResponse.role = 'admin';
         }
@@ -126,9 +127,10 @@ router.post('/google', async (req, res) => {
         if (userResponse.password) delete userResponse.password;
 
         // Founder Bypass
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const founderEmail = process.env.FOUNDER_EMAIL;
-        if (user.email === adminEmail || user.email === founderEmail) {
+        const adminEmail = (process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com').toLowerCase().trim();
+        const founderEmail = (process.env.FOUNDER_EMAIL || 'panwarvishant9@gmail.com').toLowerCase().trim();
+        const userEmail = (user.email || '').toLowerCase().trim();
+        if (userEmail && (userEmail === adminEmail || userEmail === founderEmail)) {
             userResponse.subscriptionTier = 'diamond';
             userResponse.role = 'admin';
         }
