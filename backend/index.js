@@ -11,6 +11,7 @@ const Incident = require('./models/Incident');
 const Review = require('./models/Review');
 const SOSRequest = require('./models/SOSRequest');
 const CommunityHelp = require('./models/CommunityHelp');
+const Space = require('./models/Space');
 
 
 const { OAuth2Client } = require('google-auth-library');
@@ -418,6 +419,12 @@ app.post('/api/payment/verify-signature', async (req, res) => {
         user.subscriptionTier = 'gold'; // Upgrade user subscription to premium
         user.isPremium = true; 
         await user.save(); 
+      }
+    } else if (entityType === 'parking') {
+      const space = await Space.findById(entityId);
+      if (space) {
+        space.isAvailable = false;
+        await space.save();
       }
     }
     res.json({ success: true, message: 'Payment verified' });

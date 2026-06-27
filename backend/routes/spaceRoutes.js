@@ -57,13 +57,9 @@ router.post('/book/:id', protect, async (req, res) => {
 
     const totalAmount = space.pricePerHour * (hours || 1);
 
-    // In a real app, integrate Razorpay here.
-    // For now, we simulate a successful booking and mark space as unavailable.
-    
-    // Optional: Mark as unavailable or just record booking. 
-    // We'll leave it available for MVP so others can see it, or mark it unavailable.
-    // space.isAvailable = false;
-    // await space.save();
+    // Mark space as unavailable in database
+    space.isAvailable = false;
+    await space.save();
 
     res.json({ message: 'Booking successful', spaceId, totalAmount, hours });
   } catch (error) {

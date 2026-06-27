@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { Navigation, Clock, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getBackendUrl } from '../utils/api';
+import PaymentModal from '../components/PaymentModal';
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -38,6 +39,7 @@ export default function FindParking() {
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [bookingHours, setBookingHours] = useState(1);
   const [isBooking, setIsBooking] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState(null);
 
   useEffect(() => {
     const onSuccess = (pos) => {
@@ -117,13 +119,21 @@ export default function FindParking() {
     fetchSpaces();
   }, []);
 
-  const handleBook = async () => {
+  const handleBook = () => {
     if (!user) {
       toast.error("Please login to book a space");
       navigate('/login');
       return;
     }
     
+    // Set payment details to launch Razorpay checkout modal
+    setPaymentPlan({
+      name: `Parking Spot Booking (${bookingHours} hours)`,
+      amount: selectedSpace.pricePerHour * bookingHours
+    });
+  };
+
+  const handleBookingPaymentSuccess = async () => {
     setIsBooking(true);
     try {
       const baseUrl = getBackendUrl();
@@ -138,14 +148,17 @@ export default function FindParking() {
 
       if (res.ok) {
         toast.success(`Successfully booked for ${bookingHours} hour(s)!`);
+        // Refresh local spaces state to mark this spot as booked
+        setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
         setSelectedSpace(null);
       } else {
-        toast.error("Booking failed. Space might be unavailable.");
+        toast.error("Failed to register booking in database.");
       }
     } catch (err) {
-      toast.error("Server error during booking.");
+      toast.error("Server error registering booking.");
     } finally {
       setIsBooking(false);
+      setPaymentPlan(null);
     }
   };
 
@@ -304,6 +317,16 @@ export default function FindParking() {
               Host Your Space Instead
             </button>
           </div>
+        )}
+
+        {paymentPlan && (
+          <PaymentModal 
+            plan={paymentPlan} 
+            entityId={selectedSpace?._id} 
+            entityType="parking" 
+            onClose={() => setPaymentPlan(null)} 
+            onSuccess={handleBookingPaymentSuccess}
+          />
         )}
       </section>
     </>
