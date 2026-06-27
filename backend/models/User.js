@@ -30,6 +30,9 @@ const UserSchema = new mongoose.Schema({
   
   // PRO Features
   subscriptionTier: { type: String, enum: ['free', 'silver', 'gold', 'diamond'], default: 'free' },
+  razorpaySubscriptionId: { type: String },
+  subscriptionStatus: { type: String, enum: ['inactive', 'active', 'cancelled', 'halted'], default: 'inactive' },
+  subscriptionExpiresAt: { type: Date },
   secondaryVehicles: [{
     make: String,
     model: String,

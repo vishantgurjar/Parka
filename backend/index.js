@@ -427,6 +427,226 @@ app.post('/api/payment/verify-signature', async (req, res) => {
   }
 });
 
+// --- PAYMENT SUBSCRIPTION ROUTES (Razorpay Autopay) ---
+app.post('/api/payment/create-subscription', async (req, res) => {
+  try {
+    const { planName, amount, entityId } = req.body;
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    // Graceful fallback to sandbox testing if keys are not set
+    if (!keyId || !keySecret || keyId === 'dummy_id' || keySecret === 'dummy_secret') {
+      console.warn("Razorpay credentials missing. Fallback to Sandbox Mock Subscription Mode.");
+      return res.json({
+        id: `sub_mock_${Date.now()}`,
+        status: "created",
+        isMock: true,
+        planName,
+        amount
+      });
+    }
+
+    try {
+      const rzp = new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret
+      });
+
+      // Determine billing period and interval based on planName
+      let period = 'monthly';
+      let interval = 1;
+      const normalizedPlan = planName.toLowerCase();
+      
+      if (normalizedPlan.includes('6 months') || normalizedPlan.includes('half')) {
+        period = 'monthly';
+        interval = 6;
+      } else if (normalizedPlan.includes('year') || normalizedPlan.includes('annual') || normalizedPlan.includes('diamond')) {
+        period = 'yearly';
+        interval = 1;
+      }
+
+      // Check if plan already exists to avoid creating duplicate plans
+      let planId;
+      try {
+        const plansList = await rzp.plans.all();
+        const existing = plansList.items.find(p => 
+          p.item && 
+          p.item.amount === Number(amount) * 100 && 
+          p.period === period && 
+          p.interval === interval
+        );
+        if (existing) {
+          planId = existing.id;
+        }
+      } catch (listErr) {
+        console.warn("Could not retrieve existing Razorpay plans, will attempt to create:", listErr.message);
+      }
+
+      // If plan doesn't exist, create it
+      if (!planId) {
+        const newPlan = await rzp.plans.create({
+          period: period,
+          interval: interval,
+          item: {
+            name: `${planName} Autopay`,
+            amount: Number(amount) * 100,
+            currency: "INR",
+            description: `Recurring auto-debit plan for ${planName}`
+          }
+        });
+        planId = newPlan.id;
+      }
+
+      // Create subscription
+      const subscription = await rzp.subscriptions.create({
+        plan_id: planId,
+        customer_notify: 1,
+        total_count: period === 'yearly' ? 5 : 12, // default 5 years or 12 cycles
+        quantity: 1
+      });
+
+      res.json(subscription);
+    } catch (apiError) {
+      console.error("Razorpay subscription API error. Falling back to Mock mode:", apiError);
+      res.json({
+        id: `sub_mock_${Date.now()}`,
+        status: "created",
+        isMock: true,
+        planName,
+        amount,
+        fallbackReason: apiError.message
+      });
+    }
+  } catch (error) {
+    console.error("Create Subscription Route Error:", error);
+    res.status(500).json({ message: 'Error initiating subscription: ' + error.message });
+  }
+});
+
+app.post('/api/payment/verify-subscription-signature', async (req, res) => {
+  try {
+    const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature, entityId, planName } = req.body;
+    
+    const isMock = razorpay_subscription_id && razorpay_subscription_id.startsWith('sub_mock_');
+
+    if (!isMock) {
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      if (!keySecret || keySecret === 'dummy_secret') {
+        return res.status(400).json({ message: 'Razorpay keys not configured' });
+      }
+      const body = razorpay_payment_id + "|" + razorpay_subscription_id;
+      const expectedSignature = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
+      if (expectedSignature !== razorpay_signature) {
+        return res.status(400).json({ message: 'Invalid subscription signature' });
+      }
+    }
+
+    // Identify subscription tier
+    let tier = 'free';
+    const nameLower = planName.toLowerCase();
+    if (nameLower.includes('silver')) tier = 'silver';
+    else if (nameLower.includes('gold')) tier = 'gold';
+    else if (nameLower.includes('diamond')) tier = 'diamond';
+
+    // Calculate expiry date
+    let durationDays = 30;
+    if (tier === 'gold') durationDays = 180;
+    else if (tier === 'diamond') durationDays = 365;
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + durationDays);
+
+    // Update User
+    const user = await User.findById(entityId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.subscriptionTier = tier;
+    user.razorpaySubscriptionId = razorpay_subscription_id;
+    user.subscriptionStatus = 'active';
+    user.subscriptionExpiresAt = expiresAt;
+    await user.save();
+
+    res.json({ success: true, message: 'Subscription successfully verified and activated', tier, expiresAt });
+  } catch (error) {
+    console.error("Subscription Verification Error:", error);
+    res.status(500).json({ message: 'Error verifying subscription: ' + error.message });
+  }
+});
+
+app.post('/api/payment/webhook', async (req, res) => {
+  try {
+    const signature = req.headers['x-razorpay-signature'];
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    // Support mock testing if secret is missing or signature is not provided
+    const isMockTesting = !webhookSecret || webhookSecret === 'dummy_webhook_secret' || !signature;
+
+    if (!isMockTesting) {
+      try {
+        const isValid = Razorpay.validateWebhookSignature(JSON.stringify(req.body), signature, webhookSecret);
+        if (!isValid) {
+          console.warn("Webhook validation failed via SDK.");
+          return res.status(400).json({ message: 'Invalid Webhook Signature' });
+        }
+      } catch (e) {
+        console.error("Error validating webhook signature:", e.message);
+        return res.status(400).json({ message: 'Invalid Webhook Signature: ' + e.message });
+      }
+    }
+
+    const { event, payload } = req.body;
+    console.log(`Webhook Event Received: ${event}`);
+
+    if (event === 'subscription.charged') {
+      const subscriptionEntity = payload.subscription.entity;
+      const subscriptionId = subscriptionEntity.id;
+      const currentEnd = subscriptionEntity.current_end; // unix timestamp
+
+      // Find user by subscription ID
+      const user = await User.findOne({ razorpaySubscriptionId: subscriptionId });
+      if (user) {
+        user.subscriptionStatus = 'active';
+        
+        // Determine expiration increment based on tier
+        let durationDays = 30;
+        if (user.subscriptionTier === 'gold') durationDays = 180;
+        else if (user.subscriptionTier === 'diamond') durationDays = 365;
+
+        if (currentEnd) {
+          user.subscriptionExpiresAt = new Date(currentEnd * 1000);
+        } else {
+          const expiresAt = new Date(user.subscriptionExpiresAt || Date.now());
+          expiresAt.setDate(expiresAt.getDate() + durationDays);
+          user.subscriptionExpiresAt = expiresAt;
+        }
+        
+        await user.save();
+        console.log(`Subscription automatically renewed for user: ${user.email}, expiry is now: ${user.subscriptionExpiresAt}`);
+      } else {
+        console.warn(`User with subscription ID ${subscriptionId} not found.`);
+      }
+    } else if (event === 'subscription.cancelled' || event === 'subscription.halted') {
+      const subscriptionEntity = payload.subscription.entity;
+      const subscriptionId = subscriptionEntity.id;
+
+      const user = await User.findOne({ razorpaySubscriptionId: subscriptionId });
+      if (user) {
+        user.subscriptionStatus = event.split('.')[1]; // cancelled or halted
+        user.subscriptionTier = 'free'; // Revoke premium features
+        await user.save();
+        console.log(`Subscription cancelled/halted for user: ${user.email}`);
+      }
+    }
+
+    res.json({ status: 'ok' });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    res.status(500).json({ message: "Webhook internal server error: " + error.message });
+  }
+});
+
 // --- SMART QR SCAN ALERT ---
 app.post('/api/alerts/scan', async (req, res) => {
     const { vehicleId, ownerPhone, lat, lng } = req.body;

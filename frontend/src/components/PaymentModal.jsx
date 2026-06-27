@@ -19,37 +19,68 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setLoading(true);
     setError(null);
 
+    const isSubscription = entityType === 'user';
+
     try {
-      // 1. Create Order on Backend
       const baseUrl = getBackendUrl();
-      const orderRes = await fetch(`${baseUrl}/api/payment/create-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: plan.amount,
-          receipt: `${entityId}_${Date.now()}`
-        })
-      });
+      let orderData;
 
-      const orderData = await orderRes.json();
-
-      if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
-
-      // If mock order, bypass browser Razorpay library completely and auto-verify
-      if (orderData.isMock) {
-        console.log("⚡ Sandbox / Mock Mode Active: Completing direct bypass...");
-        const baseUrl = getBackendUrl();
-        const verifyRes = await fetch(`${baseUrl}/api/payment/verify-signature`, {
+      if (isSubscription) {
+        // 1. Create Subscription on Backend
+        const subRes = await fetch(`${baseUrl}/api/payment/create-subscription`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            razorpay_order_id: orderData.id,
-            razorpay_payment_id: `pay_mock_${Date.now()}`,
-            razorpay_signature: "mock_signature",
-            entityType,
-            entityId,
-            amount: plan.amount
+            planName: plan.name,
+            amount: plan.amount,
+            entityId
           })
+        });
+        orderData = await subRes.json();
+        if (!subRes.ok) throw new Error(orderData.message || 'Failed to create subscription');
+      } else {
+        // 1. Create Order on Backend
+        const orderRes = await fetch(`${baseUrl}/api/payment/create-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: plan.amount,
+            receipt: `${entityId}_${Date.now()}`
+          })
+        });
+        orderData = await orderRes.json();
+        if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
+      }
+
+      // If mock payment, bypass browser Razorpay library completely and auto-verify
+      if (orderData.isMock) {
+        console.log("⚡ Sandbox / Mock Mode Active: Completing direct bypass...");
+        
+        const verifyBody = isSubscription 
+          ? {
+              razorpay_subscription_id: orderData.id,
+              razorpay_payment_id: `pay_mock_${Date.now()}`,
+              razorpay_signature: "mock_signature",
+              entityId,
+              planName: plan.name
+            }
+          : {
+              razorpay_order_id: orderData.id,
+              razorpay_payment_id: `pay_mock_${Date.now()}`,
+              razorpay_signature: "mock_signature",
+              entityType,
+              entityId,
+              amount: plan.amount
+            };
+
+        const verifyUrl = isSubscription 
+          ? `${baseUrl}/api/payment/verify-subscription-signature`
+          : `${baseUrl}/api/payment/verify-signature`;
+
+        const verifyRes = await fetch(verifyUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(verifyBody)
         });
 
         const verifyData = await verifyRes.json();
@@ -67,16 +98,55 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
       // 2. Options for Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
         name: "Parxéé City",
-        description: `Payment for ${plan.name}`,
+        description: isSubscription ? `Subscription for ${plan.name}` : `Payment for ${plan.name}`,
         image: "/logo.png",
-        order_id: orderData.id,
-        handler: async function (response) {
-          // 3. Verify Signature on Backend
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || ""
+        },
+        theme: {
+          color: "#0d9488"
+        }
+      };
+
+      if (isSubscription) {
+        options.subscription_id = orderData.id;
+        options.handler = async function (response) {
           try {
-            const baseUrl = getBackendUrl();
+            const verifyRes = await fetch(`${baseUrl}/api/payment/verify-subscription-signature`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_subscription_id: response.razorpay_subscription_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                entityId,
+                planName: plan.name
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok) {
+              toast.success("Subscription Successful! ✓");
+              if (onSuccess) onSuccess(verifyData);
+              onClose();
+            } else {
+              throw new Error(verifyData.message || 'Subscription verification failed');
+            }
+          } catch (err) {
+            console.error("Verification Error:", err);
+            setError("Subscription verification failed. Please contact support with Subscription ID: " + response.razorpay_subscription_id);
+          }
+        };
+      } else {
+        options.amount = orderData.amount;
+        options.currency = orderData.currency;
+        options.order_id = orderData.id;
+        options.handler = async function (response) {
+          try {
             const verifyRes = await fetch(`${baseUrl}/api/payment/verify-signature`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -103,16 +173,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             console.error("Verification Error:", err);
             setError("Payment verification failed. Please contact support with Payment ID: " + response.razorpay_payment_id);
           }
-        },
-        prefill: {
-          name: user?.name || "",
-          email: user?.email || "",
-          contact: user?.phone || ""
-        },
-        theme: {
-          color: "#0d9488"
-        }
-      };
+        };
+      }
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (response) {
