@@ -133,33 +133,12 @@ export default function FindParking() {
     });
   };
 
-  const handleBookingPaymentSuccess = async () => {
-    setIsBooking(true);
-    try {
-      const baseUrl = getBackendUrl();
-      const res = await fetch(`${baseUrl}/api/spaces/book/${selectedSpace._id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ hours: bookingHours })
-      });
-
-      if (res.ok) {
-        toast.success(`Successfully booked for ${bookingHours} hour(s)!`);
-        // Refresh local spaces state to mark this spot as booked
-        setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
-        setSelectedSpace(null);
-      } else {
-        toast.error("Failed to register booking in database.");
-      }
-    } catch (err) {
-      toast.error("Server error registering booking.");
-    } finally {
-      setIsBooking(false);
-      setPaymentPlan(null);
-    }
+  const handleBookingPaymentSuccess = () => {
+    toast.success(`Successfully booked for ${bookingHours} hour(s)!`);
+    // Refresh local spaces state to mark this spot as booked
+    setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
+    setSelectedSpace(null);
+    setPaymentPlan(null);
   };
 
   return (
