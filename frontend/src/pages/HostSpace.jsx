@@ -177,6 +177,28 @@ export default function HostSpace() {
       <section style={{ padding: '8rem 0 6rem', minHeight: '100vh', position: 'relative' }}>
         <div className="container" style={{ maxWidth: '1200px' }}>
           
+          {/* Host vs Book Segmented Control Tab */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '6px', borderRadius: '50px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'inline-flex', gap: '4px' }}>
+              <button 
+                type="button"
+                onClick={() => {}} 
+                style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Home size={16} /> Host Your Space
+              </button>
+              <button 
+                type="button"
+                onClick={() => navigate('/park')} 
+                style={{ background: 'transparent', color: 'var(--muted)', border: 'none', padding: '10px 24px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => e.target.style.color = '#fff'}
+                onMouseLeave={(e) => e.target.style.color = 'var(--muted)'}
+              >
+                <MapPin size={16} /> Book Parking Spot
+              </button>
+            </div>
+          </div>
+
           {/* Main Layout Grid */}
           <div className="host-layout-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem' }}>
             
@@ -269,6 +291,27 @@ export default function HostSpace() {
                     <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '4px' }}>EV SmartGrid Hub Ready</h4>
                     <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Turn your space into an EV charging hub by selecting the EV amenity pill and double your occupancy.</p>
                   </div>
+                </div>
+
+                {/* Prestige Booking Option Card */}
+                <div style={{ marginTop: '2.5rem', padding: '1.5rem', background: 'rgba(168, 85, 247, 0.04)', border: '1px dashed rgba(168, 85, 247, 0.2)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', padding: '8px', borderRadius: '50%' }}>
+                      <MapPin size={16} />
+                    </div>
+                    <div>
+                      <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', margin: 0, color: '#fff' }}>Looking to Book a Space?</h5>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Rent premium spots instantly on live satellite radar map.</span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => navigate('/park')} 
+                    className="btn-gradient" 
+                    style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)', border: 'none', padding: '10px 16px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}
+                  >
+                    Open Parking Booking Radar
+                  </button>
                 </div>
               </div>
 
