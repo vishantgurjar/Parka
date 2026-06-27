@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { Mail, Lock, ChevronRight, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { AuthContext } from '../App';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { toast } from 'react-hot-toast';
 import { getBackendUrl } from '../utils/api';
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState('login'); // 'login', 'register', or 'forgot'
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Login State
   const [loginEmail, setLoginEmail] = useState('');
@@ -39,7 +40,8 @@ export default function LoginPage() {
       if (res.ok) {
         login(data.user, data.token);
         toast.success(`Welcome back, ${data.user.name}!`);
-        navigate('/');
+        const from = location.state?.from || '/';
+        navigate(from);
       } else {
         toast.error(data.message || 'Login failed. Please check credentials or register initially.');
       }

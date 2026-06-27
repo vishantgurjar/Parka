@@ -122,7 +122,7 @@ export default function FindParking() {
   const handleBook = () => {
     if (!user) {
       toast.error("Please login to book a space");
-      navigate('/login');
+      navigate('/login', { state: { from: '/park' } });
       return;
     }
     
@@ -136,8 +136,10 @@ export default function FindParking() {
   const handleBookingPaymentSuccess = () => {
     toast.success(`Successfully booked for ${bookingHours} hour(s)!`);
     // Refresh local spaces state to mark this spot as booked
-    setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
-    setSelectedSpace(null);
+    if (selectedSpace) {
+      setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
+      setSelectedSpace(null);
+    }
     setPaymentPlan(null);
   };
 
