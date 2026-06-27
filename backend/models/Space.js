@@ -22,6 +22,14 @@ const spaceSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  spotType: {
+    type: String,
+    enum: ['Driveway', 'Garage', 'Basement', 'Open Plot'],
+    default: 'Driveway'
+  },
+  amenities: [{
+    type: String
+  }],
   images: [{
     type: String // Cloudinary URLs
   }],
