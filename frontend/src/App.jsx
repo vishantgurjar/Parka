@@ -56,8 +56,14 @@ function App() {
   // Auth State
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('parkeActiveUser');
-      let u = (saved && saved !== 'undefined') ? JSON.parse(saved) : null;
+      const savedUser = localStorage.getItem('parkeActiveUser');
+      const savedToken = localStorage.getItem('parkeToken');
+      if (!savedUser || savedUser === 'undefined' || !savedToken || savedToken === 'undefined' || savedToken === 'null') {
+        localStorage.removeItem('parkeActiveUser');
+        localStorage.removeItem('parkeToken');
+        return null;
+      }
+      let u = JSON.parse(savedUser);
       // Force Diamond status for owner on startup/refresh
       if (u && (u.email === import.meta.env.VITE_ADMIN_EMAIL || u.role === 'admin')) {
         u.subscriptionTier = 'diamond';
@@ -66,14 +72,19 @@ function App() {
     } catch (err) {
       console.error("Corrupted LocalStorage User data:", err);
       localStorage.removeItem('parkeActiveUser');
+      localStorage.removeItem('parkeToken');
       return null;
     }
   });
 
   const [token, setToken] = useState(() => {
     try {
-      const saved = localStorage.getItem('parkeToken');
-      return (saved && saved !== 'undefined' && saved !== 'null') ? saved : null;
+      const savedUser = localStorage.getItem('parkeActiveUser');
+      const savedToken = localStorage.getItem('parkeToken');
+      if (!savedUser || savedUser === 'undefined' || !savedToken || savedToken === 'undefined' || savedToken === 'null') {
+        return null;
+      }
+      return savedToken;
     } catch (err) {
       return null;
     }

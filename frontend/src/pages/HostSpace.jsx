@@ -39,7 +39,7 @@ export default function HostSpace() {
     setMonthlyEarnings(calcPrice * calcHours * 30);
   }, [calcPrice, calcHours]);
 
-  if (!user || !token) {
+  if (!user) {
     return (
       <div className="container" style={{ padding: '8rem 0', textAlign: 'center', minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '3rem', maxWidth: '450px' }}>
@@ -48,7 +48,7 @@ export default function HostSpace() {
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '1rem' }}>Access Host Console</h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>You need to be logged in to access the PARXÉÉ Space Host dashboard and begin earning.</p>
-          <button onClick={() => navigate('/login')} className="btn-gradient" style={{ padding: '14px 28px', borderRadius: '12px', width: '100%', fontSize: '1rem', fontWeight: 'bold' }}>Go to Login</button>
+          <button onClick={() => navigate('/login', { state: { from: '/host' } })} className="btn-gradient" style={{ padding: '14px 28px', borderRadius: '12px', width: '100%', fontSize: '1rem', fontWeight: 'bold' }}>Go to Login</button>
         </div>
       </div>
     );
