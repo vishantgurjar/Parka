@@ -5,7 +5,7 @@ import L from 'leaflet';
 import SEO from '../components/SEO';
 import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
-import { Navigation, Clock, CreditCard } from 'lucide-react';
+import { Navigation, Clock, CreditCard, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getBackendUrl } from '../utils/api';
 import PaymentModal from '../components/PaymentModal';
@@ -40,6 +40,7 @@ export default function FindParking() {
   const [bookingHours, setBookingHours] = useState(1);
   const [isBooking, setIsBooking] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState(null);
+  const [activeBooking, setActiveBooking] = useState(null);
 
   useEffect(() => {
     const onSuccess = (pos) => {
@@ -135,8 +136,14 @@ export default function FindParking() {
 
   const handleBookingPaymentSuccess = () => {
     toast.success(`Successfully booked for ${bookingHours} hour(s)!`);
-    // Refresh local spaces state to mark this spot as booked
     if (selectedSpace) {
+      setActiveBooking({
+        space: selectedSpace,
+        hours: bookingHours,
+        amount: selectedSpace.pricePerHour * bookingHours,
+        otp: Math.floor(100000 + Math.random() * 900000).toString().replace(/(\d{3})(\d{3})/, '$1-$2'),
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
       setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
       setSelectedSpace(null);
     }
@@ -283,7 +290,7 @@ export default function FindParking() {
         </div>
 
         {/* Empty State Overlay */}
-        {spaces.length === 0 && (
+        {spaces.length === 0 && !activeBooking && (
           <div className="bento-item glass light-sweep" style={{
             position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
             zIndex: 10010, padding: '2rem', textAlign: 'center', width: '90%', maxWidth: '400px',
@@ -297,6 +304,68 @@ export default function FindParking() {
             <button onClick={() => navigate('/host')} className="btn-gradient full-width light-sweep" style={{ padding: '14px', borderRadius: '12px', fontWeight: 'bold' }}>
               Host Your Space Instead
             </button>
+          </div>
+        )}
+
+        {/* Booking Confirmed Receipt Overlay */}
+        {activeBooking && (
+          <div className="bento-item glass light-sweep" style={{
+            position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+            zIndex: 10020, padding: '2rem', width: '90%', maxWidth: '420px',
+            background: 'rgba(3, 7, 18, 0.95)', backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(16, 185, 129, 0.15)'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', width: '54px', height: '54px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.8rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <Check size={26} />
+              </div>
+              <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '900', letterSpacing: '1.5px', textTransform: 'uppercase' }}>PARXÉÉ SECURE TICKET</span>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginTop: '4px', color: '#fff' }}>Booking Confirmed</h3>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '16px', borderRadius: '16px', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>Spot Address:</span>
+                <span style={{ fontWeight: 'bold', color: '#fff', textAlign: 'right', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeBooking.space.address}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>Reserved Duration:</span>
+                <span style={{ fontWeight: 'bold', color: '#fff' }}>{activeBooking.hours} Hour(s)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>Amount Paid:</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>₹{activeBooking.amount}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>Booking Time:</span>
+                <span style={{ fontWeight: 'bold', color: '#fff' }}>{activeBooking.timestamp}</span>
+              </div>
+              <div style={{ borderTop: '1px dashed rgba(255,255,255,0.1)', marginTop: '6px', paddingTop: '12px', textAlign: 'center' }}>
+                <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '4px' }}>Gate Passcode / OTP</span>
+                <span style={{ display: 'block', fontSize: '1.8rem', fontFamily: 'monospace', fontWeight: '900', color: 'var(--primary)', letterSpacing: '2px' }}>{activeBooking.otp}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => {
+                  const url = `https://www.google.com/maps/search/?api=1&query=${activeBooking.space.location.lat},${activeBooking.space.location.lng}`;
+                  window.open(url, '_blank');
+                }} 
+                className="btn-gradient" 
+                style={{ flex: 1, padding: '12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
+              >
+                <Navigation size={14} /> Navigate
+              </button>
+              <button 
+                onClick={() => setActiveBooking(null)} 
+                className="glass" 
+                style={{ flex: 1, padding: '12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.85rem', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer', background: 'rgba(239, 68, 68, 0.05)' }}
+              >
+                Close Ticket
+              </button>
+            </div>
           </div>
         )}
 
