@@ -194,7 +194,7 @@ export default function FindParking() {
         {selectedSpace && (
           <div className="bento-item glass light-sweep" style={{ 
             position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
-            width: '90%', maxWidth: '400px', zIndex: 10, padding: '1.5rem', 
+            width: '90%', maxWidth: '400px', zIndex: 10010, padding: '1.5rem', 
             background: 'rgba(3, 7, 18, 0.9)', backdropFilter: 'blur(10px)' 
           }}>
             <button onClick={() => setSelectedSpace(null)} style={{ position: 'absolute', top: '10px', right: '15px', color: '#fff', opacity: 0.5 }}>✕</button>
@@ -246,7 +246,7 @@ export default function FindParking() {
         {/* Floating Top Header & Search Bar */}
         <div style={{
           position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
-          zIndex: 10, background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)',
+          zIndex: 10010, background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)',
           padding: '8px 16px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)',
           display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
           width: '90%', maxWidth: '450px'
@@ -286,7 +286,7 @@ export default function FindParking() {
         {spaces.length === 0 && (
           <div className="bento-item glass light-sweep" style={{
             position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
-            zIndex: 10, padding: '2rem', textAlign: 'center', width: '90%', maxWidth: '400px',
+            zIndex: 10010, padding: '2rem', textAlign: 'center', width: '90%', maxWidth: '400px',
             background: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(12px)'
           }}>
             <div style={{ width: '60px', height: '60px', background: 'rgba(168, 85, 247, 0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
