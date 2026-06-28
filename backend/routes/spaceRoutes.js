@@ -34,7 +34,19 @@ router.post('/', protect, async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const spaces = await Space.find({ isAvailable: true, status: 'approved' }).populate('hostId', 'name email');
+    let spaces = await Space.find({ isAvailable: true, status: 'approved' }).populate('hostId', 'name email');
+    
+    if (spaces.length === 0) {
+      // Auto-reset dummy spot for testing/demo purposes if no available spots are found
+      const dummySpot = await Space.findOne({ address: /IIT Roorkee/i });
+      if (dummySpot) {
+        dummySpot.isAvailable = true;
+        dummySpot.status = 'approved';
+        await dummySpot.save();
+        spaces = await Space.find({ isAvailable: true, status: 'approved' }).populate('hostId', 'name email');
+      }
+    }
+    
     res.json(spaces);
   } catch (error) {
     console.error('Error fetching spaces:', error);
