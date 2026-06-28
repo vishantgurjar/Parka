@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -36,6 +36,16 @@ import { HelmetProvider } from 'react-helmet-async';
 // Contexts
 export const ThemeContext = createContext();
 export const AuthContext = createContext();
+
+function LoginRouteWrapper() {
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
+  if (user) {
+    const from = location.state?.from || '/';
+    return <Navigate to={from} replace />;
+  }
+  return <LoginPage />;
+}
 
 function App() {
   // Theme State
@@ -307,7 +317,7 @@ function App() {
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home onOpenPayment={handleOpenPayment} />} />
-                  <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
+                  <Route path="/login" element={<LoginRouteWrapper />} />
                   <Route path="/register" element={<ExtendedRegistration />} />
                   <Route path="/mechanic-register" element={<MechanicRegistration />} />
                   <Route path="/join" element={<Navigate to="/mechanic-register" replace />} />
