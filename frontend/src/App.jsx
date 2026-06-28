@@ -315,6 +315,7 @@ function App() {
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.role === 'admin') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   <Route path="/host" element={<HostSpace />} />
+                  <Route path="/host-space" element={<HostSpace />} />
                   <Route path="/park" element={<FindParking />} />
                   <Route path="/ev-hub" element={<EVHub />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}

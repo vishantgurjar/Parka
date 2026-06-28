@@ -294,7 +294,7 @@ export default function FindParking() {
             </div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>No Spaces Nearby</h3>
             <p style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '1.5rem' }}>We couldn't find any premium parking spots in this area right now.</p>
-            <button onClick={() => navigate('/host-space')} className="btn-gradient full-width light-sweep" style={{ padding: '14px', borderRadius: '12px', fontWeight: 'bold' }}>
+            <button onClick={() => navigate('/host')} className="btn-gradient full-width light-sweep" style={{ padding: '14px', borderRadius: '12px', fontWeight: 'bold' }}>
               Host Your Space Instead
             </button>
           </div>
