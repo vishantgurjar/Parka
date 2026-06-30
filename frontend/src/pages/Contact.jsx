@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, MessageSquare, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { toast } from 'react-hot-toast';
+import { getBackendUrl } from '../utils/api';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', category: 'General Inquiry', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submittedHasPhone, setSubmittedHasPhone] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -24,14 +26,30 @@ export default function Contact() {
     }
     
     setIsSubmitting(true);
-    // Simulate API request delay
-    await new Promise(r => setTimeout(r, 1200));
-    console.log("Contact submission:", form);
-    
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    toast.success("Message sent successfully!");
-    setForm({ name: '', email: '', phone: '', category: 'General Inquiry', message: '' });
+    const hasPhone = !!form.phone.trim();
+    setSubmittedHasPhone(hasPhone);
+
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsSuccess(true);
+        toast.success("Message sent successfully!");
+        setForm({ name: '', email: '', phone: '', category: 'General Inquiry', message: '' });
+      } else {
+        toast.error(data.message || "Failed to send message. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -66,7 +84,7 @@ export default function Contact() {
                 </div>
                 <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.5rem' }}>Message Dispatched!</h4>
                 <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-                  Thank you for reaching out. A support coordinator will follow up via email or phone within 2 hours.
+                  Thank you for reaching out. A support coordinator will follow up via email {submittedHasPhone ? 'or phone' : ''} within 2 hours.
                 </p>
                 <button 
                   onClick={() => setIsSuccess(false)}
