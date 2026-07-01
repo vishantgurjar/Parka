@@ -68,7 +68,12 @@ router.post('/redeem-points', async (req, res) => {
 // @desc    Report an issue about a vehicle to notify owner and get points
 router.post('/report-issue', async (req, res) => {
   try {
-    const { vehicleId, reporterId, issueType } = req.body;
+    const { vehicleId, reporterId, issueType, imageUrl } = req.body;
+    
+    if (!imageUrl) {
+      return res.status(400).json({ message: "Photo proof is required to submit a report and notify the owner." });
+    }
+
     const vehicleOwner = await User.findById(vehicleId);
     if (!vehicleOwner) return res.status(404).json({ message: 'Vehicle owner not found' });
 
@@ -77,6 +82,7 @@ router.post('/report-issue', async (req, res) => {
     console.log(`Owner: ${vehicleOwner.name} (${vehicleOwner.phone})`);
     console.log(`Vehicle: ${vehicleOwner.plateNumber} (${vehicleOwner.make} ${vehicleOwner.model})`);
     console.log(`Reported Issue: "${issueType.toUpperCase()}"`);
+    console.log(`Photo Proof: "${imageUrl}"`);
     console.log(`Reporter ID: ${reporterId || 'Guest'}`);
     console.log(`Time: ${new Date().toLocaleString()}\n\n`);
 
@@ -113,6 +119,13 @@ router.post('/report-issue', async (req, res) => {
                 <p style="margin: 0; font-size: 13px;"><strong>Reported Issue:</strong></p>
                 <h3 style="margin: 5px 0; color: #14b8a6; text-transform: uppercase; font-size: 18px;">${issueType.toUpperCase().replace('_', ' ')}</h3>
                 <p style="margin: 5px 0 0 0; font-size: 12px; color: #9ca3af;">Time: ${new Date().toLocaleString()}</p>
+                
+                <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); paddingTop: 10px;">
+                  <p style="margin: 0 0 8px 0; font-size: 13px; color: #14b8a6;"><strong>📸 Photo Proof submitted by neighbor:</strong></p>
+                  <a href="${imageUrl}" target="_blank">
+                    <img src="${imageUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);" alt="Vehicle Issue Proof" />
+                  </a>
+                </div>
               </div>
 
               <p>Please check your vehicle as soon as possible to prevent any inconvenience or security concerns!</p>

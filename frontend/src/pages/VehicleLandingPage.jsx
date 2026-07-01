@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock, Bell, Lightbulb, Info } from 'lucide-react';
+import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock, Bell, Lightbulb, Info, Camera } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 import SecureCallModal from '../components/SecureCallModal';
@@ -16,6 +16,13 @@ export default function VehicleLandingPage() {
   const [nearestMechanic, setNearestMechanic] = useState({ phone: '9112200000', name: 'Parxéé Admin' });
   const [reporting, setReporting] = useState(null);
   const { user: currentUser } = useContext(AuthContext);
+
+  // Photo Capture states for Proof requirement
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [selectedIssueLabel, setSelectedIssueLabel] = useState('');
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState('');
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
 
   useEffect(() => {
@@ -101,10 +108,38 @@ export default function VehicleLandingPage() {
     fetchVehicle();
   }, [id]);
 
-  const handleReportIssue = async (issueType) => {
-    if (reporting) return;
-    setReporting(issueType);
+  const triggerReportFlow = (issueType) => {
+    setSelectedIssueLabel(issueType);
+    setPhotoFile(null);
+    setPhotoPreviewUrl('');
+    setShowPhotoModal(true);
+  };
+
+  const handleReportIssue = async () => {
+    if (reporting || !photoFile) return;
+    setIsUploadingPhoto(true);
+    setReporting(selectedIssueLabel);
+    
     try {
+      // 1. Upload photo proof to Cloudinary
+      const formData = new FormData();
+      formData.append('file', photoFile);
+      formData.append('upload_preset', 'parxee city');
+      formData.append('resource_type', 'image');
+
+      const cloudRes = await fetch('https://api.cloudinary.com/v1_1/dosb2aa9f/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!cloudRes.ok) {
+        throw new Error("Failed to upload photo proof. Please try again.");
+      }
+
+      const cloudData = await cloudRes.json();
+      const imageUrl = cloudData.secure_url;
+
+      // 2. Submit report to backend
       const baseUrl = getBackendUrl();
       const res = await fetch(`${baseUrl}/api/user/report-issue`, {
         method: 'POST',
@@ -112,19 +147,23 @@ export default function VehicleLandingPage() {
         body: JSON.stringify({
           vehicleId: id,
           reporterId: currentUser?._id,
-          issueType: issueType
+          issueType: selectedIssueLabel,
+          imageUrl: imageUrl
         })
       });
+      
       const data = await res.json();
       if (res.ok) {
         toast.success(data.message);
+        setShowPhotoModal(false);
       } else {
         toast.error(data.message || "Failed to notify owner.");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Error reporting issue. Check your connection.");
+      toast.error(err.message || "Error reporting issue. Check your connection.");
     } finally {
+      setIsUploadingPhoto(false);
       setReporting(null);
     }
   };
@@ -352,7 +391,7 @@ export default function VehicleLandingPage() {
                   <button 
                     key={item.id}
                     disabled={reporting === item.id}
-                    onClick={() => handleReportIssue(item.label)}
+                    onClick={() => triggerReportFlow(item.label)}
                     style={{
                       background: 'rgba(255,255,255,0.05)',
                       border: '1px solid var(--border)',
@@ -399,6 +438,99 @@ export default function VehicleLandingPage() {
 
       {showSecureCall && (
         <SecureCallModal vehicleId={vehicle._id} onClose={() => setShowSecureCall(false)} />
+      )}
+
+      {showPhotoModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(10px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}
+        onClick={() => setShowPhotoModal(false)}
+        >
+          <div className="bento-item glass" style={{
+            width: '100%', maxWidth: '420px', padding: '2rem', borderRadius: '28px',
+            textAlign: 'center', position: 'relative', border: '1px solid rgba(20, 184, 166, 0.3)',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(20,184,166,0.15)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setShowPhotoModal(false)}
+              style={{ position: 'absolute', top: '16px', right: '20px', background: 'transparent', border: 'none', color: '#fff', fontSize: '1.25rem', opacity: 0.5, cursor: 'pointer' }}
+            >
+              ✕
+            </button>
+
+            <div style={{ width: '56px', height: '56px', background: 'rgba(20, 184, 166, 0.1)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <Camera size={28} />
+            </div>
+
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>Photo Proof Required</h3>
+            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+              Please take a live photo of the vehicle showing the issue <strong>[{selectedIssueLabel}]</strong> to prevent misuse and earn your 50 points.
+            </p>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              {photoPreviewUrl ? (
+                <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <img src={photoPreviewUrl} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                  <button 
+                    onClick={() => { setPhotoFile(null); setPhotoPreviewUrl(''); }}
+                    style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <label style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                  padding: '2rem 1rem', borderRadius: '16px', border: '2px dashed rgba(255,255,255,0.1)',
+                  cursor: 'pointer', background: 'rgba(255,255,255,0.02)', transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                >
+                  <Camera size={32} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#fff' }}>Click to Open Camera</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Take a live photo proof</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment" 
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setPhotoFile(file);
+                        setPhotoPreviewUrl(URL.createObjectURL(file));
+                      }
+                    }}
+                    style={{ display: 'none' }} 
+                  />
+                </label>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                disabled={!photoFile || isUploadingPhoto}
+                onClick={handleReportIssue}
+                className="btn-gradient light-sweep" 
+                style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', background: 'var(--gradient-primary)', border: 'none', color: '#000', cursor: (!photoFile || isUploadingPhoto) ? 'not-allowed' : 'pointer', opacity: (!photoFile || isUploadingPhoto) ? 0.5 : 1 }}
+              >
+                {isUploadingPhoto ? 'Uploading Proof...' : '✔ Submit Report & Notify Owner'}
+              </button>
+              <button 
+                disabled={isUploadingPhoto}
+                onClick={() => setShowPhotoModal(false)}
+                className="btn-secondary" 
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
