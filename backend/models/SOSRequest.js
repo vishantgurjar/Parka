@@ -12,6 +12,11 @@ const SOSRequestSchema = new mongoose.Schema({
         lat: { type: Number },
         lng: { type: Number }
     },
+    type: {
+        type: String,
+        enum: ['general', 'ev_rescue'],
+        default: 'general'
+    },
     status: { 
         type: String, 
         enum: ['pending', 'accepted', 'completed', 'cancelled'],

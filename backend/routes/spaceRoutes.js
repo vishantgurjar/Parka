@@ -80,4 +80,45 @@ router.post('/book/:id', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/spaces/bookings/active/:userId
+// @desc    Get active booking for a renter
+// @access  Private (using protect)
+router.get('/bookings/active/:userId', protect, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const SpaceBooking = require('../models/SpaceBooking');
+    const booking = await SpaceBooking.findOne({
+      userId,
+      status: 'approved'
+    }).populate('spaceId');
+    res.json({ success: true, booking });
+  } catch (error) {
+    console.error("Fetch active parking booking error:", error);
+    res.status(500).json({ message: "Server error fetching active booking" });
+  }
+});
+
+// @route   POST /api/spaces/bookings/complete
+// @desc    Complete a parking session and free the space
+// @access  Private (using protect)
+router.post('/bookings/complete', protect, async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    const SpaceBooking = require('../models/SpaceBooking');
+    const booking = await SpaceBooking.findById(bookingId);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    booking.status = 'completed';
+    await booking.save();
+
+    // Mark the space available
+    await Space.findByIdAndUpdate(booking.spaceId, { isAvailable: true });
+
+    res.json({ success: true, message: "Parking session completed successfully!" });
+  } catch (error) {
+    console.error("Complete space booking error:", error);
+    res.status(500).json({ message: "Server error completing parking session" });
+  }
+});
+
 module.exports = router;

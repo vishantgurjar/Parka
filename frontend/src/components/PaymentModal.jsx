@@ -130,7 +130,9 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 razorpay_signature: response.razorpay_signature,
                 entityType,
                 entityId,
-                amount: plan.amount
+                amount: plan.amount,
+                userId: user?._id || user?.id,
+                hours: plan.hours
               })
             });
 
@@ -204,7 +206,9 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             razorpay_signature: "mock_signature",
             entityType,
             entityId,
-            amount: plan.amount
+            amount: plan.amount,
+            userId: user?._id || user?.id,
+            hours: plan.hours
           };
 
       const verifyUrl = isSubscription 

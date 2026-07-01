@@ -72,13 +72,61 @@ router.post('/report-issue', async (req, res) => {
     const vehicleOwner = await User.findById(vehicleId);
     if (!vehicleOwner) return res.status(404).json({ message: 'Vehicle owner not found' });
 
-    // 1. Notify Owner (Simulated)
+    // 1. Notify Owner (Nodemailer Email Notification)
     console.log(`\n\n[📢 NEIGHBORLY HELP ALERT]`);
     console.log(`Owner: ${vehicleOwner.name} (${vehicleOwner.phone})`);
     console.log(`Vehicle: ${vehicleOwner.plateNumber} (${vehicleOwner.make} ${vehicleOwner.model})`);
     console.log(`Reported Issue: "${issueType.toUpperCase()}"`);
     console.log(`Reporter ID: ${reporterId || 'Guest'}`);
     console.log(`Time: ${new Date().toLocaleString()}\n\n`);
+
+    try {
+      const nodemailer = require('nodemailer');
+      const emailUser = process.env.EMAIL_USER;
+      const emailPass = process.env.EMAIL_PASS;
+      const emailService = process.env.EMAIL_SERVICE || 'gmail';
+
+      if (emailUser && emailPass && emailPass !== 'your_gmail_app_password_here') {
+        const transporter = nodemailer.createTransport({
+          service: emailService,
+          auth: {
+            user: emailUser,
+            pass: emailPass
+          }
+        });
+
+        const mailOptions = {
+          from: `"Parxéé City Neighborhood Help" <${emailUser}>`,
+          to: vehicleOwner.email,
+          subject: `📢 Vehicle Issue Reported: [${issueType.toUpperCase().replace('_', ' ')}] - Parxéé City`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #14b8a6; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">PARXÉÉ CITY</h1>
+                <p style="color: #9ca3af; font-size: 13px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Neighborhood Protection Network</p>
+              </div>
+              <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+              <p>Hello ${vehicleOwner.name},</p>
+              <p>A helpful neighbor has reported an issue with your vehicle (<strong>${vehicleOwner.plateNumber || 'Your Registered Vehicle'}</strong>, ${vehicleOwner.make} ${vehicleOwner.model}).</p>
+              
+              <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #14b8a6; margin: 20px 0;">
+                <p style="margin: 0; font-size: 13px;"><strong>Reported Issue:</strong></p>
+                <h3 style="margin: 5px 0; color: #14b8a6; text-transform: uppercase; font-size: 18px;">${issueType.toUpperCase().replace('_', ' ')}</h3>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #9ca3af;">Time: ${new Date().toLocaleString()}</p>
+              </div>
+
+              <p>Please check your vehicle as soon as possible to prevent any inconvenience or security concerns!</p>
+              <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+              <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+            </div>
+          `
+        };
+        await transporter.sendMail(mailOptions);
+        console.log(`[Report Issue Email Alert] Sent successfully to ${vehicleOwner.email}`);
+      }
+    } catch (mailErr) {
+      console.error("Failed to send report issue email alert:", mailErr);
+    }
 
     // 2. Reward Reporter (if logged in)
     let pointsEarned = 0;

@@ -12,6 +12,7 @@ import {
   Car, Eye, BatteryCharging
 } from 'lucide-react';
 import { getBackendUrl } from '../utils/api';
+import { io } from 'socket.io-client';
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -192,6 +193,10 @@ export default function EVHub() {
   const [chargePercent, setChargePercent] = useState(0);
   const [enteredOtp, setEnteredOtp] = useState('');
   
+  // Real active SOS state for EV rescue
+  const [activeEvSosId, setActiveEvSosId] = useState(null);
+  const [evRescuerBid, setEvRescuerBid] = useState(null);
+  
   // Host Charger Form States
   const [hostForm, setHostForm] = useState({
     hostName: user?.name || '',
@@ -339,6 +344,52 @@ export default function EVHub() {
     }
   };
 
+  const fetchActiveEvSOSRequest = async () => {
+    if (!user) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/sos/active/user/${user._id}`);
+      if (res.ok) {
+        const activeSos = await res.json();
+        if (activeSos && activeSos.type === 'ev_rescue') {
+          setActiveEvSosId(activeSos._id);
+          
+          if (activeSos.status === 'pending') {
+            setSosStatus('searching');
+            setSosProgress(0);
+            
+            const newSocket = io(getBackendUrl());
+            newSocket.on('connect', () => {
+              newSocket.emit('join-sos-room', user._id);
+            });
+            newSocket.on('sos-match-confirmed', (data) => {
+              setSosStatus('dispatched');
+              setEvRescuerBid(data.sos.assignedBid);
+              toast.success("SOS Rescuer Unit Dispatched!");
+              speakVoice("Rescuer unit dispatched! Tracking coordinates.");
+            });
+            newSocket.on('mechanic-moved', (loc) => {
+              setSosMarkerCoords([loc.lat, loc.lng]);
+              setSosProgress(prev => {
+                const next = Math.min(prev + 10, 100);
+                if (next >= 100) {
+                  setSosStatus('arrived');
+                  speakVoice("Rescue unit arrived at your coordinates. Ready to charge!");
+                }
+                return next;
+              });
+            });
+          } else if (activeSos.status === 'accepted') {
+            setSosStatus('dispatched');
+            setEvRescuerBid(activeSos.assignedBid);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching active EV SOS:", err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'grid-share') {
       fetchChargers();
@@ -346,6 +397,8 @@ export default function EVHub() {
     } else if (activeTab === 'wallet') {
       fetchEarnings();
       fetchActiveBookings();
+    } else if (activeTab === 'sos') {
+      fetchActiveEvSOSRequest();
     }
   }, [activeTab]);
 
@@ -511,43 +564,62 @@ export default function EVHub() {
   const [sosProgress, setSosProgress] = useState(0);
   const [sosMarkerCoords, setSosMarkerCoords] = useState(null);
 
-  const startSosSimulation = () => {
+  const startSosSimulation = async () => {
+    if (!user) {
+      toast.error("Please login to use SOS Rescue.");
+      return;
+    }
     setSosStatus('searching');
     setSosProgress(0);
     speakVoice("Locating the nearest Parxéé highway charging rescue unit...");
-    
-    // Step 1: Searching for rescue van
-    setTimeout(() => {
-      setSosStatus('dispatched');
-      speakVoice("Rescuer unit dispatched! Tracking coordinates and ETA is 12 minutes.");
-      toast.success("SOS Rescuer Unit Dispatched!");
-      
-      // Place rescue van close by user map coordinates
-      const startLat = mapCenter[0] + 0.02;
-      const startLng = mapCenter[1] + 0.02;
-      setSosMarkerCoords([startLat, startLng]);
-      
-      // Step 2: Animate Van heading closer to the center
-      let prg = 0;
-      const interval = setInterval(() => {
-        prg += 5;
-        setSosProgress(prg);
+
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/sos/broadcast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user._id,
+          userName: user.name,
+          userPhone: user.phone || '9112200000',
+          location: { lat: mapCenter[0], lng: mapCenter[1] },
+          type: 'ev_rescue'
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setActiveEvSosId(data.sosRequest._id);
+
+        const newSocket = io(getBackendUrl());
+        newSocket.on('connect', () => {
+          newSocket.emit('join-sos-room', user._id);
+        });
         
-        // Move marker closer linearly
-        setSosMarkerCoords(prev => {
-          if (!prev) return null;
-          const diffLat = (mapCenter[0] - startLat) * (prg / 100);
-          const diffLng = (mapCenter[1] - startLng) * (prg / 100);
-          return [startLat + diffLat, startLng + diffLng];
+        newSocket.on('sos-match-confirmed', (data) => {
+          setSosStatus('dispatched');
+          setEvRescuerBid(data.sos.assignedBid);
+          toast.success("SOS Rescuer Unit Dispatched!");
+          speakVoice("Rescuer unit dispatched! Tracking coordinates.");
         });
 
-        if (prg >= 100) {
-          clearInterval(interval);
-          setSosStatus('arrived');
-          speakVoice("Rescue unit arrived at your coordinates. Ready to charge!");
-        }
-      }, 500); // Speed simulation
-    }, 3000);
+        newSocket.on('mechanic-moved', (loc) => {
+          setSosMarkerCoords([loc.lat, loc.lng]);
+          setSosProgress(prev => {
+            const next = Math.min(prev + 10, 100);
+            if (next >= 100) {
+              setSosStatus('arrived');
+              speakVoice("Rescue unit arrived at your coordinates. Ready to charge!");
+            }
+            return next;
+          });
+        });
+      }
+    } catch (err) {
+      console.error("EV SOS broadcast failed:", err);
+      toast.error("Failed to dispatch rescue. Check connection.");
+      setSosStatus('idle');
+    }
   };
 
 
@@ -1879,11 +1951,11 @@ export default function EVHub() {
                         {/* Rescuer Info */}
                         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '16px', display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.25rem' }}>
                           <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', color: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                            RG
+                            {evRescuerBid ? evRescuerBid.mechanicName.charAt(0) : "R"}
                           </div>
                           <div>
-                            <strong style={{ fontSize: '0.9rem', color: '#fff', display: 'block' }}>Ramesh Gujjar (EV Rescue Expert)</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block' }}>Vehicle: Mahindra e-Supro (DL-3C-XX-8742)</span>
+                            <strong style={{ fontSize: '0.9rem', color: '#fff', display: 'block' }}>{evRescuerBid ? evRescuerBid.mechanicName : "Ramesh Gujjar (EV Rescue Expert)"}</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block' }}>Vehicle: {evRescuerBid ? `Contact: ${evRescuerBid.phone || 'N/A'}` : "Mahindra e-Supro (DL-3C-XX-8742)"}</span>
                           </div>
                         </div>
 

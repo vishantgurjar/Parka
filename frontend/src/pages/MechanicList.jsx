@@ -236,6 +236,58 @@ export default function MechanicList() {
     fetchMechanics();
   }, []);
 
+  const fetchActiveSOSRequest = async () => {
+    if (!user) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/sos/active/user/${user._id}`);
+      if (res.ok) {
+        const activeSos = await res.json();
+        if (activeSos && activeSos.type === 'general') {
+          setActiveSosId(activeSos._id);
+          setBids(activeSos.bids || []);
+          
+          if (activeSos.status === 'pending') {
+            setSosStatus('broadcasting');
+            
+            const newSocket = io(getBackendUrl());
+            setSocket(newSocket);
+
+            newSocket.on('connect', () => {
+                newSocket.emit('join-sos-room', user._id);
+            });
+
+            newSocket.on('mechanic-bid', (bid) => {
+                setBids(prev => [...prev, bid]);
+            });
+
+            newSocket.on('mechanic-moved', (loc) => {
+                setMechanicLocation(loc);
+            });
+
+            newSocket.on('sos-match-confirmed', (data) => {
+                setSosStatus('accepted');
+                setAssignedMechanic(data.sos.assignedBid);
+                setActiveSOS({...data.sos.assignedBid, id: data.sos._id});
+                newSocket.disconnect();
+                setSocket(null);
+            });
+          } else if (activeSos.status === 'accepted') {
+            setSosStatus('accepted');
+            setAssignedMechanic(activeSos.assignedBid);
+            setActiveSOS({...activeSos.assignedBid, id: activeSos._id});
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching active SOS request:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveSOSRequest();
+  }, [user]);
+
   const defaultCenter = userLocation ? [userLocation.lat, userLocation.lng] : [28.6139, 77.2090]; // Default Delhi
 
   // ---------- SOS LOGIC -----------
@@ -290,6 +342,14 @@ export default function MechanicList() {
 
             newSocket.on('mechanic-moved', (loc) => {
                 setMechanicLocation(loc);
+            });
+
+            newSocket.on('sos-match-confirmed', (data) => {
+                setSosStatus('accepted');
+                setAssignedMechanic(data.sos.assignedBid);
+                setActiveSOS({...data.sos.assignedBid, id: data.sos._id});
+                newSocket.disconnect();
+                setSocket(null);
             });
         }
     } catch (err) {

@@ -24,12 +24,13 @@ module.exports = function(io) {
     // @desc    Broadcast a new SOS request
     router.post('/broadcast', async (req, res) => {
         try {
-            const { userId, userName, userPhone, location } = req.body;
+            const { userId, userName, userPhone, location, type } = req.body;
             const sosRequest = new SOSRequest({
                 userId,
                 userName,
                 userPhone,
                 location,
+                type: type || 'general',
                 bids: []
             });
             await sosRequest.save();
@@ -37,6 +38,59 @@ module.exports = function(io) {
             // Broadcast via socket.io
             if (io) {
                 io.to('mechanic_sos').emit('incoming-sos', sosRequest);
+            }
+
+            // Task 8: Simulated dispatch auto-bid for ev_rescue
+            if (sosRequest.type === 'ev_rescue') {
+                setTimeout(async () => {
+                    try {
+                        const targetSos = await SOSRequest.findById(sosRequest._id);
+                        if (targetSos && targetSos.status === 'pending') {
+                            const bid = {
+                                mechanicId: '65e2b0ef0000000000000001',
+                                mechanicName: 'Ramesh Gujjar (EV Expert)',
+                                price: 299,
+                                distance: 2.4,
+                                phone: '+91 91122 00000'
+                            };
+                            targetSos.bids.push(bid);
+                            targetSos.status = 'accepted';
+                            targetSos.assignedBid = bid;
+                            await targetSos.save();
+
+                            if (io) {
+                                io.to(`sos_${targetSos.userId}`).emit("sos-match-confirmed", { sosId: targetSos._id, sos: targetSos });
+                                io.to('mechanic_sos').emit("sos-resolved", targetSos._id);
+                            }
+
+                            // Movement simulation
+                            let progress = 0;
+                            const interval = setInterval(async () => {
+                                progress += 10;
+                                const freshSos = await SOSRequest.findById(targetSos._id);
+                                if (!freshSos || freshSos.status !== 'accepted') {
+                                    clearInterval(interval);
+                                    return;
+                                }
+                                
+                                const startLat = targetSos.location.lat + 0.02;
+                                const startLng = targetSos.location.lng + 0.02;
+                                const currentLat = startLat + (targetSos.location.lat - startLat) * (progress / 100);
+                                const currentLng = startLng + (targetSos.location.lng - startLng) * (progress / 100);
+                                
+                                if (io) {
+                                    io.to(`sos_${targetSos.userId}`).emit("mechanic-moved", { lat: currentLat, lng: currentLng });
+                                }
+
+                                if (progress >= 100) {
+                                    clearInterval(interval);
+                                }
+                            }, 2000);
+                        }
+                    } catch (err) {
+                        console.error("Auto-bid error:", err);
+                    }
+                }, 3000);
             }
 
             res.status(201).json({ message: 'SOS Broadcasted Successfully', sosRequest });
@@ -54,6 +108,22 @@ module.exports = function(io) {
             res.json(activeRequests);
         } catch (err) {
             res.status(500).json({ message: 'Error fetching active SOS requests' });
+        }
+    });
+
+    // @route   GET /api/sos/active/user/:userId
+    // @desc    Get active SOS request for a user (pending or accepted)
+    router.get('/active/user/:userId', async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const activeRequest = await SOSRequest.findOne({
+                userId,
+                status: { $in: ['pending', 'accepted'] }
+            }).sort({ createdAt: -1 });
+            res.json(activeRequest);
+        } catch (err) {
+            console.error("Error fetching active SOS for user:", err);
+            res.status(500).json({ message: "Server error fetching active SOS" });
         }
     });
 

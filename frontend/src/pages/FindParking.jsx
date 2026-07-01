@@ -120,6 +120,37 @@ export default function FindParking() {
     fetchSpaces();
   }, []);
 
+  const fetchActiveBooking = async () => {
+    if (!user) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/spaces/bookings/active/${user._id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.booking) {
+          setActiveBooking({
+            id: data.booking._id,
+            space: data.booking.spaceId,
+            hours: data.booking.hours,
+            amount: data.booking.price,
+            otp: data.booking.otp,
+            timestamp: new Date(data.booking.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          });
+        } else {
+          setActiveBooking(null);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load active booking:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveBooking();
+  }, [user]);
+
   const handleBook = () => {
     if (!user) {
       toast.error("Please login to book a space");
@@ -130,24 +161,69 @@ export default function FindParking() {
     // Set payment details to launch Razorpay checkout modal
     setPaymentPlan({
       name: `Parking Spot Booking (${bookingHours} hours)`,
-      amount: selectedSpace.pricePerHour * bookingHours
+      amount: selectedSpace.pricePerHour * bookingHours,
+      hours: bookingHours
     });
   };
 
   const handleBookingPaymentSuccess = () => {
     toast.success(`Successfully booked for ${bookingHours} hour(s)!`);
-    if (selectedSpace) {
-      setActiveBooking({
-        space: selectedSpace,
-        hours: bookingHours,
-        amount: selectedSpace.pricePerHour * bookingHours,
-        otp: Math.floor(100000 + Math.random() * 900000).toString().replace(/(\d{3})(\d{3})/, '$1-$2'),
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      setSpaces(prev => prev.map(s => s._id === selectedSpace._id ? { ...s, isAvailable: false } : s));
-      setSelectedSpace(null);
-    }
+    setSelectedSpace(null);
     setPaymentPlan(null);
+    fetchActiveBooking();
+    
+    // Refresh spaces list
+    const fetchSpaces = async () => {
+      try {
+        const baseUrl = getBackendUrl();
+        const res = await fetch(`${baseUrl}/api/spaces`);
+        if (res.ok) {
+          const data = await res.json();
+          setSpaces(data);
+        }
+      } catch (err) {
+        console.error("Failed to load spaces", err);
+      }
+    };
+    fetchSpaces();
+  };
+
+  const handleCompleteParking = async () => {
+    if (!activeBooking) return;
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/spaces/bookings/complete`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ bookingId: activeBooking.id })
+      });
+      if (res.ok) {
+        toast.success("Parking session completed successfully!");
+        setActiveBooking(null);
+        // Refresh spaces list
+        const fetchSpaces = async () => {
+          try {
+            const baseUrl = getBackendUrl();
+            const res = await fetch(`${baseUrl}/api/spaces`);
+            if (res.ok) {
+              const data = await res.json();
+              setSpaces(data);
+            }
+          } catch (err) {
+            console.error("Failed to load spaces", err);
+          }
+        };
+        fetchSpaces();
+      } else {
+        toast.error("Failed to complete parking session.");
+      }
+    } catch (err) {
+      console.error("Complete booking error:", err);
+      toast.error("Network error completing parking session.");
+    }
   };
 
   return (
@@ -359,11 +435,11 @@ export default function FindParking() {
                 <Navigation size={14} /> Navigate
               </button>
               <button 
-                onClick={() => setActiveBooking(null)} 
+                onClick={handleCompleteParking} 
                 className="glass" 
                 style={{ flex: 1, padding: '12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.85rem', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer', background: 'rgba(239, 68, 68, 0.05)' }}
               >
-                Close Ticket
+                Stop Parking
               </button>
             </div>
           </div>

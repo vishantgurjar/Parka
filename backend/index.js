@@ -12,6 +12,7 @@ const Review = require('./models/Review');
 const SOSRequest = require('./models/SOSRequest');
 const CommunityHelp = require('./models/CommunityHelp');
 const Space = require('./models/Space');
+const SpaceBooking = require('./models/SpaceBooking');
 
 
 const { OAuth2Client } = require('google-auth-library');
@@ -393,7 +394,7 @@ app.post('/api/payment/create-order', async (req, res) => {
 
 app.post('/api/payment/verify-signature', async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, entityType, entityId, amount } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, entityType, entityId, amount, userId, hours } = req.body;
     
     const isMock = razorpay_order_id && razorpay_order_id.startsWith('order_mock_');
 
@@ -425,6 +426,19 @@ app.post('/api/payment/verify-signature', async (req, res) => {
       if (space) {
         space.isAvailable = false;
         await space.save();
+
+        const bookingOtp = `PK-${Math.floor(100000 + Math.random() * 900000)}`;
+        const booking = new SpaceBooking({
+          spaceId: entityId,
+          userId: userId || '65e2b0ef0000000000000000',
+          hours: Number(hours) || 1,
+          price: Number(amount) || (space.pricePerHour * (Number(hours) || 1)),
+          status: 'approved',
+          otp: bookingOtp,
+          paymentOrderId: razorpay_order_id || `order_mock_${Date.now()}`,
+          paymentVerified: true
+        });
+        await booking.save();
       }
     }
     res.json({ success: true, message: 'Payment verified' });
@@ -660,11 +674,54 @@ app.post('/api/alerts/scan', async (req, res) => {
     let locationMsg = "";
     try {
         const owner = await User.findOne({ phone: ownerPhone });
-        if (owner && ['silver', 'gold', 'diamond'].includes(owner.subscriptionTier)) {
-            if (lat && lng) locationMsg = `📍 Location: https://www.google.com/maps?q=${lat},${lng}`;
-            else locationMsg = " (Location access denied)";
+        if (owner) {
+            const hasPremium = ['silver', 'gold', 'diamond'].includes(owner.subscriptionTier);
+            if (hasPremium) {
+                if (lat && lng) locationMsg = `📍 Location: https://www.google.com/maps?q=${lat},${lng}`;
+                else locationMsg = " (Location access denied)";
+            }
+
+            // Send actual email via nodemailer
+            const nodemailer = require('nodemailer');
+            const emailUser = process.env.EMAIL_USER;
+            const emailPass = process.env.EMAIL_PASS;
+            const emailService = process.env.EMAIL_SERVICE || 'gmail';
+
+            if (emailUser && emailPass && emailPass !== 'your_gmail_app_password_here') {
+                const transporter = nodemailer.createTransport({
+                    service: emailService,
+                    auth: {
+                        user: emailUser,
+                        pass: emailPass
+                    }
+                });
+
+                const mailOptions = {
+                    from: `"Parxéé City Alerts" <${emailUser}>`,
+                    to: owner.email,
+                    subject: `⚠️ QR Code Scanned - Parxéé City`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #f43f5e;">
+                            <h2 style="color: #f43f5e; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 0;">⚠️ Security Notice: QR Scan</h2>
+                            <p>Hello ${owner.name || 'Driver'},</p>
+                            <p>Someone scanned the Smart QR Code of your vehicle (<strong>${owner.plateNumber || 'Your Registered Vehicle'}</strong>).</p>
+                            <p>If you did not perform this scan, someone might be looking to contact you or inspecting your vehicle.</p>
+                            <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #f43f5e; margin: 20px 0;">
+                                <p style="margin: 0; font-size: 13px;"><strong>Details:</strong></p>
+                                <p style="margin: 5px 0 0 0; color: #d1d5db;">Time: ${new Date().toLocaleString()}</p>
+                                <p style="margin: 5px 0 0 0; color: #d1d5db;">${hasPremium ? `GPS Location: ${locationMsg}` : `GPS Location: 🔒 Upgrade to Silver/Gold/Diamond plan to unlock live tracking location links.`}</p>
+                            </div>
+                            <p style="color: #9ca3af; font-size: 13px;">Stay safe and secure with Parxéé City Protection.</p>
+                        </div>
+                    `
+                };
+                await transporter.sendMail(mailOptions);
+                console.log(`[QR Scan Email Alert] Sent successfully to ${owner.email}`);
+            }
         }
-    } catch (err) {}
+    } catch (err) {
+        console.error("QR Scan Alert Email Error:", err);
+    }
     res.json({ success: true, message: `Alert sent. ${locationMsg}` });
 });
 
