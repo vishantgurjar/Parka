@@ -125,6 +125,38 @@ function App() {
     localStorage.removeItem('active_order_id'); // Cleanup any stale payment data
   };
 
+  // Sync user profile with database to ensure smartTagId, subscription status, and other fields are always up to date
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (!token) return;
+      try {
+        const baseUrl = getBackendUrl();
+        const res = await fetch(`${baseUrl}/api/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            let userData = data.user;
+            if (userData && (userData.email === import.meta.env.VITE_ADMIN_EMAIL || userData.role === 'admin')) {
+              userData.subscriptionTier = 'diamond';
+            }
+            setUser(userData);
+            localStorage.setItem('parkeActiveUser', JSON.stringify(userData));
+          }
+        } else if (res.status === 401) {
+          logout();
+        }
+      } catch (err) {
+        console.error("Failed to sync profile:", err);
+      }
+    };
+
+    fetchCurrentUser();
+  }, [token]);
+
   const isPro = (u = user) => {
     if (!u) return false;
     // Hardcoded bypass for owner for absolute reliability

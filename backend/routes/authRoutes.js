@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+const { protect } = require('../middleware/authMiddleware');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -322,6 +323,21 @@ router.post('/reset-password', async (req, res) => {
     } catch (error) {
         console.error('Reset Password Error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   GET /api/auth/me
+// @desc    Get current user profile (full, non-masked)
+router.get('/me', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ user });
+    } catch (err) {
+        console.error('Fetch Current User Error:', err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
