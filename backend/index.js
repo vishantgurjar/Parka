@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
@@ -213,7 +215,21 @@ try {
 }
 
 // Middleware
+app.use(helmet());
 app.use(cors());
+
+// Rate Limiter: 200 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, 
+  standardHeaders: true, 
+  legacyHeaders: false, 
+  message: {
+    message: "Too many requests from this IP, please try again after 15 minutes"
+  }
+});
+app.use(limiter);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 

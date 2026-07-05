@@ -33,6 +33,7 @@ const UserSchema = new mongoose.Schema({
   razorpaySubscriptionId: { type: String },
   subscriptionStatus: { type: String, enum: ['inactive', 'active', 'cancelled', 'halted'], default: 'inactive' },
   subscriptionExpiresAt: { type: Date },
+  smartTagId: { type: String, unique: true, sparse: true },
   secondaryVehicles: [{
     make: String,
     model: String,
