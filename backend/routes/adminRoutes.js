@@ -156,4 +156,169 @@ router.delete('/chargers/:id', protect, isAdmin, async (req, res) => {
   }
 });
 
+// ================= STICKER HUB ADMIN ENDPOINTS =================
+const Sticker = require('../models/Sticker');
+
+// @route   POST /api/admin/stickers/generate
+// @desc    Bulk range-generate sticker IDs (e.g., PC000001 to PC000050)
+router.post('/stickers/generate', protect, isAdmin, async (req, res) => {
+  try {
+    const { prefix = 'PC', startNum = 1, count = 50 } = req.body;
+    
+    if (count <= 0 || count > 1000) {
+      return res.status(400).json({ message: "Generate count must be between 1 and 1000 per request." });
+    }
+
+    const stickerDocs = [];
+    for (let i = 0; i < count; i++) {
+      const nextVal = startNum + i;
+      // Pad to 6 digits, e.g., 000001
+      const paddedVal = String(nextVal).padStart(6, '0');
+      const stickerId = `${prefix}${paddedVal}`.toUpperCase();
+      
+      stickerDocs.push({
+        stickerId,
+        status: 'Inactive'
+      });
+    }
+
+    // Ignore duplicates, insert new records
+    let createdCount = 0;
+    try {
+      const result = await Sticker.insertMany(stickerDocs, { ordered: false });
+      createdCount = result.length;
+    } catch (bulkErr) {
+      // insertMany with ordered:false will throw error containing writeErrors for duplicates,
+      // but still insert the non-duplicates. We count successfully inserted records.
+      createdCount = bulkErr.result ? bulkErr.result.nInserted : 0;
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Successfully printed/generated ${createdCount} stickers in database.`,
+      generated: createdCount
+    });
+  } catch (error) {
+    console.error("Bulk Generate Error:", error);
+    res.status(500).json({ message: "Error generating stickers." });
+  }
+});
+
+// @route   GET /api/admin/stickers
+// @desc    List printed/generated stickers with search and filter
+router.get('/stickers', protect, isAdmin, async (req, res) => {
+  try {
+    const { search = '', status = '', page = 1, limit = 50 } = req.query;
+
+    const query = {};
+    if (search) {
+      query.stickerId = { $regex: search, $options: 'i' };
+    }
+    if (status) {
+      query.status = status;
+    }
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skipNum = (pageNum - 1) * limitNum;
+
+    const total = await Sticker.countDocuments(query);
+    const stickers = await Sticker.find(query)
+      .populate('userId', 'name email phone')
+      .sort({ stickerId: 1 })
+      .skip(skipNum)
+      .limit(limitNum);
+
+    // Calculate overall stats
+    const totalPrinted = await Sticker.countDocuments({});
+    const totalActive = await Sticker.countDocuments({ status: 'Active' });
+    const totalInactive = await Sticker.countDocuments({ status: 'Inactive' });
+
+    res.json({
+      success: true,
+      stickers,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      stats: {
+        totalPrinted,
+        totalActive,
+        totalInactive
+      }
+    });
+  } catch (error) {
+    console.error("Get Stickers Admin Error:", error);
+    res.status(500).json({ message: "Error loading stickers." });
+  }
+});
+
+// @route   POST /api/admin/stickers/:id/toggle-status
+// @desc    Deactivate or reactivate a sticker ID
+router.post('/stickers/:stickerId/toggle-status', protect, isAdmin, async (req, res) => {
+  try {
+    const stickerId = req.params.stickerId.toUpperCase();
+    const sticker = await Sticker.findOne({ stickerId });
+
+    if (!sticker) {
+      return res.status(404).json({ message: "Sticker not found." });
+    }
+
+    // Toggle Status
+    if (sticker.status === 'Active') {
+      sticker.status = 'Inactive';
+      // De-link associated User if active
+      if (sticker.userId) {
+        await User.findByIdAndUpdate(sticker.userId, { $unset: { smartTagId: "" } });
+      }
+      sticker.userId = null;
+      sticker.phone = null;
+      sticker.vehicleNumber = null;
+      sticker.activationDate = null;
+      sticker.activatedBy = null;
+    } else {
+      sticker.status = 'Active';
+      sticker.activationDate = new Date();
+      sticker.activatedBy = 'Admin Manual';
+    }
+
+    await sticker.save();
+    res.json({ 
+      success: true, 
+      message: `Sticker ${stickerId} status toggled to ${sticker.status}`, 
+      sticker 
+    });
+  } catch (error) {
+    console.error("Sticker Toggle Error:", error);
+    res.status(500).json({ message: "Error changing sticker status." });
+  }
+});
+
+// @route   GET /api/admin/stickers/export
+// @desc    Export sticker details as CSV
+router.get('/stickers/export', protect, isAdmin, async (req, res) => {
+  try {
+    const stickers = await Sticker.find({})
+      .populate('userId', 'name email phone')
+      .sort({ stickerId: 1 });
+
+    let csvContent = "Sticker ID,Status,Owner Name,Owner Mobile,Vehicle Plate,Activation Date\n";
+    
+    stickers.forEach(s => {
+      const ownerName = s.userId ? `"${s.userId.name}"` : "NULL";
+      const ownerPhone = s.userId ? `"${s.userId.phone}"` : "NULL";
+      const vehicleNum = s.vehicleNumber ? `"${s.vehicleNumber}"` : "NULL";
+      const actDate = s.activationDate ? s.activationDate.toISOString() : "NULL";
+
+      csvContent += `${s.stickerId},${s.status},${ownerName},${ownerPhone},${vehicleNum},${actDate}\n`;
+    });
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('parxee_stickers_report.csv');
+    res.send(csvContent);
+  } catch (error) {
+    console.error("Export Stickers CSV Error:", error);
+    res.status(500).send("Error generating export report.");
+  }
+});
+
 module.exports = router;

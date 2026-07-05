@@ -22,7 +22,8 @@ export default function Profile() {
     make: user?.make || '',
     model: user?.model || '',
     year: user?.year || '',
-    color: user?.color || ''
+    color: user?.color || '',
+    emergencyContact: user?.emergencyContact || ''
   });
 
   if (!user) {
@@ -257,6 +258,82 @@ export default function Profile() {
 
           </div>
 
+          {/* QR STICKER STATUS CARD */}
+          <div className="glass-card" style={{ marginTop: '30px', padding: '24px', border: '1px solid rgba(139, 92, 246, 0.2)', textAlign: 'left' }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', color: '#8b5cf6', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+              <span>🏷️</span> Smart QR Protection Tag
+            </h3>
+            
+            {user.smartTagId ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'center' }}>
+                
+                {/* QR Display */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.01)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`} 
+                    alt="My QR Sticker" 
+                    style={{ width: '150px', height: '150px', borderRadius: '12px', background: '#fff', padding: '8px' }}
+                  />
+                  <span style={{ fontSize: '0.8rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold' }}>STICKER ID: {user.smartTagId}</span>
+                  <a 
+                    href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`}
+                    download={`parxee_qr_${user.smartTagId}.png`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-gradient" 
+                    style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', color: '#000', fontWeight: 'bold' }}
+                  >
+                    Download QR Code
+                  </a>
+                </div>
+
+                {/* QR Actions & Status */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>PROTECTION STATUS</span>
+                    <strong style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+                      Active & Fully Protected
+                    </strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>EMERGENCY CONTACT</span>
+                    <strong style={{ color: '#fff' }}>{user.emergencyContact || 'Not Set (Manage Docs to configure)'}</strong>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                    <button 
+                      onClick={() => {
+                        toast.success(`Replacement order received for Sticker ID: ${user.smartTagId}! Support team will dispatch shortly.`);
+                      }}
+                      className="btn-secondary" 
+                      style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', flex: 1 }}
+                    >
+                      🔄 Order Replacement
+                    </button>
+                    <Link 
+                      to={`/v/${user.smartTagId}`}
+                      className="btn-secondary" 
+                      style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', color: '#a78bfa', textDecoration: 'none', cursor: 'pointer', flex: 1, textAlign: 'center' }}
+                    >
+                      👁️ View Public Profile
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+                  You don't have an active Parxéé City Smart QR Sticker linked to this profile.
+                </p>
+                <div style={{ fontSize: '0.8rem', color: '#eab308', background: 'rgba(234, 179, 8, 0.05)', padding: '10px', borderRadius: '8px', display: 'inline-block', maxWidth: '380px' }}>
+                  ⚠️ **To activate a sticker:** Scan the QR code printed on your physical sticker and complete the mobile verification.
+                </div>
+              </div>
+            )}
+          </div>
+
           <div style={{ marginTop: '40px', textAlign: 'center' }}>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
               *Member since: {new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
@@ -339,6 +416,11 @@ export default function Profile() {
                            <label className="form-label" style={{ fontSize: '0.75rem' }}>VEHICLE COLOR</label>
                            <input type="text" name="color" value={docData.color} onChange={handleDocChange} placeholder="e.g. Sapphire Black" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
                        </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginTop: '15px' }}>
+                        <label className="form-label" style={{ fontSize: '0.75rem' }}>EMERGENCY CONTACT NUMBER</label>
+                        <input type="tel" name="emergencyContact" value={docData.emergencyContact} onChange={handleDocChange} placeholder="e.g. 9876543210" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }} />
                     </div>
 
                     <div className="form-grid form-grid-3" style={{ gap: '15px', marginTop: '15px' }}>

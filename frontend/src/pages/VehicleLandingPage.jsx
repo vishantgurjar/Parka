@@ -79,6 +79,8 @@ export default function VehicleLandingPage() {
 
     const sendScanAlert = (lat, lng, ownerPhone) => {
       const baseUrl = getBackendUrl();
+      
+      // 1. Send scan notification to owner
       fetch(`${baseUrl}/api/alerts/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,6 +91,17 @@ export default function VehicleLandingPage() {
           lng 
         })
       }).catch(err => console.log('Alert skipped:', err));
+
+      // 2. Log scan to history for analytics
+      fetch(`${baseUrl}/api/stickers/log-scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          stickerId: id, 
+          lat, 
+          lng 
+        })
+      }).catch(err => console.log('Scan log skipped:', err));
     };
 
     const fetchNearestMechanic = async (lat, lng) => {
@@ -253,68 +266,63 @@ export default function VehicleLandingPage() {
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
-          {/* 1. Primary Action: Secure Privacy Call (PRO) OR Direct Call (Standard) */}
-          {(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') ? (
-            <button onClick={() => setShowSecureCall(true)} className="btn-gradient" style={{ 
-              border: 'none',
-              cursor: 'pointer',
-              padding: '18px', 
-              borderRadius: '20px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              fontSize: '1.2rem',
-              fontWeight: '800',
-              background: 'var(--gradient-primary)',
-              color: '#fff',
-              boxShadow: '0 10px 25px rgba(13, 148, 136, 0.4)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
-                  <ShieldCheck size={24} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '1.2rem' }}>Secure Privacy Call</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>IDENTITY HIDDEN • ENCRYPTED</div>
-                </div>
+          {/* 1. Primary Action: Secure Privacy Call (IDENTITY HIDDEN) */}
+          <button onClick={() => setShowSecureCall(true)} className="btn-gradient" style={{ 
+            border: 'none',
+            cursor: 'pointer',
+            padding: '18px', 
+            borderRadius: '20px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            fontSize: '1.2rem',
+            fontWeight: '800',
+            background: 'var(--gradient-primary)',
+            color: '#fff',
+            boxShadow: '0 10px 25px rgba(13, 148, 136, 0.4)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
+                <ShieldCheck size={24} />
               </div>
-              <ChevronRight size={24} />
-            </button>
-          ) : (
-            <a href={`tel:${vehicle.phone || '9112200000'}`} className="btn-gradient" style={{ 
-              textDecoration: 'none', 
-              padding: '18px', 
-              borderRadius: '20px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              fontSize: '1.2rem',
-              fontWeight: '800',
-              background: 'var(--gradient-primary)',
-              color: '#fff',
-              boxShadow: '0 10px 25px rgba(13, 148, 136, 0.3)',
-              border: 'none',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
-                  <PhoneCall size={24} />
-                </div>
-                Call Owner Now
+              <div>
+                <div style={{ fontSize: '1.2rem' }}>Secure Privacy Call</div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>IDENTITY HIDDEN • ENCRYPTED</div>
               </div>
-              <ChevronRight size={24} />
-            </a>
-          )}
-
-          {/* 2. No Fallback for PRO (Strict Privacy) */}
-          {!(vehicle.subscriptionTier === 'gold' || vehicle.subscriptionTier === 'diamond') && (
-            <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '0.8rem', marginTop: '-5px' }}>
-               Standard Network call will be initiated.
             </div>
-          )}
+            <ChevronRight size={24} />
+          </button>
+
+          {/* 2. Secondary Action: Secure WhatsApp Direct Message */}
+          <a 
+            href={`${getBackendUrl()}/api/stickers/whatsapp/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              textDecoration: 'none', 
+              padding: '16px', 
+              borderRadius: '20px', 
+              background: 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)',
+              border: 'none',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(37, 211, 102, 0.3)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>💬</span>
+              </div>
+              Secure WhatsApp Chat
+            </div>
+            <ChevronRight size={24} />
+          </a>
           
           {/* 3. Highway Emergency Help (Critical) */}
           <a href={`tel:${nearestMechanic.phone}`} style={{ 

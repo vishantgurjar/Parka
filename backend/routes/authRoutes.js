@@ -158,18 +158,29 @@ router.get('/vehicle/:id', async (req, res) => {
                 subscriptionTier: 'diamond'
             });
         }
-        const user = await User.findById(req.params.id).select('name email phone make model plateNumber color year subscriptionTier');
+
+        let user = null;
+        const mongoose = require('mongoose');
+
+        // 1. Try finding by User ObjectId
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            user = await User.findById(req.params.id).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact');
+        }
+
+        // 2. Fallback to finding by smartTagId/Sticker ID
+        if (!user) {
+            const stickerId = req.params.id.toUpperCase().trim();
+            user = await User.findOne({ smartTagId: stickerId }).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact');
+        }
 
         if (!user) {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
 
-        // Data Privacy Masking for PRO users
+        // Enforce strict Data Privacy Masking on the public page for all users
         const userObj = user.toObject();
-        if (userObj.subscriptionTier === 'diamond' || userObj.subscriptionTier === 'gold') {
-            userObj.phone = 'HIDDEN (Privacy Active)';
-            userObj.email = 'PROTECTED';
-        }
+        userObj.phone = 'HIDDEN (Privacy Active)';
+        userObj.email = 'PROTECTED';
 
         res.json(userObj);
     } catch (error) {

@@ -319,6 +319,7 @@ const communityRoutes = require('./routes/communityRoutes')(io);
 const aiRoutes = require('./routes/aiRoutes');
 const spaceRoutes = require('./routes/spaceRoutes');
 const evRoutes = require('./routes/evRoutes');
+const stickerRoutes = require('./routes/stickerRoutes');
 
 app.use('/api', checkDbConnection);
 
@@ -331,6 +332,7 @@ app.use('/api/community-help', communityRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/spaces', spaceRoutes);
 app.use('/api/ev', evRoutes);
+app.use('/api/stickers', stickerRoutes);
 
 // --- UNGROUPED ROUTES (Payments, Incidents, Alerts, Reviews) ---
 

@@ -16,6 +16,21 @@ export default function AdminDashboard({ user }) {
   const [mechanics, setMechanics] = useState([]);
   const [chargers, setChargers] = useState([]);
 
+  // Sticker Hub States
+  const [stickers, setStickers] = useState([]);
+  const [stickerStats, setStickerStats] = useState({ totalPrinted: 0, totalActive: 0, totalInactive: 0 });
+  const [stickerSearch, setStickerSearch] = useState('');
+  const [stickerFilter, setStickerFilter] = useState('');
+  const [stickerPage, setStickerPage] = useState(1);
+  const [stickerTotalPages, setStickerTotalPages] = useState(1);
+  const [stickersLoading, setStickersLoading] = useState(false);
+
+  // Bulk Generator States
+  const [genPrefix, setGenPrefix] = useState('PC');
+  const [genStartNum, setGenStartNum] = useState(1);
+  const [genCount, setGenCount] = useState(50);
+  const [genLoading, setGenLoading] = useState(false);
+
   const API_BASE = getBackendUrl();
 
   const fetchMechanics = async () => {
@@ -106,6 +121,101 @@ export default function AdminDashboard({ user }) {
       toast.error("Error deleting charger.");
     }
   };
+
+  const fetchStickers = async (page = 1) => {
+    setStickersLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/stickers?search=${stickerSearch}&status=${stickerFilter}&page=${page}&limit=50`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStickers(data.stickers);
+        setStickerStats(data.stats);
+        setStickerPage(data.page);
+        setStickerTotalPages(data.totalPages);
+      } else {
+        toast.error(data.message || "Failed to load stickers.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error loading stickers.");
+    } finally {
+      setStickersLoading(false);
+    }
+  };
+
+  const handleGenerateStickers = async (e) => {
+    e.preventDefault();
+    setGenLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/stickers/generate`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('parkeToken')}`
+        },
+        body: JSON.stringify({ prefix: genPrefix, startNum: genStartNum, count: genCount })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchStickers(1);
+      } else {
+        toast.error(data.message || "Failed to generate stickers.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error generating stickers.");
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+  const toggleStickerStatus = async (stickerId) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/stickers/${stickerId}/toggle-status`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchStickers(stickerPage);
+      } else {
+        toast.error(data.message || "Failed to toggle status.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error toggling status.");
+    }
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/stickers/export`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'parxee_stickers_report.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success("CSV Report downloaded successfully!");
+      } else {
+        toast.error("Failed to generate CSV report.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error downloading report.");
+    }
+  };
+
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
   useEffect(() => {
@@ -245,6 +355,12 @@ export default function AdminDashboard({ user }) {
               style={{ padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', background: activeTab === 'chargers' ? '#38bdf8' : 'rgba(255,255,255,0.02)', color: '#fff', border: 'none', cursor: 'pointer' }}
             >
               🔌 Manage EV Chargers
+            </button>
+            <button 
+              onClick={() => { setActiveTab('stickers'); fetchStickers(1); }}
+              style={{ padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', background: activeTab === 'stickers' ? '#8b5cf6' : 'rgba(255,255,255,0.02)', color: '#fff', border: 'none', cursor: 'pointer' }}
+            >
+              🏷️ Sticker Hub
             </button>
          </div>
 
@@ -513,6 +629,211 @@ export default function AdminDashboard({ user }) {
                )}
             </div>
          )}
+
+         {activeTab === 'stickers' && (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                
+                {/* Sticker Stats Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+                   <div className="glass-card" style={{ borderLeft: '4px solid #8b5cf6', padding: '1.25rem', borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#9ca3af', textTransform: 'uppercase' }}>Printed Stickers</h4>
+                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>{stickerStats.totalPrinted}</p>
+                   </div>
+                   <div className="glass-card" style={{ borderLeft: '4px solid #10b981', padding: '1.25rem', borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#9ca3af', textTransform: 'uppercase' }}>Activated Cards</h4>
+                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>{stickerStats.totalActive}</p>
+                   </div>
+                   <div className="glass-card" style={{ borderLeft: '4px solid #f59e0b', padding: '1.25rem', borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: '#9ca3af', textTransform: 'uppercase' }}>Inactive Stickers</h4>
+                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#f59e0b' }}>{stickerStats.totalInactive}</p>
+                   </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '2rem' }}>
+                   
+                   {/* 1. Range Generator Form */}
+                   <div className="glass-card" style={{ padding: '1.5rem', borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', color: '#fff', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
+                         🏷️ Generate Pre-printed Sticker IDs
+                      </h3>
+                      <form onSubmit={handleGenerateStickers} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                            <div>
+                               <label style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>Prefix</label>
+                               <input 
+                                  type="text" 
+                                  value={genPrefix} 
+                                  onChange={(e) => setGenPrefix(e.target.value.toUpperCase())}
+                                  style={{ width: '100%', padding: '10px', background: '#0a0a0a', border: '1px solid #374151', color: '#fff', borderRadius: '6px' }}
+                               />
+                            </div>
+                            <div>
+                               <label style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>Start Number</label>
+                               <input 
+                                  type="number" 
+                                  value={genStartNum} 
+                                  onChange={(e) => setGenStartNum(parseInt(e.target.value) || 1)}
+                                  style={{ width: '100%', padding: '10px', background: '#0a0a0a', border: '1px solid #374151', color: '#fff', borderRadius: '6px' }}
+                               />
+                            </div>
+                            <div>
+                               <label style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>Count (Max 1000)</label>
+                               <input 
+                                  type="number" 
+                                  value={genCount} 
+                                  onChange={(e) => setGenCount(parseInt(e.target.value) || 50)}
+                                  style={{ width: '100%', padding: '10px', background: '#0a0a0a', border: '1px solid #374151', color: '#fff', borderRadius: '6px' }}
+                               />
+                            </div>
+                         </div>
+                         <button 
+                            type="submit" 
+                            disabled={genLoading}
+                            style={{ padding: '12px', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', cursor: genLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold', marginTop: '10px' }}
+                         >
+                            {genLoading ? "Generating..." : "Generate & Print IDs"}
+                         </button>
+                      </form>
+                   </div>
+
+                   {/* 2. Actions & Exports */}
+                   <div className="glass-card" style={{ padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                         <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', color: '#fff', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
+                            💾 Data Exporter
+                         </h3>
+                         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.4' }}>
+                            Export details of all generated stickers, including registration status, linked customer details, and vehicle information.
+                         </p>
+                      </div>
+                      <button 
+                         onClick={handleExportCsv}
+                         style={{ padding: '12px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      >
+                         📥 Download CSV Sticker Report
+                      </button>
+                   </div>
+
+                </div>
+
+                {/* Filter and Search controls */}
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                   <input 
+                      type="text" 
+                      placeholder="Search Sticker ID (e.g. PC000001)..." 
+                      value={stickerSearch}
+                      onChange={(e) => setStickerSearch(e.target.value)}
+                      style={{ flex: 2, minWidth: '220px', padding: '12px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '8px' }}
+                   />
+                   <select 
+                      value={stickerFilter}
+                      onChange={(e) => setStickerFilter(e.target.value)}
+                      style={{ flex: 1, minWidth: '150px', padding: '12px', background: '#111827', border: '1px solid #374151', color: '#fff', borderRadius: '8px' }}
+                   >
+                      <option value="">All Statuses</option>
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                   </select>
+                   <button 
+                      onClick={() => fetchStickers(1)}
+                      style={{ padding: '12px 24px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                   >
+                      Search
+                   </button>
+                </div>
+
+                {/* Sticker List Table */}
+                {stickersLoading ? (
+                   <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--primary)' }}>Loading Stickers Database...</div>
+                ) : stickers.length === 0 ? (
+                   <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--muted)', background: 'rgba(255,255,255,0.01)', borderRadius: '12px', border: '1px solid var(--border)' }}>No pre-printed stickers found matching constraints.</div>
+                ) : (
+                   <div>
+                      <div className="table-responsive" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+                            <thead>
+                               <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', textTransform: 'uppercase', color: '#9ca3af' }}>
+                                  <th style={{ padding: '14px 10px' }}>Sticker ID</th>
+                                  <th style={{ padding: '14px 10px' }}>Status</th>
+                                  <th style={{ padding: '14px 10px' }}>Linked Customer</th>
+                                  <th style={{ padding: '14px 10px' }}>Vehicle Info</th>
+                                  <th style={{ padding: '14px 10px' }}>Activation Date</th>
+                                  <th style={{ padding: '14px 10px', textAlign: 'right' }}>Actions</th>
+                               </tr>
+                            </thead>
+                            <tbody>
+                               {stickers.map((s) => (
+                                  <tr key={s._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
+                                     <td style={{ padding: '14px 10px', fontWeight: 'bold', fontFamily: 'monospace' }}>{s.stickerId}</td>
+                                     <td style={{ padding: '14px 10px' }}>
+                                        <span style={{ 
+                                           fontSize: '0.75rem', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold',
+                                           background: s.status === 'Active' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                                           color: s.status === 'Active' ? '#10b981' : '#f59e0b'
+                                        }}>
+                                           {s.status}
+                                        </span>
+                                     </td>
+                                     <td style={{ padding: '14px 10px' }}>
+                                        {s.userId ? (
+                                           <div>
+                                              <div style={{ fontWeight: 'bold' }}>{s.userId.name}</div>
+                                              <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Phone: {s.userId.phone}</div>
+                                           </div>
+                                        ) : "NULL"}
+                                     </td>
+                                     <td style={{ padding: '14px 10px' }}>{s.vehicleNumber || 'N/A'}</td>
+                                     <td style={{ padding: '14px 10px', fontSize: '0.8rem', color: '#9ca3af' }}>
+                                        {s.activationDate ? new Date(s.activationDate).toLocaleDateString() : 'N/A'}
+                                     </td>
+                                     <td style={{ padding: '14px 10px', textAlign: 'right' }}>
+                                        <button 
+                                           onClick={() => toggleStickerStatus(s.stickerId)}
+                                           style={{
+                                              background: s.status === 'Active' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                              color: s.status === 'Active' ? '#ef4444' : '#10b981',
+                                              border: `1px solid ${s.status === 'Active' ? '#ef4444' : '#10b981'}`,
+                                              padding: '6px 12px',
+                                              borderRadius: '6px',
+                                              cursor: 'pointer',
+                                              fontSize: '0.8rem',
+                                              fontWeight: 'bold'
+                                           }}
+                                        >
+                                           {s.status === 'Active' ? 'Deactivate' : 'Reactivate'}
+                                        </button>
+                                     </td>
+                                  </tr>
+                               ))}
+                            </tbody>
+                         </table>
+                      </div>
+                      
+                      {/* Pagination Controls */}
+                      {stickerTotalPages > 1 && (
+                         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.5rem', alignItems: 'center' }}>
+                            <button 
+                               disabled={stickerPage === 1}
+                               onClick={() => fetchStickers(stickerPage - 1)}
+                               style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                               Previous
+                            </button>
+                            <span style={{ fontSize: '0.9rem', color: '#9ca3af' }}>Page {stickerPage} of {stickerTotalPages}</span>
+                            <button 
+                               disabled={stickerPage === stickerTotalPages}
+                               onClick={() => fetchStickers(stickerPage + 1)}
+                               style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                               Next
+                            </button>
+                         </div>
+                      )}
+                   </div>
+                )}
+
+             </div>
+          )}
       </div>
       {selectedVideo && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', animation: 'fadeIn 0.3s ease' }}>

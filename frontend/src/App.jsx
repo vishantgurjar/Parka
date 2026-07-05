@@ -24,6 +24,7 @@ import Contact from './pages/Contact';
 import RefundPolicy from './pages/RefundPolicy';
 import FAQ from './pages/FAQ';
 import VehicleLandingPage from './pages/VehicleLandingPage';
+import ActivateSticker from './pages/ActivateSticker';
 import AIAssistant from './pages/AIAssistant';
 import CommunityHelp from './pages/CommunityHelp';
 import Sentinel from './pages/Sentinel';
@@ -338,6 +339,7 @@ function App() {
                   <Route path="/refund-policy" element={<RefundPolicy />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
+                  <Route path="/activate/:stickerId" element={<ActivateSticker />} />
                   <Route path="/cam" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.role === 'admin') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />

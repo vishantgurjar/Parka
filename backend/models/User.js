@@ -34,6 +34,7 @@ const UserSchema = new mongoose.Schema({
   subscriptionStatus: { type: String, enum: ['inactive', 'active', 'cancelled', 'halted'], default: 'inactive' },
   subscriptionExpiresAt: { type: Date },
   smartTagId: { type: String, unique: true, sparse: true },
+  emergencyContact: { type: String },
   secondaryVehicles: [{
     make: String,
     model: String,
