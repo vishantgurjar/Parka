@@ -295,34 +295,7 @@ export default function VehicleLandingPage() {
             <ChevronRight size={24} />
           </button>
 
-          {/* 2. Secondary Action: Secure WhatsApp Direct Message */}
-          <a 
-            href={`${getBackendUrl()}/api/stickers/whatsapp/${id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ 
-              textDecoration: 'none', 
-              padding: '16px', 
-              borderRadius: '20px', 
-              background: 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)',
-              border: 'none',
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              fontSize: '1.25rem',
-              fontWeight: 'bold',
-              color: '#fff',
-              boxShadow: '0 10px 25px rgba(37, 211, 102, 0.3)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>💬</span>
-              </div>
-              Secure WhatsApp Chat
-            </div>
-            <ChevronRight size={24} />
-          </a>
+
           
           {/* 3. Highway Emergency Help (Critical) */}
           <a href={`tel:${nearestMechanic.phone}`} style={{ 

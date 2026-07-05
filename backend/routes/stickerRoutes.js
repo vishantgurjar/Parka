@@ -283,33 +283,6 @@ router.post('/log-scan', async (req, res) => {
     }
 });
 
-// @route   GET /api/stickers/whatsapp/:id
-// @desc    Redirect to WhatsApp without exposing phone number on frontend
-router.get('/whatsapp/:id', async (req, res) => {
-    try {
-        const mongoose = require('mongoose');
-        let user = null;
-        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
-            user = await User.findById(req.params.id);
-        }
-        if (!user) {
-            user = await User.findOne({ smartTagId: req.params.id.toUpperCase().trim() });
-        }
 
-        if (!user || !user.phone) {
-            return res.status(404).send('Owner contact info not found');
-        }
-
-        const formattedPhone = user.phone.replace(/[^0-9]/g, '');
-        // Prefix with country code 91 if not present
-        const phoneWithCountry = formattedPhone.length === 10 ? `91${formattedPhone}` : formattedPhone;
-        
-        const message = encodeURIComponent(`Hello, I scanned the PARXÉÉ CITY QR code on your vehicle ${user.plateNumber || ''}. Please check.`);
-        res.redirect(`https://wa.me/${phoneWithCountry}?text=${message}`);
-    } catch (error) {
-        console.error('WhatsApp redirect error:', error);
-        res.status(500).send('Error redirecting to WhatsApp');
-    }
-});
 
 module.exports = router;
