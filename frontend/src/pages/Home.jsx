@@ -22,7 +22,9 @@ export default function Home({ onOpenPayment }) {
 
   useEffect(() => {
     const dataToEncode = user 
-      ? `${window.location.origin}/v/${user._id}` 
+      ? (user.smartTagId 
+          ? `${window.location.origin}/activate/${user.smartTagId}` 
+          : `${window.location.origin}/v/${user._id}`) 
       : `${window.location.origin}/v/GUEST_PREVIEW`;
     
     QRCode.toDataURL(dataToEncode, {
@@ -98,7 +100,7 @@ export default function Home({ onOpenPayment }) {
   }, []);
 
   // Point: QR URL Generation (Stable Restored)
-  const qrUrl = qrCodeDataUrl || (user ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}` : "");
+  const qrUrl = qrCodeDataUrl || (user ? (user.smartTagId ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/activate/${user.smartTagId}` : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}`) : "");
 
   useEffect(() => {
     if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
