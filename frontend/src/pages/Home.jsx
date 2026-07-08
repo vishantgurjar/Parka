@@ -511,6 +511,12 @@ export default function Home({ onOpenPayment }) {
                        </div>
                      )}
                      
+                      {activeCard === 'profile' && (
+                        <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '-1.5rem', zIndex: 2 }}>
+                          STICKER ID: {user?.smartTagId || 'PC000001'}
+                        </span>
+                      )}
+
                      <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
                         <div className="light-sweep" style={{ borderRadius: '32px' }}>
                            {activeCard === 'emergency' ? (
