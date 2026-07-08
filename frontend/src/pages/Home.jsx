@@ -528,23 +528,22 @@ export default function Home({ onOpenPayment }) {
                            )}
                         </div>
                      </div>
-                     
-                     {activeCard === 'profile' ? (
+                       {activeCard === 'profile' ? (
                        user ? (
-                         <div className="reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                             <button onClick={downloadQR} className="btn-gradient light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#000' }}>
                               <Download size={18} />
                               Download HQ Image
                             </button>
                          </div>
                        ) : (
-                         <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
+                         <div className="qr-actions" style={{ maxWidth: '400px', width: '100%' }}>
                             <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
                          </div>
                        )
                      ) : (
                        !user && (
-                         <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
+                         <div className="qr-actions" style={{ maxWidth: '400px', width: '100%' }}>
                             <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
                          </div>
                        )
