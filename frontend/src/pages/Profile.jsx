@@ -4,7 +4,7 @@ import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
 import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
-import EmergencyCard from '../components/EmergencyCard';
+import EmergencySticker from '../components/EmergencySticker';
 import { toPng } from 'html-to-image';
 import { getBackendUrl } from '../utils/api';
 
@@ -34,16 +34,16 @@ export default function Profile() {
       await new Promise(r => setTimeout(r, 500));
 
       const options = {
-        width: 520,
-        height: 300,
+        width: 360,
+        height: 560,
         pixelRatio: 4, 
         backgroundColor: '#030712',
         style: {
           transform: 'none',
           margin: '0',
           padding: '0',
-          width: '520px',
-          height: '300px'
+          width: '360px',
+          height: '560px'
         }
       };
 
@@ -347,9 +347,14 @@ export default function Profile() {
             {user.smartTagId ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'center' }}>
                 
-                {/* QR Display - Render premium EmergencyCard */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.01)', padding: '24px 20px', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', minWidth: '320px' }}>
+                {/* QR Display - Render premium EmergencySticker */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '24px 20px', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', minWidth: '320px' }}>
                   
+                  {/* Sticker ID Outside Card */}
+                  <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
+                    STICKER ID: {user.smartTagId}
+                  </span>
+
                   {/* QR Card Container */}
                   <div style={{ 
                     width: '100%', 
@@ -360,18 +365,18 @@ export default function Profile() {
                     overflow: 'visible'
                   }}>
                     <div ref={qrRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                      <EmergencyCard 
+                      <EmergencySticker 
                         user={user} 
                         qrUrl={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`} 
                       />
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap', marginTop: '14px' }}>
                     <button 
                       onClick={downloadQR} 
-                      className="btn-gradient" 
-                      style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                      className="btn-gradient light-sweep" 
+                      style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
                     >
                       Download HQ Card
                     </button>
@@ -381,7 +386,7 @@ export default function Profile() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-secondary" 
-                      style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                      style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
                     >
                       Download QR Code
                     </a>
