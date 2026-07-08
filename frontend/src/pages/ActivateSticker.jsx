@@ -11,7 +11,7 @@ export default function ActivateSticker() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  // Flow steps: 'loading' | 'invalid' | 'phone_input' | 'otp_verify' | 'register_form' | 'success'
+  // Flow steps: 'loading' | 'invalid' | 'initial_form' | 'otp_verify' | 'vehicle_form' | 'success'
   const [step, setStep] = useState('loading');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -47,7 +47,7 @@ export default function ActivateSticker() {
             toast.success("This sticker is already active. Opening Emergency Profile...");
             navigate(`/v/${stickerId}`, { replace: true });
           } else {
-            setStep('phone_input');
+            setStep('initial_form');
           }
         } else {
           setErrorMessage('Could not check sticker status. Try again.');
@@ -75,9 +75,15 @@ export default function ActivateSticker() {
     navigate(`/activate/${inputStickerId.trim().toUpperCase()}`);
   };
 
-  // Request OTP
+  // Request OTP (collects name, email and phone first)
   const handleSendOtp = async (e) => {
     e.preventDefault();
+    if (!ownerName || ownerName.trim().length === 0) {
+      return toast.error('Please enter your full name.');
+    }
+    if (!email || email.trim().length === 0) {
+      return toast.error('Please enter a valid email address.');
+    }
     if (!phone || phone.length < 10) {
       return toast.error('Please enter a valid 10-digit mobile number.');
     }
@@ -124,7 +130,7 @@ export default function ActivateSticker() {
       if (res.ok) {
         toast.success(data.message);
         setOtpToken(data.token);
-        setStep('register_form');
+        setStep('vehicle_form');
       } else {
         toast.error(data.message || 'Incorrect OTP.');
       }
@@ -164,17 +170,16 @@ export default function ActivateSticker() {
       const data = await res.json();
 
       if (res.ok) {
-        toast.success(data.message);
+        toast.success(data.message || 'Smart QR Card activated successfully!');
         // Login local session so the user dashboard is active
         if (data.user) {
-          // Verify if actual login token is returned, if not we can use the activationToken temporarily or prompt login
-          // We will save user details so user is logged in
           localStorage.setItem('parkeActiveUser', JSON.stringify(data.user));
           localStorage.setItem('parkeToken', otpToken);
           // Sync frontend AuthContext
           login(data.user, otpToken);
         }
-        setStep('success');
+        // Redirect directly to the public safety vehicle landing page
+        navigate(`/v/${stickerId}`, { replace: true });
       } else {
         toast.error(data.message || 'Activation failed.');
       }
@@ -265,34 +270,72 @@ export default function ActivateSticker() {
               </form>
             )}
 
-            {/* Step 2: Request OTP */}
-            {step === 'phone_input' && (
+            {/* Step 2: Initial Form (Name, Email, Phone) */}
+            {step === 'initial_form' && (
               <form onSubmit={handleSendOtp}>
                 <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                   <div style={{ background: 'rgba(20, 184, 166, 0.1)', color: 'var(--primary)', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                     <Shield size={28} />
                   </div>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>Sticker ID: {stickerId}</h3>
-                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Enter your mobile number to verify and activate this sticker.</p>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Enter your details to register and verify your account.</p>
                 </div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Mobile Number</label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '8px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                      <Phone size={16} />
-                      <span>+91</span>
-                    </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' }}>
+                  {/* Name Input */}
+                  <div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <User size={12} color="var(--primary)" /> Owner Full Name *
+                    </label>
                     <input 
-                      type="tel" 
-                      placeholder="Enter 10-digit number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').substring(0, 10))}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px 14px 14px 75px', color: '#fff', fontSize: '1rem', outline: 'none', transition: 'all 0.3s' }}
+                      type="text" 
+                      placeholder="e.g. Ramesh Kumar"
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', color: '#fff', outline: 'none', transition: 'all 0.3s' }}
                       onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
                       onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                       required
                     />
+                  </div>
+
+                  {/* Email Input */}
+                  <div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <Mail size={12} color="var(--primary)" /> Email Address *
+                    </label>
+                    <input 
+                      type="email" 
+                      placeholder="e.g. name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', color: '#fff', outline: 'none', transition: 'all 0.3s' }}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                      onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                      required
+                    />
+                  </div>
+
+                  {/* Mobile Input */}
+                  <div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <Phone size={12} color="var(--primary)" /> Mobile Number *
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '8px', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '8px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                        <span>+91</span>
+                      </div>
+                      <input 
+                        type="tel" 
+                        placeholder="Enter 10-digit number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').substring(0, 10))}
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px 14px 14px 55px', color: '#fff', fontSize: '1rem', outline: 'none', transition: 'all 0.3s' }}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                        onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -335,7 +378,7 @@ export default function ActivateSticker() {
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button 
                     type="button" 
-                    onClick={() => setStep('phone_input')} 
+                    onClick={() => setStep('initial_form')} 
                     className="btn-secondary" 
                     style={{ flex: 1, padding: '12px', borderRadius: '12px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}
                   >
@@ -354,7 +397,7 @@ export default function ActivateSticker() {
             )}
 
             {/* Step 4: Vehicle & Owner Registration */}
-            {step === 'register_form' && (
+            {step === 'vehicle_form' && (
               <form onSubmit={handleActivate}>
                 <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>Vehicle Protection Registration</h3>
@@ -363,25 +406,10 @@ export default function ActivateSticker() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '6px', marginBottom: '1.5rem' }}>
                   
-                  {/* Owner Name */}
-                  <div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      <User size={12} color="var(--primary)" /> Owner Full Name *
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Ramesh Kumar"
-                      value={ownerName}
-                      onChange={(e) => setOwnerName(e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
-                      required
-                    />
-                  </div>
-
                   {/* Vehicle Plate Number */}
                   <div>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      <Car size={12} color="var(--primary)" /> Vehicle Plate Number *
+                      <Car size={12} color="var(--primary)" /> Vehicle Plate Number / RC *
                     </label>
                     <input 
                       type="text" 
@@ -447,20 +475,6 @@ export default function ActivateSticker() {
                     />
                   </div>
 
-                  {/* Email (Optional) */}
-                  <div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      <Mail size={12} color="var(--primary)" /> Email Address (Optional)
-                    </label>
-                    <input 
-                      type="email" 
-                      placeholder="e.g. name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
-                    />
-                  </div>
-
                 </div>
 
                 <button 
@@ -474,7 +488,7 @@ export default function ActivateSticker() {
               </form>
             )}
 
-            {/* Step 5: Success screen */}
+            {/* Step 5: Success screen (Fallback in case of no redirect) */}
             {step === 'success' && (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ color: 'var(--primary)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', background: 'rgba(20, 184, 166, 0.1)' }}>
@@ -485,34 +499,11 @@ export default function ActivateSticker() {
                   Your PARXÉÉ CITY QR sticker is now active. Anyone scanning the sticker can contact you securely and report roadside emergencies.
                 </p>
 
-                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1rem', marginBottom: '2rem', textAlign: 'left' }}>
-                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>STICKER DETAILS:</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.9rem' }}>
-                    <span style={{ color: 'var(--muted)' }}>Sticker ID:</span>
-                    <strong style={{ color: '#fff' }}>{stickerId}</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.9rem' }}>
-                    <span style={{ color: 'var(--muted)' }}>Owner:</span>
-                    <strong style={{ color: '#fff' }}>{ownerName}</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                    <span style={{ color: 'var(--muted)' }}>Vehicle Plate:</span>
-                    <strong style={{ color: 'var(--primary)' }}>{vehicleNumber}</strong>
-                  </div>
-                </div>
-
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button 
-                    onClick={() => navigate('/profile')} 
+                    onClick={() => navigate(`/v/${stickerId}`, { replace: true })} 
                     className="btn-gradient" 
                     style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 'bold', border: 'none', color: '#000', background: 'var(--gradient-primary)', cursor: 'pointer' }}
-                  >
-                    Go to User Dashboard
-                  </button>
-                  <button 
-                    onClick={() => navigate(`/v/${stickerId}`)} 
-                    className="btn-secondary" 
-                    style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}
                   >
                     View Public Safety Profile
                   </button>
@@ -527,3 +518,4 @@ export default function ActivateSticker() {
     </div>
   );
 }
+

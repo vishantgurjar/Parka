@@ -242,6 +242,14 @@ const connectDB = async () => {
         if (!dbUrl) throw new Error('MongoDB connection URL (mongo_url) is missing from environment variables.');
         await mongoose.connect(dbUrl);
         console.log('Connected to MongoDB');
+        
+        // Auto-migrate any existing users without a sticker ID to have unique sequential ones
+        try {
+            const { migrateExistingUsersWithoutStickers } = require('./utils/stickerHelper');
+            migrateExistingUsersWithoutStickers();
+        } catch (migErr) {
+            console.error('Failed to trigger sticker ID migration:', migErr.message);
+        }
     } catch (err) {
         console.error('Could not connect to MongoDB:', err.message);
         throw err;
