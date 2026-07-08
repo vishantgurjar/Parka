@@ -1,9 +1,11 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
 import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
+import EmergencyCard from '../components/EmergencyCard';
+import { toPng } from 'html-to-image';
 import { getBackendUrl } from '../utils/api';
 
 export default function Profile() {
@@ -11,6 +13,83 @@ export default function Profile() {
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const qrRef = useRef(null);
+
+  const isIOSDevice = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+  };
+
+  const downloadQR = async () => {
+    if (!qrRef.current) return;
+    
+    const originalCard = qrRef.current.querySelector('.hybrid-card') || qrRef.current;
+    const clonedCard = originalCard.cloneNode(true);
+    
+    try {
+      const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
+      clonedCard.classList.add('is-downloading');
+      document.body.appendChild(clonedCard);
+      
+      await new Promise(r => setTimeout(r, 500));
+
+      const options = {
+        width: 520,
+        height: 300,
+        pixelRatio: 4, 
+        backgroundColor: '#030712',
+        style: {
+          transform: 'none',
+          margin: '0',
+          padding: '0',
+          width: '520px',
+          height: '300px'
+        }
+      };
+
+      const dataUrl = await toPng(clonedCard, options);
+      
+      if (isIOSDevice()) {
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], `parxee-city-${name}.png`, { type: 'image/png' });
+          
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: `Parxéé City ID Card`,
+              text: `My Parxéé City Smart QR Card`
+            });
+            toast.success("Share sheet opened!");
+          } else {
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `parxee-city-${name}.png`;
+            link.href = blobUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+          }
+        } catch (downloadErr) {
+          console.warn("iOS sharing/download failed:", downloadErr);
+        }
+      } else {
+        const link = document.createElement('a');
+        link.download = `parxee-city-${name}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err) {
+      console.error('Final Download Error:', err);
+      toast.error("Mobile render failed. Please use a screenshot if this continues.");
+    } finally {
+      if (document.body.contains(clonedCard)) {
+        document.body.removeChild(clonedCard);
+      }
+    }
+  };
 
   // Form State for Documents
   const [docData, setDocData] = useState({
@@ -268,24 +347,53 @@ export default function Profile() {
             {user.smartTagId ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'center' }}>
                 
-                {/* QR Display */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.01)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`} 
-                    alt="My QR Sticker" 
-                    style={{ width: '150px', height: '150px', borderRadius: '12px', background: '#fff', padding: '8px' }}
-                  />
-                  <span style={{ fontSize: '0.8rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold' }}>STICKER ID: {user.smartTagId}</span>
-                  <a 
-                    href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`}
-                    download={`parxee_qr_${user.smartTagId}.png`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-gradient" 
-                    style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', color: '#000', fontWeight: 'bold' }}
-                  >
-                    Download QR Code
-                  </a>
+                {/* QR Display - Render premium EmergencyCard */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.01)', padding: '24px 20px', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', minWidth: '320px' }}>
+                  
+                  {/* QR Card Container */}
+                  <div style={{ 
+                    width: '100%', 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    padding: '10px 0',
+                    overflow: 'visible'
+                  }}>
+                    <div 
+                      ref={qrRef} 
+                      style={{ 
+                        transform: 'scale(0.75)', 
+                        transformOrigin: 'center center',
+                        margin: '-37px -65px',
+                        display: 'inline-block'
+                      }}
+                    >
+                      <EmergencyCard 
+                        user={user} 
+                        qrUrl={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`} 
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button 
+                      onClick={downloadQR} 
+                      className="btn-gradient" 
+                      style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                    >
+                      Download HQ Card
+                    </button>
+                    <a 
+                      href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`}
+                      download={`parxee_qr_${user.smartTagId}.png`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary" 
+                      style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '0.8rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                    >
+                      Download QR Code
+                    </a>
+                  </div>
                 </div>
 
                 {/* QR Actions & Status */}
