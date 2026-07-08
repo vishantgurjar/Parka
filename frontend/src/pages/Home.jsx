@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import EmergencyCard from '../components/EmergencyCard';
 import CustomerCard from '../components/CustomerCard';
+import EmergencySticker from '../components/EmergencySticker';
 import { toPng } from 'html-to-image';
 import { toast } from 'react-hot-toast';
 import QRCode from 'qrcode';
@@ -135,14 +136,16 @@ export default function Home({ onOpenPayment }) {
     if (!qrRef.current) return;
     
     // Step 1: Create the hidden capture clone
-    const originalCard = qrRef.current.querySelector('.hybrid-card') || qrRef.current;
+    const isVertical = activeCard === 'profile';
+    const cardSelector = isVertical ? '.emergency-sticker-card' : '.hybrid-card';
+    const originalCard = qrRef.current.querySelector(cardSelector) || qrRef.current;
     const clonedCard = originalCard.cloneNode(true);
     
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
       
       // Step 2: Inject the clone into the hidden background layer
-      clonedCard.classList.add('is-downloading');
+      clonedCard.classList.add(isVertical ? 'is-downloading-sticker' : 'is-downloading');
       document.body.appendChild(clonedCard);
       
       // Step 3: Wait specifically for images and fonts to be ready
@@ -150,16 +153,16 @@ export default function Home({ onOpenPayment }) {
       await new Promise(r => setTimeout(r, 500));
 
       const options = {
-        width: 520,
-        height: 300,
+        width: isVertical ? 360 : 520,
+        height: isVertical ? 560 : 300,
         pixelRatio: 4, 
         backgroundColor: '#030712',
         style: {
           transform: 'none',
           margin: '0',
           padding: '0',
-          width: '520px',
-          height: '300px'
+          width: isVertical ? '360px' : '520px',
+          height: isVertical ? '560px' : '300px'
         }
       };
 
@@ -477,6 +480,23 @@ export default function Home({ onOpenPayment }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', alignItems: 'center', width: '100%' }}>
+            <div className="card-switcher reveal" style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <button 
+                className={`switcher-btn ${activeCard === 'emergency' ? 'active' : ''}`}
+                onClick={() => setActiveCard('emergency')}
+                style={{ borderRadius: '16px', padding: '12px 24px', fontSize: '0.85rem', fontWeight: '800', letterSpacing: '1px' }}
+              >
+                EMERGENCY
+              </button>
+              <button 
+                className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveCard('profile')}
+                style={{ borderRadius: '16px', padding: '12px 24px', fontSize: '0.85rem', fontWeight: '800', letterSpacing: '1px' }}
+              >
+                CUSTOMER CARD
+              </button>
+            </div>
+
             <div className="reveal" style={{ transitionDelay: '0.2s', width: '100%', display: 'flex', justifyContent: 'center' }}>
               {(() => {
                 const guestUser = { name: 'GUEST USER', plateNumber: 'UP 16 XX 0000', subscriptionTier: 'silver' };
@@ -493,18 +513,41 @@ export default function Home({ onOpenPayment }) {
                      
                      <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
                         <div className="light-sweep" style={{ borderRadius: '32px' }}>
-                          <EmergencyCard 
-                            ref={qrRef}
-                            user={displayUser} 
-                            qrUrl={qrCodeDataUrl} 
-                          />
+                           {activeCard === 'emergency' ? (
+                             <EmergencyCard 
+                               ref={qrRef}
+                               user={displayUser} 
+                               qrUrl={qrCodeDataUrl} 
+                             />
+                           ) : (
+                             <EmergencySticker 
+                               ref={qrRef}
+                               user={displayUser} 
+                               qrUrl={qrCodeDataUrl} 
+                             />
+                           )}
                         </div>
                      </div>
                      
-                     {!user && (
-                        <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
-                           <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
-                        </div>
+                     {activeCard === 'profile' ? (
+                       user ? (
+                         <div className="reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <button onClick={downloadQR} className="btn-gradient light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#000' }}>
+                              <Download size={18} />
+                              Download HQ Image
+                            </button>
+                         </div>
+                       ) : (
+                         <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
+                            <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
+                         </div>
+                       )
+                     ) : (
+                       !user && (
+                         <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
+                            <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
+                         </div>
+                       )
                      )}
                    </div>
                 );
