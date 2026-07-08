@@ -510,50 +510,56 @@ export default function Home({ onOpenPayment }) {
                           PREVIEW: Login to personalize your card
                        </div>
                      )}
-                     
-                      {activeCard === 'profile' && (
-                        <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '-1.5rem', zIndex: 2 }}>
-                          STICKER ID: {user?.smartTagId || 'PC000001'}
-                        </span>
+                       {activeCard === 'profile' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '24px 20px', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', minWidth: '320px', maxWidth: '385px', width: '100%', margin: '0 auto' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
+                            STICKER ID: {user?.smartTagId || 'PC000001'}
+                          </span>
+                          <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px 0', overflow: 'visible' }}>
+                            <div ref={qrRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                              <EmergencySticker 
+                                user={displayUser} 
+                                qrUrl={qrCodeDataUrl} 
+                              />
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap', marginTop: '14px' }}>
+                            <button 
+                              onClick={downloadQR} 
+                              className="btn-gradient light-sweep" 
+                              style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                            >
+                              Download HQ Card
+                            </button>
+                            <a 
+                              href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + (user?.smartTagId ? '/activate/' + user.smartTagId : '/v/GUEST_PREVIEW'))}`}
+                              download={`parxee_qr_${user?.smartTagId || 'guest'}.png`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-secondary" 
+                              style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                            >
+                              Download QR Code
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
+                           <div className="light-sweep" style={{ borderRadius: '32px' }}>
+                              <EmergencyCard 
+                                ref={qrRef}
+                                user={displayUser} 
+                                qrUrl={qrCodeDataUrl} 
+                              />
+                           </div>
+                        </div>
                       )}
 
-                     <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
-                        <div className="light-sweep" style={{ borderRadius: '32px' }}>
-                           {activeCard === 'emergency' ? (
-                             <EmergencyCard 
-                               ref={qrRef}
-                               user={displayUser} 
-                               qrUrl={qrCodeDataUrl} 
-                             />
-                           ) : (
-                             <EmergencySticker 
-                               ref={qrRef}
-                               user={displayUser} 
-                               qrUrl={qrCodeDataUrl} 
-                             />
-                           )}
-                        </div>
-                     </div>
-                       {activeCard === 'profile' ? (
-                       user ? (
-                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button onClick={downloadQR} className="btn-gradient light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#000' }}>
-                              <Download size={18} />
-                              Download HQ Image
-                            </button>
-                         </div>
-                       ) : (
-                         <div className="qr-actions" style={{ maxWidth: '400px', width: '100%' }}>
+                      {!user && (
+                         <div className="qr-actions" style={{ maxWidth: '400px', width: '100%', marginTop: '2rem' }}>
                             <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
                          </div>
-                       )
-                     ) : (
-                       !user && (
-                         <div className="qr-actions" style={{ maxWidth: '400px', width: '100%' }}>
-                            <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
-                         </div>
-                       )
-                     )}
+                      )}
                    </div>
                 );
               })()}
