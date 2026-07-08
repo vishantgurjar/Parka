@@ -74,7 +74,7 @@ export default function Home({ onOpenPayment }) {
   
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
-  const [activeCard, setActiveCard] = useState('emergency'); // profile or emergency
+  const [activeCard, setActiveCard] = useState('profile'); // profile or emergency
   const [showSOSHub, setShowSOSHub] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
