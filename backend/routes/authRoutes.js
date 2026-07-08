@@ -149,13 +149,13 @@ router.get('/vehicle/:id', async (req, res) => {
     try {
         if (req.params.id === 'demo') {
             return res.json({
-                name: 'VISHANT GURJAR',
-                phone: '9112200000',
-                make: 'MERCEDES',
-                model: 'G-WAGON',
-                plateNumber: 'HR51 AA 0001',
-                color: 'MATTE BLACK',
-                year: '2024',
+                name: 'SECURED OWNER',
+                phone: '🔒 SECURE (Identity Masked)',
+                make: '🔒 SECURED BY PARXÉÉ',
+                model: '',
+                plateNumber: '🔒 SECURED & HIDDEN',
+                color: '🔒 SECURED & HIDDEN',
+                year: '🔒 SECURED & HIDDEN',
                 subscriptionTier: 'diamond'
             });
         }
@@ -180,8 +180,15 @@ router.get('/vehicle/:id', async (req, res) => {
 
         // Enforce strict Data Privacy Masking on the public page for all users
         const userObj = user.toObject();
-        userObj.phone = 'HIDDEN (Privacy Active)';
+        userObj.name = 'SECURED OWNER';
+        userObj.phone = '🔒 SECURE (Identity Masked)';
         userObj.email = 'PROTECTED';
+        userObj.make = '🔒 SECURED BY PARXÉÉ';
+        userObj.model = '';
+        userObj.plateNumber = '🔒 SECURED & HIDDEN';
+        userObj.color = '🔒 SECURED & HIDDEN';
+        userObj.year = '🔒 SECURED & HIDDEN';
+        userObj.emergencyContact = '🔒 SECURED & HIDDEN';
 
         res.json(userObj);
     } catch (error) {

@@ -204,8 +204,8 @@ export default function VehicleLandingPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#030712', padding: '80px 1rem 40px' }}>
       <SEO 
-        title={`${vehicle?.name || 'Vehicle'}'s Protected Identity - Parxéé City`}
-        description={`Safety landing page for ${vehicle?.name || 'Owner'}'s ${vehicle?.make || ''} ${vehicle?.model || 'Vehicle'}. Instant emergency contact access.`}
+        title="Secured Vehicle Profile - Parxéé City"
+        description="Protected vehicle emergency contact portal. Contact the owner securely without exposing any personal contact info, names, or plate numbers."
       />
       
       <div className="container" style={{ maxWidth: '500px' }}>
@@ -240,23 +240,23 @@ export default function VehicleLandingPage() {
           <div className="glass-premium" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div className="shimmer-shimmer"></div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
-              <div>
+               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Owner</p>
-                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#fff' }}>{vehicle.name}</p>
+                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#fff' }}>🔒 SECURED OWNER</p>
               </div>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Mobile Number</p>
                 <p style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>
-                  {vehicle.subscriptionTier === 'diamond' || vehicle.subscriptionTier === 'gold' ? '🔒 SECURE (PRO)' : (vehicle.phone || 'N/A')}
+                  🔒 SECURED BY PARXÉÉ
                 </p>
               </div>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Plate</p>
-                <p style={{ fontSize: '1rem', fontWeight: '700', color: '#fff' }}>{vehicle.plateNumber || 'N/A'}</p>
+                <p style={{ fontSize: '1rem', fontWeight: '700', color: '#fff' }}>🔒 SECURED & HIDDEN</p>
               </div>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', fontWeight: '800', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Model</p>
-                <p style={{ fontSize: '1rem', fontWeight: '700', color: '#fff' }}>{vehicle.make} {vehicle.model}</p>
+                <p style={{ fontSize: '1rem', fontWeight: '700', color: '#fff' }}>🔒 SECURED & HIDDEN</p>
               </div>
             </div>
             <div className="card-chip" style={{ position: 'absolute', top: '15px', right: '15px', opacity: 0.5 }}></div>

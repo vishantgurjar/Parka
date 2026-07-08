@@ -691,7 +691,19 @@ app.post('/api/alerts/scan', async (req, res) => {
     const { vehicleId, ownerPhone, lat, lng } = req.body;
     let locationMsg = "";
     try {
-        const owner = await User.findOne({ phone: ownerPhone });
+        let owner = null;
+        const mongoose = require('mongoose');
+        if (mongoose.Types.ObjectId.isValid(vehicleId)) {
+            owner = await User.findById(vehicleId);
+        }
+        if (!owner && vehicleId) {
+            const stickerId = vehicleId.toUpperCase().trim();
+            owner = await User.findOne({ smartTagId: stickerId });
+        }
+        if (!owner && ownerPhone && ownerPhone !== '🔒 SECURE (Identity Masked)' && ownerPhone !== 'HIDDEN (Privacy Active)') {
+            owner = await User.findOne({ phone: ownerPhone });
+        }
+
         if (owner) {
             const hasPremium = ['silver', 'gold', 'diamond'].includes(owner.subscriptionTier);
             if (hasPremium) {
