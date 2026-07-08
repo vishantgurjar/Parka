@@ -15,7 +15,7 @@ const EmergencySticker = React.forwardRef(({ user, qrUrl }, ref) => {
       style={{ padding: '0', display: 'flex', justifyContent: 'center', width: '100%' }}
     >
       <div 
-        className={`hybrid-card ${vipClass}`} 
+        className={`emergency-sticker-card ${vipClass}`} 
         style={{ 
           width: '360px', 
           height: '560px', 

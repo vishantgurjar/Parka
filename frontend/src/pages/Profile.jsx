@@ -23,12 +23,12 @@ export default function Profile() {
   const downloadQR = async () => {
     if (!qrRef.current) return;
     
-    const originalCard = qrRef.current.querySelector('.hybrid-card') || qrRef.current;
+    const originalCard = qrRef.current.querySelector('.emergency-sticker-card') || qrRef.current;
     const clonedCard = originalCard.cloneNode(true);
     
     try {
       const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
-      clonedCard.classList.add('is-downloading');
+      clonedCard.classList.add('is-downloading-sticker');
       document.body.appendChild(clonedCard);
       
       await new Promise(r => setTimeout(r, 500));
