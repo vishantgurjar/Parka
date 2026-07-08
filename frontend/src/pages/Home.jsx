@@ -526,17 +526,10 @@ export default function Home({ onOpenPayment }) {
                         </div>
                      </div>
                      
-                     {user ? (
-                       <div className="reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                          <button onClick={downloadQR} className="btn-gradient light-sweep" style={{ padding: '16px 32px', borderRadius: '50px', fontWeight: '800' }}>
-                            <Download size={18} />
-                            Download HQ Image
-                          </button>
-                       </div>
-                     ) : (
-                       <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
-                          <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
-                       </div>
+                     {!user && (
+                        <div className="qr-actions reveal" style={{ maxWidth: '400px', width: '100%' }}>
+                           <Link to="/register" className="btn-gradient light-sweep" style={{ padding: '16px', borderRadius: '18px', display: 'block', textAlign: 'center', fontWeight: '900' }}>Get Your Premium Card</Link>
+                        </div>
                      )}
                    </div>
                 );
