@@ -359,15 +359,7 @@ export default function Profile() {
                     padding: '10px 0',
                     overflow: 'visible'
                   }}>
-                    <div 
-                      ref={qrRef} 
-                      style={{ 
-                        transform: 'scale(0.75)', 
-                        transformOrigin: 'center center',
-                        margin: '-37px -65px',
-                        display: 'inline-block'
-                      }}
-                    >
+                    <div ref={qrRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                       <EmergencyCard 
                         user={user} 
                         qrUrl={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`} 

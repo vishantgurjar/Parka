@@ -1904,7 +1904,7 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   .hybrid-card {
     width: 100%;
     max-width: 360px;
-    height: auto;
+    height: 250px;
   }
   .hybrid-value { font-size: 1rem; }
   .hybrid-helpline { font-size: 1.25rem; }
