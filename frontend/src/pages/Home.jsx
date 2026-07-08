@@ -17,17 +17,7 @@ export default function Home({ onOpenPayment }) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [iosModalImage, setIosModalImage] = useState(null);
 
-  const handleActivateClick = () => {
-    const stickerId = prompt("Enter your 8-digit Smart Tag ID (e.g., PC000001) to activate:");
-    if (stickerId) {
-      const cleanId = stickerId.trim().toUpperCase();
-      if (cleanId.length >= 6) {
-        navigate(`/activate/${cleanId}`);
-      } else {
-        toast.error("Please enter a valid Smart Tag ID.");
-      }
-    }
-  };
+
 
   const isIOSDevice = () => {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
@@ -545,7 +535,7 @@ export default function Home({ onOpenPayment }) {
                               Download HQ Card
                             </button>
                             <button 
-                              onClick={handleActivateClick}
+                              onClick={() => navigate('/activate')}
                               className="btn-secondary" 
                               style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
                             >

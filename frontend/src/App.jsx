@@ -372,6 +372,7 @@ function App() {
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/v/:id" element={<VehicleLandingPage />} />
                   <Route path="/activate/:stickerId" element={<ActivateSticker />} />
+                  <Route path="/activate" element={<ActivateSticker />} />
                   <Route path="/cam" element={<Sentinel />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.role === 'admin') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />

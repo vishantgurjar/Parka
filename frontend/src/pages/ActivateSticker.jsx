@@ -27,6 +27,7 @@ export default function ActivateSticker() {
   const [vehicleColor, setVehicleColor] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
   const [email, setEmail] = useState('');
+  const [inputStickerId, setInputStickerId] = useState('');
 
   const API_BASE = getBackendUrl();
 
@@ -62,10 +63,17 @@ export default function ActivateSticker() {
     if (stickerId) {
       checkStickerStatus();
     } else {
-      setErrorMessage('No Sticker ID provided.');
-      setStep('invalid');
+      setStep('enter_id');
     }
   }, [stickerId, navigate, API_BASE]);
+
+  const handleProceedId = (e) => {
+    e.preventDefault();
+    if (!inputStickerId || inputStickerId.trim().length < 6) {
+      return toast.error("Please enter a valid Smart Tag ID.");
+    }
+    navigate(`/activate/${inputStickerId.trim().toUpperCase()}`);
+  };
 
   // Request OTP
   const handleSendOtp = async (e) => {
@@ -221,6 +229,40 @@ export default function ActivateSticker() {
                   Return to Home
                 </Link>
               </div>
+            )}
+
+            {/* Step 1C: Enter Sticker ID Manual Form */}
+            {step === 'enter_id' && (
+              <form onSubmit={handleProceedId}>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ background: 'rgba(20, 184, 166, 0.1)', color: 'var(--primary)', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                    <Shield size={28} />
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>Activate Smart Tag</h3>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Enter the 8-digit Sticker ID printed on your card to begin.</p>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Sticker / Tag ID</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. PC000001"
+                    value={inputStickerId}
+                    onChange={(e) => setInputStickerId(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '1rem', outline: 'none', transition: 'all 0.3s', textTransform: 'uppercase' }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="btn-gradient" 
+                  style={{ width: '100%', border: 'none', padding: '16px', borderRadius: '12px', color: '#000', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(20, 184, 166, 0.2)' }}
+                >
+                  Proceed to Verify
+                </button>
+              </form>
             )}
 
             {/* Step 2: Request OTP */}
