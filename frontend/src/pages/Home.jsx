@@ -1,7 +1,7 @@
 import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu, Send, Download, Printer } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import EmergencyCard from '../components/EmergencyCard';
 import CustomerCard from '../components/CustomerCard';
@@ -12,9 +12,22 @@ import QRCode from 'qrcode';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [iosModalImage, setIosModalImage] = useState(null);
+
+  const handleActivateClick = () => {
+    const stickerId = prompt("Enter your 8-digit Smart Tag ID (e.g., PC000001) to activate:");
+    if (stickerId) {
+      const cleanId = stickerId.trim().toUpperCase();
+      if (cleanId.length >= 6) {
+        navigate(`/activate/${cleanId}`);
+      } else {
+        toast.error("Please enter a valid Smart Tag ID.");
+      }
+    }
+  };
 
   const isIOSDevice = () => {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
@@ -531,16 +544,13 @@ export default function Home({ onOpenPayment }) {
                             >
                               Download HQ Card
                             </button>
-                            <a 
-                              href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + (user?.smartTagId ? '/activate/' + user.smartTagId : '/v/GUEST_PREVIEW'))}`}
-                              download={`parxee_qr_${user?.smartTagId || 'guest'}.png`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button 
+                              onClick={handleActivateClick}
                               className="btn-secondary" 
-                              style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
+                              style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
                             >
-                              Download QR Code
-                            </a>
+                              Activate Card
+                            </button>
                           </div>
                         </div>
                       ) : (
