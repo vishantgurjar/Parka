@@ -477,23 +477,6 @@ export default function Home({ onOpenPayment }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', alignItems: 'center', width: '100%' }}>
-            <div className="card-switcher reveal" style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <button 
-                className={`switcher-btn ${activeCard === 'emergency' ? 'active' : ''}`}
-                onClick={() => setActiveCard('emergency')}
-                style={{ borderRadius: '16px', padding: '12px 24px', fontSize: '0.85rem', fontWeight: '800', letterSpacing: '1px' }}
-              >
-                EMERGENCY
-              </button>
-              <button 
-                className={`switcher-btn ${activeCard === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveCard('profile')}
-                style={{ borderRadius: '16px', padding: '12px 24px', fontSize: '0.85rem', fontWeight: '800', letterSpacing: '1px' }}
-              >
-                CUSTOMER
-              </button>
-            </div>
-
             <div className="reveal" style={{ transitionDelay: '0.2s', width: '100%', display: 'flex', justifyContent: 'center' }}>
               {(() => {
                 const guestUser = { name: 'GUEST USER', plateNumber: 'UP 16 XX 0000', subscriptionTier: 'silver' };
@@ -510,19 +493,11 @@ export default function Home({ onOpenPayment }) {
                      
                      <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
                         <div className="light-sweep" style={{ borderRadius: '32px' }}>
-                          {activeCard === 'emergency' ? (
-                            <EmergencyCard 
-                              ref={qrRef}
-                              user={displayUser} 
-                              qrUrl={qrCodeDataUrl} 
-                            />
-                          ) : (
-                            <CustomerCard 
-                              ref={qrRef}
-                              user={displayUser} 
-                              qrUrl={qrCodeDataUrl} 
-                            />
-                          )}
+                          <EmergencyCard 
+                            ref={qrRef}
+                            user={displayUser} 
+                            qrUrl={qrCodeDataUrl} 
+                          />
                         </div>
                      </div>
                      
