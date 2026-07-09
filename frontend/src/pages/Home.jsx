@@ -508,7 +508,7 @@ export default function Home({ onOpenPayment }) {
                 return (
                    <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '3rem', width: '100%', alignItems: 'center' }}>
                      {!user && (
-                       <div className="hero-badge glass reveal" style={{ marginBottom: '0', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '12px 24px', borderRadius: '50px' }}>
+                       <div className="hero-badge glass" style={{ marginBottom: '0', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '12px 24px', borderRadius: '50px' }}>
                           <Sparkles size={16} style={{ marginRight: '8px' }} />
                           PREVIEW: Login to personalize your card
                        </div>
@@ -544,7 +544,7 @@ export default function Home({ onOpenPayment }) {
                           </div>
                         </div>
                       ) : (
-                        <div className="qr-container reveal" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
+                        <div className="qr-container" style={{ border: 'none', background: 'transparent', padding: '0', perspective: '2000px' }}>
                            <div className="light-sweep" style={{ borderRadius: '32px' }}>
                               <EmergencyCard 
                                 ref={qrRef}
