@@ -232,8 +232,31 @@ router.post('/activate', async (req, res) => {
             return res.status(400).json({ success: false, message: 'This QR sticker is already active.' });
         }
 
-        // Check if there is already a user with this phone number
-        let user = await User.findOne({ phone });
+        // Find existing user by email or phone (handling formatting differences)
+        const digits = phone.replace(/\D/g, '').slice(-10);
+        let phoneRegex = null;
+        if (digits.length >= 10) {
+            const regexString = digits.split('').join('[\\s-]*');
+            phoneRegex = new RegExp(regexString);
+        }
+
+        const userQueries = [];
+        if (phoneRegex) {
+            userQueries.push({ phone: phoneRegex });
+        } else {
+            userQueries.push({ phone });
+        }
+        if (email) {
+            userQueries.push({ email: email.toLowerCase().trim() });
+        }
+
+        let user = await User.findOne({ $or: userQueries });
+
+        // Unset the smartTagId from any other user to prevent duplicate key errors
+        await User.updateMany(
+            { smartTagId: cleanStickerId },
+            { $unset: { smartTagId: "" } }
+        );
 
         if (user) {
             // Update existing user's vehicle details and smartTagId
@@ -245,6 +268,9 @@ router.post('/activate', async (req, res) => {
             user.emergencyContact = emergencyContact;
             user.smartTagId = cleanStickerId;
             if (email) user.email = email.toLowerCase().trim();
+            
+            // Handle cases where phone format is updated
+            user.phone = phone;
             await user.save();
         } else {
             // Create a new user account
