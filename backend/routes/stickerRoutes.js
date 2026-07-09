@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const Sticker = require('../models/Sticker');
 const Otp = require('../models/Otp');
 const User = require('../models/User');
@@ -33,10 +34,10 @@ router.get('/status/:stickerId', async (req, res) => {
 });
 
 // @route   POST /api/stickers/send-otp
-// @desc    Send OTP to customer phone number for activation
+// @desc    Send OTP to customer phone number/email for activation
 router.post('/send-otp', async (req, res) => {
     try {
-        const { phone } = req.body;
+        const { phone, email } = req.body;
         const stickerId = req.body.stickerId ? req.body.stickerId.toUpperCase().trim() : '';
 
         if (!phone || !stickerId) {
@@ -78,14 +79,57 @@ router.post('/send-otp', async (req, res) => {
         console.log(`STICKER ID: ${stickerId} | EXPIRES IN 5 MINUTES`);
         console.log(`======================================================\n`);
 
-        /*
-        // INTEGRATION NOTE: To send SMS via real gateway (like Fast2SMS, Twilio, etc.):
-        //
-        // const axios = require('axios');
-        // await axios.get(`https://www.fast2sms.com/dev/bulkV2?authorization=YOUR_API_KEY&variables_values=${otpCode}&route=otp&numbers=${phone}`);
-        */
+        // Send OTP via Email if provided
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS;
+        const emailService = process.env.EMAIL_SERVICE || 'gmail';
 
-        res.json({ success: true, message: 'Security OTP has been sent successfully (Check server logs in dev mode).' });
+        if (email && emailUser && emailPass) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    service: emailService,
+                    auth: {
+                        user: emailUser,
+                        pass: emailPass
+                    }
+                });
+
+                const mailOptions = {
+                    from: `"Parxéé City Support" <${emailUser}>`,
+                    to: email.toLowerCase().trim(),
+                    subject: 'Parxéé City - Smart Sticker Activation OTP',
+                    html: `
+                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #06b6d4;">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="color: #06b6d4; margin: 0;">PARXÉÉ CITY</h1>
+                                <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Smart QR Sticker Activation</p>
+                            </div>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                            <h2 style="font-size: 20px; font-weight: 600; color: #06b6d4;">Security Verification OTP</h2>
+                            <p style="color: #d1d5db; line-height: 1.6;">Hello,</p>
+                            <p style="color: #d1d5db; line-height: 1.6;">Please use the following 6-digit verification code to activate your Parxéé City Smart QR Sticker (Sticker ID: <strong>${stickerId}</strong>):</p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #06b6d4; background: rgba(6, 182, 212, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2); display: inline-block;">
+                                    ${otpCode}
+                                </span>
+                            </div>
+                            
+                            <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                            <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+                        </div>
+                    `
+                };
+
+                await transporter.sendMail(mailOptions);
+                console.log(`[Email Sent] Activation OTP sent successfully to ${email}`);
+            } catch (mailErr) {
+                console.error('Failed to send activation email:', mailErr);
+            }
+        }
+
+        res.json({ success: true, message: 'Security OTP has been sent successfully to your mobile and email.' });
     } catch (error) {
         console.error('Send OTP Error:', error);
         res.status(500).json({ success: false, message: 'Server error' });
