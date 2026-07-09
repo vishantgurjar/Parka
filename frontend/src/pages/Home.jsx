@@ -438,14 +438,14 @@ export default function Home({ onOpenPayment }) {
                 <div className="plan-icon" style={{ borderRadius: '12px' }}><CheckCircle size={20} /></div>
                 <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Silver</h3></div>
               </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">250</span></div>
+              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">199</span></div>
               <span className="period" style={{ opacity: 0.6 }}>/month</span>
               <ul className="plan-features" style={{ marginTop: '2rem' }}>
                 <li>Standard QR Profile</li>
                 <li>SMS Alert System</li>
                 <li>1 Vehicle Limit</li>
               </ul>
-              <button className="plan-btn glass light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Silver', '250')}>Start Silver</button>
+              <button className="plan-btn glass light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Silver', '199')}>Start Silver</button>
             </div>
             
             <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: 'var(--primary)', background: 'rgba(94, 234, 212, 0.05)' }}>
@@ -454,14 +454,14 @@ export default function Home({ onOpenPayment }) {
                 <div className="plan-icon featured-icon" style={{ borderRadius: '12px' }}><ShieldCheck size={20} /></div>
                 <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Gold PRO</h3></div>
               </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">450</span></div>
+              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">299</span></div>
               <span className="period" style={{ opacity: 0.6 }}>/6 months</span>
               <ul className="plan-features" style={{ marginTop: '2rem' }}>
                 <li style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Privacy Mode Calling</li>
                 <li>Smart Sticker Delivery</li>
                 <li>Up to 3 Vehicles</li>
               </ul>
-              <button className="plan-btn-featured light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Gold PRO', '450')}>Upgrade to PRO</button>
+              <button className="plan-btn-featured light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Gold PRO', '299')}>Upgrade to PRO</button>
             </div>
 
             <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: '#a855f7', background: 'rgba(168, 85, 247, 0.05)' }}>
@@ -469,14 +469,14 @@ export default function Home({ onOpenPayment }) {
                 <div className="plan-icon" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', borderRadius: '12px' }}><ShieldCheck size={20} /></div>
                 <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Diamond</h3></div>
               </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)', color: '#a855f7' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">1,000</span></div>
+              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)', color: '#a855f7' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">399</span></div>
               <span className="period" style={{ opacity: 0.6 }}>/year</span>
               <ul className="plan-features" style={{ marginTop: '2rem' }}>
                 <li style={{ color: '#a855f7', fontWeight: 'bold' }}>Elite Concierge Line</li>
                 <li>Zero Booking Fees</li>
                 <li>Up to 5 Vehicles</li>
               </ul>
-              <button className="plan-btn light-sweep" style={{ background: '#a855f7', color: '#fff', marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Diamond PRO', '1000')}>Go Diamond</button>
+              <button className="plan-btn light-sweep" style={{ background: '#a855f7', color: '#fff', marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Diamond PRO', '399')}>Go Diamond</button>
             </div>
           </div>
         </div>
