@@ -253,10 +253,17 @@ router.post('/activate', async (req, res) => {
         let user = await User.findOne({ $or: userQueries });
 
         // Unset the smartTagId from any other user to prevent duplicate key errors
-        await User.updateMany(
-            { smartTagId: cleanStickerId },
-            { $unset: { smartTagId: "" } }
-        );
+        if (user) {
+            await User.updateMany(
+                { smartTagId: cleanStickerId, _id: { $ne: user._id } },
+                { $unset: { smartTagId: "" } }
+            );
+        } else {
+            await User.updateMany(
+                { smartTagId: cleanStickerId },
+                { $unset: { smartTagId: "" } }
+            );
+        }
 
         if (user) {
             // Update existing user's vehicle details and smartTagId
@@ -267,6 +274,7 @@ router.post('/activate', async (req, res) => {
             user.plateNumber = vehicleNumber;
             user.emergencyContact = emergencyContact;
             user.smartTagId = cleanStickerId;
+            user.markModified('smartTagId');
             if (email) user.email = email.toLowerCase().trim();
             
             // Handle cases where phone format is updated
