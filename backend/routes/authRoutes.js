@@ -168,35 +168,70 @@ router.get('/vehicle/:id', async (req, res) => {
 
         let user = null;
         const mongoose = require('mongoose');
+        const rawId = req.params.id.toUpperCase().trim();
+        let isSecondary = false;
+        let secondaryIndex = -1;
+        let lookupId = rawId;
+
+        if (rawId.includes('-S')) {
+            const parts = rawId.split('-S');
+            lookupId = parts[0];
+            secondaryIndex = parseInt(parts[1], 10) - 1;
+            isSecondary = true;
+        }
 
         // 1. Try finding by User ObjectId
-        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
-            user = await User.findById(req.params.id).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact');
+        if (mongoose.Types.ObjectId.isValid(lookupId)) {
+            user = await User.findById(lookupId).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact secondaryVehicles');
         }
 
         // 2. Fallback to finding by smartTagId/Sticker ID
         if (!user) {
-            const stickerId = req.params.id.toUpperCase().trim();
-            user = await User.findOne({ smartTagId: stickerId }).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact');
+            user = await User.findOne({ smartTagId: lookupId }).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact secondaryVehicles');
         }
 
         if (!user) {
             return res.status(404).json({ message: 'Vehicle/User not found' });
         }
 
-        // Enforce strict Data Privacy Masking on the public page for all users
-        const userObj = user.toObject();
-        userObj.name = 'SECURED OWNER';
-        userObj.phone = '🔒 SECURE (Identity Masked)';
-        userObj.email = 'PROTECTED';
-        userObj.make = '🔒 SECURED BY PARXÉÉ';
-        userObj.model = '';
-        userObj.plateNumber = '🔒 SECURED & HIDDEN';
-        userObj.color = '🔒 SECURED & HIDDEN';
-        userObj.year = '🔒 SECURED & HIDDEN';
-        userObj.emergencyContact = '🔒 SECURED & HIDDEN';
+        let vehicleDetails = {
+            _id: user._id,
+            name: user.name,
+            phone: user.phone,
+            email: user.email,
+            make: user.make,
+            model: user.model,
+            plateNumber: user.plateNumber,
+            color: user.color,
+            year: user.year,
+            subscriptionTier: user.subscriptionTier,
+            smartTagId: user.smartTagId,
+            emergencyContact: user.emergencyContact
+        };
 
-        res.json(userObj);
+        if (isSecondary && user.secondaryVehicles && user.secondaryVehicles[secondaryIndex]) {
+            const secVeh = user.secondaryVehicles[secondaryIndex];
+            vehicleDetails.make = secVeh.make;
+            vehicleDetails.model = secVeh.model;
+            vehicleDetails.plateNumber = secVeh.plateNumber;
+            vehicleDetails.color = secVeh.color;
+            vehicleDetails.year = secVeh.year;
+            vehicleDetails.smartTagId = `${user.smartTagId}-S${secondaryIndex + 1}`;
+        }
+
+        // Enforce strict Data Privacy Masking on the public page for all users
+        const maskedObj = { ...vehicleDetails };
+        maskedObj.name = 'SECURED OWNER';
+        maskedObj.phone = '🔒 SECURE (Identity Masked)';
+        maskedObj.email = 'PROTECTED';
+        maskedObj.make = '🔒 SECURED BY PARXÉÉ';
+        maskedObj.model = '';
+        maskedObj.plateNumber = '🔒 SECURED & HIDDEN';
+        maskedObj.color = '🔒 SECURED & HIDDEN';
+        maskedObj.year = '🔒 SECURED & HIDDEN';
+        maskedObj.emergencyContact = '🔒 SECURED & HIDDEN';
+
+        res.json(maskedObj);
     } catch (error) {
         console.error('Fetch Vehicle Error:', error);
         res.status(500).json({ message: 'Server error' });

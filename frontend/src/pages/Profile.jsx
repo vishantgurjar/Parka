@@ -13,9 +13,83 @@ export default function Profile() {
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
+  const [isSecondaryCardModalOpen, setIsSecondaryCardModalOpen] = useState(false);
+  const [selectedVehicleForCard, setSelectedVehicleForCard] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newVehicle, setNewVehicle] = useState({ make: '', model: '', year: '', color: '', plateNumber: '' });
   const qrRef = useRef(null);
+  const secondaryQrRef = useRef(null);
+
+  const downloadSecondaryQR = async () => {
+    if (!secondaryQrRef.current) return;
+    
+    const originalCard = secondaryQrRef.current.querySelector('.emergency-sticker-card') || secondaryQrRef.current;
+    const clonedCard = originalCard.cloneNode(true);
+    
+    try {
+      const name = selectedVehicleForCard?.plateNumber?.replace(/\s+/g, '-') || 'secondary-card';
+      clonedCard.classList.add('is-downloading-sticker');
+      document.body.appendChild(clonedCard);
+      
+      await new Promise(r => setTimeout(r, 500));
+
+      const options = {
+        width: 360,
+        height: 560,
+        pixelRatio: 4, 
+        backgroundColor: '#030712',
+        style: {
+          transform: 'none',
+          margin: '0',
+          padding: '0',
+          width: '360px',
+          height: '560px'
+        }
+      };
+
+      const dataUrl = await toPng(clonedCard, options);
+      
+      if (isIOSDevice()) {
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], `parxee-city-${name}.png`, { type: 'image/png' });
+          
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: `Parxéé City ID Card`,
+              text: `My Parxéé City Smart QR Card`
+            });
+            toast.success("Share sheet opened!");
+          } else {
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `parxee-city-${name}.png`;
+            link.href = blobUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+          }
+        } catch (downloadErr) {
+          console.warn("iOS sharing/download failed:", downloadErr);
+        }
+      } else {
+        const link = document.createElement('a');
+        link.download = `parxee-city-${name}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err) {
+      console.error('Final Download Error:', err);
+      toast.error("Mobile render failed. Please use a screenshot if this continues.");
+    } finally {
+      if (document.body.contains(clonedCard)) {
+        document.body.removeChild(clonedCard);
+      }
+    }
+  };
 
   const handleAddVehicle = async (e) => {
     e.preventDefault();
@@ -375,7 +449,7 @@ export default function Profile() {
 
               {user.secondaryVehicles && user.secondaryVehicles.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                  {user.secondaryVehicles.map(veh => (
+                  {user.secondaryVehicles.map((veh, idx) => (
                     <div key={veh._id} className="glass" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <button 
                         onClick={() => handleRemoveVehicle(veh._id)}
@@ -388,7 +462,7 @@ export default function Profile() {
                       <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '900', letterSpacing: '1px' }}>SECONDARY VEHICLE</span>
                       <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#fff', margin: '4px 0' }}>{veh.plateNumber}</h4>
                       
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem', marginBottom: '10px' }}>
                         <div>
                           <span style={{ display: 'block', color: 'var(--muted)', fontSize: '0.65rem', fontWeight: 'bold' }}>MAKE/BRAND</span>
                           <span style={{ color: '#fff', fontWeight: 'bold' }}>{veh.make}</span>
@@ -406,6 +480,17 @@ export default function Profile() {
                           <span style={{ color: '#fff', fontWeight: 'bold' }}>{veh.color}</span>
                         </div>
                       </div>
+
+                      <button 
+                        onClick={() => {
+                          setSelectedVehicleForCard(veh);
+                          setIsSecondaryCardModalOpen(true);
+                        }}
+                        className="btn-gradient light-sweep" 
+                        style={{ padding: '10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer' }}
+                      >
+                        🎫 Generate Card
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -814,6 +899,61 @@ export default function Profile() {
                         {isLoading ? 'Adding Vehicle...' : 'Add Vehicle to Profile'}
                     </button>
                 </form>
+            </div>
+        </div>
+      )}
+
+      {/* SECONDARY CARD MODAL */}
+      {isSecondaryCardModalOpen && selectedVehicleForCard && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="glass-card" style={{ width: '95%', maxWidth: '450px', padding: '0', overflow: 'hidden', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                    <h3 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span>🎫</span> Virtual Card Generator
+                    </h3>
+                    <button onClick={() => setIsSecondaryCardModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X /></button>
+                </div>
+                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
+                      STICKER ID: {user.smartTagId}-S{user.secondaryVehicles.indexOf(selectedVehicleForCard) + 1}
+                    </span>
+
+                    <div style={{ 
+                      width: '100%', 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      alignItems: 'center',
+                      padding: '10px 0',
+                      overflow: 'visible'
+                    }}>
+                      <div ref={secondaryQrRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                        <EmergencySticker 
+                          user={{ ...user, plateNumber: selectedVehicleForCard.plateNumber }} 
+                          qrUrl={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/v/' + user.smartTagId + '-S' + (user.secondaryVehicles.indexOf(selectedVehicleForCard) + 1))}`} 
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
+                      <button 
+                        onClick={downloadSecondaryQR} 
+                        className="btn-gradient light-sweep" 
+                        style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flex: 1, textAlign: 'center' }}
+                      >
+                        Download Card
+                      </button>
+                      <a 
+                        href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + '/v/' + user.smartTagId + '-S' + (user.secondaryVehicles.indexOf(selectedVehicleForCard) + 1))}`}
+                        download={`parxee_qr_${selectedVehicleForCard.plateNumber}.png`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary" 
+                        style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center' }}
+                      >
+                        Download QR Only
+                      </a>
+                    </div>
+                </div>
             </div>
         </div>
       )}
