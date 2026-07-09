@@ -48,8 +48,8 @@ export default function Home({ onOpenPayment }) {
   }, [user]);
 
   useEffect(() => {
-    // Reveal animation observer
-    const observerOptions = { threshold: 0.1 };
+    // Reveal animation observer - lower threshold for better compatibility with short laptop screens
+    const observerOptions = { threshold: 0.01, rootMargin: '0px 0px -10px 0px' };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -58,7 +58,13 @@ export default function Home({ onOpenPayment }) {
       });
     }, observerOptions);
 
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    const observeElements = () => {
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    };
+
+    // Observe immediately and after a short delay to capture all rendered elements
+    observeElements();
+    const timer = setTimeout(observeElements, 500);
     
     // IP location detection
     fetch('https://ipapi.co/json/')
@@ -72,8 +78,11 @@ export default function Home({ onOpenPayment }) {
       })
       .catch(() => setLocationLabel('Location Detected'));
       
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [user]);
   
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
