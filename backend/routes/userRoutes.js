@@ -253,4 +253,62 @@ router.post('/contact', async (req, res) => {
   }
 });
 
+// @route   POST /api/user/add-secondary-vehicle
+// @desc    Add a secondary vehicle to user profile
+router.post('/add-secondary-vehicle', async (req, res) => {
+  try {
+    const { userId, make, model, year, color, plateNumber } = req.body;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Validate limit based on subscription tier
+    const tier = user.subscriptionTier?.toLowerCase() || 'free';
+    let limit = 1; // Default/Free/Silver limit
+    if (tier === 'gold' || tier === 'gold pro') limit = 3;
+    if (tier === 'diamond' || tier === 'pro') limit = 5;
+
+    const currentCount = 1 + (user.secondaryVehicles ? user.secondaryVehicles.length : 0);
+    if (currentCount >= limit) {
+      return res.status(400).json({ message: `Plan limit reached. Your current plan allows up to ${limit} vehicles total.` });
+    }
+
+    if (!user.secondaryVehicles) {
+      user.secondaryVehicles = [];
+    }
+
+    user.secondaryVehicles.push({ make, model, year, color, plateNumber });
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ success: true, user: userResponse, message: 'Secondary vehicle added successfully!' });
+  } catch (error) {
+    console.error('Add Vehicle Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/user/remove-secondary-vehicle/:vehicleId
+// @desc    Remove a secondary vehicle
+router.post('/remove-secondary-vehicle/:vehicleId', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const { vehicleId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.secondaryVehicles = user.secondaryVehicles.filter(v => v._id.toString() !== vehicleId);
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ success: true, user: userResponse, message: 'Secondary vehicle removed successfully!' });
+  } catch (error) {
+    console.error('Remove Vehicle Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

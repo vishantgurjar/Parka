@@ -12,8 +12,73 @@ export default function Profile() {
   const { user, login } = useContext(AuthContext);
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
+  const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [newVehicle, setNewVehicle] = useState({ make: '', model: '', year: '', color: '', plateNumber: '' });
   const qrRef = useRef(null);
+
+  const handleAddVehicle = async (e) => {
+    e.preventDefault();
+    if (!newVehicle.make || !newVehicle.model || !newVehicle.year || !newVehicle.color || !newVehicle.plateNumber) {
+      return toast.error("Please fill in all vehicle details.");
+    }
+    setIsLoading(true);
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/add-secondary-vehicle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id || user.id, ...newVehicle })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login(data.user, localStorage.getItem('parkeToken'));
+        toast.success("Secondary vehicle added successfully!");
+        setIsAddVehicleModalOpen(false);
+        setNewVehicle({ make: '', model: '', year: '', color: '', plateNumber: '' });
+      } else {
+        toast.error(data.message || 'Failed to add vehicle.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error adding vehicle.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveVehicle = async (vehicleId) => {
+    if (!window.confirm("Are you sure you want to remove this vehicle?")) return;
+    setIsLoading(true);
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/remove-secondary-vehicle/${vehicleId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id || user.id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login(data.user, localStorage.getItem('parkeToken'));
+        toast.success("Secondary vehicle removed successfully!");
+      } else {
+        toast.error(data.message || 'Failed to remove vehicle.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error removing vehicle.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const tier = user.subscriptionTier?.toLowerCase() || 'free';
+  let totalLimit = 1;
+  if (tier === 'gold' || tier === 'gold pro') totalLimit = 3;
+  if (tier === 'diamond' || tier === 'pro') totalLimit = 5;
+
+  const currentCount = 1 + (user.secondaryVehicles ? user.secondaryVehicles.length : 0);
+  const canAddMore = currentCount < totalLimit;
 
   const isIOSDevice = () => {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
@@ -285,6 +350,84 @@ export default function Profile() {
             </div>
 
           </div>
+
+          {/* SECONDARY VEHICLES SECTION */}
+          {(user.subscriptionTier?.toLowerCase() === 'gold' || user.subscriptionTier?.toLowerCase() === 'gold pro' || user.subscriptionTier?.toLowerCase() === 'diamond' || user.subscriptionTier?.toLowerCase() === 'pro') && (
+            <div className="glass-card" style={{ marginTop: '30px', padding: '28px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
+                <h3 style={{ margin: '0', color: '#10b981', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Car size={24} /> Secondary Vehicles ({currentCount}/{totalLimit})
+                </h3>
+                {canAddMore ? (
+                  <button 
+                    onClick={() => setIsAddVehicleModalOpen(true)}
+                    className="btn-gradient light-sweep"
+                    style={{ padding: '8px 20px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}
+                  >
+                    + Add Vehicle
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted)', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '50px' }}>
+                    Plan limit reached ({totalLimit} max)
+                  </span>
+                )}
+              </div>
+
+              {user.secondaryVehicles && user.secondaryVehicles.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                  {user.secondaryVehicles.map(veh => (
+                    <div key={veh._id} className="glass" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <button 
+                        onClick={() => handleRemoveVehicle(veh._id)}
+                        style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        title="Remove vehicle"
+                      >
+                        <X size={14} />
+                      </button>
+
+                      <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '900', letterSpacing: '1px' }}>SECONDARY VEHICLE</span>
+                      <h4 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#fff', margin: '4px 0' }}>{veh.plateNumber}</h4>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem' }}>
+                        <div>
+                          <span style={{ display: 'block', color: 'var(--muted)', fontSize: '0.65rem', fontWeight: 'bold' }}>MAKE/BRAND</span>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{veh.make}</span>
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', color: 'var(--muted)', fontSize: '0.65rem', fontWeight: 'bold' }}>MODEL</span>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{veh.model}</span>
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', color: 'var(--muted)', fontSize: '0.65rem', fontWeight: 'bold' }}>YEAR</span>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{veh.year}</span>
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', color: 'var(--muted)', fontSize: '0.65rem', fontWeight: 'bold' }}>COLOR</span>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{veh.color}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--muted)' }}>
+                  <p style={{ fontSize: '0.9rem' }}>No secondary vehicles added to this profile yet.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(!user.subscriptionTier || user.subscriptionTier?.toLowerCase() === 'free' || user.subscriptionTier?.toLowerCase() === 'silver') && (
+            <div className="glass-card" style={{ marginTop: '30px', padding: '28px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+              <div style={{ textAlign: 'left' }}>
+                <h4 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: '1rem', fontWeight: 'bold' }}>Want to protect more vehicles?</h4>
+                <p style={{ margin: '0', fontSize: '0.85rem', color: 'var(--muted)' }}>Upgrade to **Gold PRO** (up to 3 vehicles) or **Diamond** (up to 5 vehicles) to manage all your cars in one account.</p>
+              </div>
+              <Link to="/#pricing" className="btn-gradient light-sweep" style={{ padding: '10px 24px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                Upgrade Plan
+              </Link>
+            </div>
+          )}
 
           <div className="form-grid form-grid-3" style={{ marginTop: '30px', gap: '20px' }}>
             
@@ -587,6 +730,89 @@ export default function Profile() {
                     <p style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--muted)', marginTop: '15px' }}>
                         *Your data is encrypted using AES-256 for Parxéé Cam Mode Security.
                     </p>
+                </form>
+            </div>
+        </div>
+      )}
+
+      {/* ADD VEHICLE MODAL */}
+      {isAddVehicleModalOpen && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="glass-card" style={{ width: '95%', maxWidth: '500px', padding: '0', overflow: 'hidden', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <div style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Car size={20} color="#10b981" /> Add Secondary Vehicle
+                    </h3>
+                    <button onClick={() => setIsAddVehicleModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X /></button>
+                </div>
+                <form onSubmit={handleAddVehicle} style={{ padding: '24px' }}>
+                    <div className="form-group" style={{ marginBottom: '15px', textAlign: 'left' }}>
+                        <label className="form-label" style={{ fontSize: '0.75rem' }}>PLATE NUMBER</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. DL 3C AB 1234" 
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                          value={newVehicle.plateNumber}
+                          onChange={(e) => setNewVehicle({ ...newVehicle, plateNumber: e.target.value })}
+                          required
+                        />
+                    </div>
+                    <div className="form-grid form-grid-2" style={{ gap: '15px', marginBottom: '15px' }}>
+                        <div className="form-group" style={{ textAlign: 'left' }}>
+                            <label className="form-label" style={{ fontSize: '0.75rem' }}>BRAND/MAKE</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. Honda" 
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                              value={newVehicle.make}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
+                              required
+                            />
+                        </div>
+                        <div className="form-group" style={{ textAlign: 'left' }}>
+                            <label className="form-label" style={{ fontSize: '0.75rem' }}>MODEL</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. City" 
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                              value={newVehicle.model}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
+                              required
+                            />
+                        </div>
+                    </div>
+                    <div className="form-grid form-grid-2" style={{ gap: '15px', marginBottom: '20px' }}>
+                        <div className="form-group" style={{ textAlign: 'left' }}>
+                            <label className="form-label" style={{ fontSize: '0.75rem' }}>YEAR</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. 2023" 
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                              value={newVehicle.year}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, year: e.target.value })}
+                              required
+                            />
+                        </div>
+                        <div className="form-group" style={{ textAlign: 'left' }}>
+                            <label className="form-label" style={{ fontSize: '0.75rem' }}>COLOR</label>
+                            <input 
+                              type="text" 
+                              placeholder="e.g. Pearl White" 
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                              value={newVehicle.color}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, color: e.target.value })}
+                              required
+                            />
+                        </div>
+                    </div>
+                    <button 
+                        type="submit" 
+                        disabled={isLoading}
+                        className="btn-gradient full-width" 
+                        style={{ padding: '16px', borderRadius: '12px', fontWeight: 'bold', border: 'none' }}
+                    >
+                        {isLoading ? 'Adding Vehicle...' : 'Add Vehicle to Profile'}
+                    </button>
                 </form>
             </div>
         </div>
