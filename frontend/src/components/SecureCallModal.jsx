@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { Phone, PhoneOff, Mic, MicOff, Shield, AlertCircle } from 'lucide-react';
 import { getBackendUrl } from '../utils/api';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
+import { AuthContext } from '../App';
 
 export default function SecureCallModal({ vehicleId, onClose, incomingSignal, callerSocketId, isOwner = false }) {
+  const { user } = useContext(AuthContext);
   const [callStatus, setCallStatus] = useState('connecting'); // connecting, calling, connected, ended, failed
   const [isMuted, setIsMuted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -17,7 +19,9 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
   useEffect(() => {
     // 1. Setup Socket
     const socket = io(getBackendUrl());
-    socket.emit('join-call-room', { userId: user?._id });
+    if (user?._id) {
+      socket.emit('register-user', user._id);
+    }
     socketRef.current = socket;
 
     const startConnection = async () => {
