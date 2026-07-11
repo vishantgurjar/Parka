@@ -141,6 +141,10 @@ export default function AdminDashboard({ user }) {
         setStickerStats(data.stats);
         setStickerPage(data.page);
         setStickerTotalPages(data.totalPages);
+        
+        const nextNum = (data.stats.totalPrinted || 0) + 1;
+        setPrintStartNum(nextNum);
+        setGenStartNum(nextNum);
       } else {
         toast.error(data.message || "Failed to load stickers.");
       }
