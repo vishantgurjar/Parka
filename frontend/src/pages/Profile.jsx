@@ -17,7 +17,6 @@ export default function Profile() {
   const [selectedVehicleForCard, setSelectedVehicleForCard] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newVehicle, setNewVehicle] = useState({ make: '', model: '', year: '', color: '', plateNumber: '' });
-  const qrRef = useRef(null);
   const secondaryQrRef = useRef(null);
 
   const downloadSecondaryQR = async () => {
@@ -159,76 +158,7 @@ export default function Profile() {
            (navigator.userAgent.includes("Mac") && "ontouchend" in document);
   };
 
-  const downloadQR = async () => {
-    if (!qrRef.current) return;
-    
-    const originalCard = qrRef.current.querySelector('.emergency-sticker-card') || qrRef.current;
-    const clonedCard = originalCard.cloneNode(true);
-    
-    try {
-      const name = user?.name?.replace(/\s+/g, '-') || 'id-card';
-      clonedCard.classList.add('is-downloading-sticker');
-      document.body.appendChild(clonedCard);
-      
-      await new Promise(r => setTimeout(r, 500));
 
-      const options = {
-        width: 360,
-        height: 560,
-        pixelRatio: 4, 
-        backgroundColor: '#030712',
-        style: {
-          transform: 'none',
-          margin: '0',
-          padding: '0',
-          width: '360px',
-          height: '560px'
-        }
-      };
-
-      const dataUrl = await toPng(clonedCard, options);
-      
-      if (isIOSDevice()) {
-        try {
-          const res = await fetch(dataUrl);
-          const blob = await res.blob();
-          const file = new File([blob], `parxee-city-${name}.png`, { type: 'image/png' });
-          
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: `Parxéé City ID Card`,
-              text: `My Parxéé City Smart QR Card`
-            });
-            toast.success("Share sheet opened!");
-          } else {
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = `parxee-city-${name}.png`;
-            link.href = blobUrl;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-          }
-        } catch (downloadErr) {
-          console.warn("iOS sharing/download failed:", downloadErr);
-        }
-      } else {
-        const link = document.createElement('a');
-        link.download = `parxee-city-${name}.png`;
-        link.href = dataUrl;
-        link.click();
-      }
-    } catch (err) {
-      console.error('Final Download Error:', err);
-      toast.error("Mobile render failed. Please use a screenshot if this continues.");
-    } finally {
-      if (document.body.contains(clonedCard)) {
-        document.body.removeChild(clonedCard);
-      }
-    }
-  };
 
   // Form State for Documents
   const [docData, setDocData] = useState({
@@ -566,107 +496,6 @@ export default function Profile() {
 
           </div>
 
-          {/* QR STICKER STATUS CARD */}
-          <div className="glass-card" style={{ marginTop: '30px', padding: '24px', border: '1px solid rgba(139, 92, 246, 0.2)', textAlign: 'left' }}>
-            <h3 style={{ margin: '0 0 1.5rem 0', color: '#8b5cf6', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-              <span>🏷️</span> Smart QR Protection Tag
-            </h3>
-            
-            {user.smartTagId ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'center' }}>
-                
-                {/* QR Display - Render premium EmergencySticker */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '24px 20px', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', minWidth: '320px' }}>
-                  
-                  {/* Sticker ID Outside Card */}
-                  <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
-                    STICKER ID: {user.smartTagId}
-                  </span>
-
-                  {/* QR Card Container */}
-                  <div style={{ 
-                    width: '100%', 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center',
-                    padding: '10px 0',
-                    overflow: 'visible'
-                  }}>
-                    <div ref={qrRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                      <EmergencySticker 
-                        user={user} 
-                        qrUrl={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`} 
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center', flexWrap: 'wrap', marginTop: '14px' }}>
-                    <button 
-                      onClick={downloadQR} 
-                      className="btn-gradient light-sweep" 
-                      style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
-                    >
-                      Download HQ Card
-                    </button>
-                    <a 
-                      href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin + '/activate/' + user.smartTagId)}`}
-                      download={`parxee_qr_${user.smartTagId}.png`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary" 
-                      style={{ padding: '12px 20px', borderRadius: '8px', fontSize: '0.85rem', textDecoration: 'none', color: '#fff', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', flex: 1, textAlign: 'center', minWidth: '130px' }}
-                    >
-                      Download QR Code
-                    </a>
-                  </div>
-                </div>
-
-                {/* QR Actions & Status */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>PROTECTION STATUS</span>
-                    <strong style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-                      Active & Fully Protected
-                    </strong>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>EMERGENCY CONTACT</span>
-                    <strong style={{ color: '#fff' }}>{user.emergencyContact || 'Not Set (Manage Docs to configure)'}</strong>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                    <button 
-                      onClick={() => {
-                        toast.success(`Replacement order received for Sticker ID: ${user.smartTagId}! Support team will dispatch shortly.`);
-                      }}
-                      className="btn-secondary" 
-                      style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', flex: 1 }}
-                    >
-                      🔄 Order Replacement
-                    </button>
-                    <Link 
-                      to={`/v/${user.smartTagId}`}
-                      className="btn-secondary" 
-                      style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', color: '#a78bfa', textDecoration: 'none', cursor: 'pointer', flex: 1, textAlign: 'center' }}
-                    >
-                      👁️ View Public Profile
-                    </Link>
-                  </div>
-                </div>
-
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-                <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-                  You don't have an active Parxéé City Smart QR Sticker linked to this profile.
-                </p>
-                <div style={{ fontSize: '0.8rem', color: '#eab308', background: 'rgba(234, 179, 8, 0.05)', padding: '10px', borderRadius: '8px', display: 'inline-block', maxWidth: '380px' }}>
-                  ⚠️ **To activate a sticker:** Scan the QR code printed on your physical sticker and complete the mobile verification.
-                </div>
-              </div>
-            )}
-          </div>
 
           <div style={{ marginTop: '40px', textAlign: 'center' }}>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
