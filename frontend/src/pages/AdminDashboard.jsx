@@ -986,27 +986,21 @@ export default function AdminDashboard({ user }) {
                                         >
                                            🖨️ Print
                                         </button>
-                                         {s.userId ? (
-                                            <button 
-                                               onClick={() => toggleStickerStatus(s.stickerId)}
-                                               style={{
-                                                  background: s.status === 'Active' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                                                  color: s.status === 'Active' ? '#ef4444' : '#10b981',
-                                                  border: `1px solid ${s.status === 'Active' ? '#ef4444' : '#10b981'}`,
-                                                  padding: '6px 12px',
-                                                  borderRadius: '6px',
-                                                  cursor: 'pointer',
-                                                  fontSize: '0.8rem',
-                                                  fontWeight: 'bold'
-                                               }}
-                                            >
-                                               {s.status === 'Active' ? 'Deactivate' : 'Activate'}
-                                            </button>
-                                         ) : (
-                                            <span style={{ fontSize: '0.8rem', color: '#6b7280', paddingRight: '12px' }}>
-                                               Unregistered
-                                            </span>
-                                         )}
+                                         <button 
+                                            onClick={() => toggleStickerStatus(s.stickerId)}
+                                            style={{
+                                               background: s.status === 'Active' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                               color: s.status === 'Active' ? '#10b981' : '#ef4444',
+                                               border: `1px solid ${s.status === 'Active' ? '#10b981' : '#ef4444'}`,
+                                               padding: '6px 12px',
+                                               borderRadius: '6px',
+                                               cursor: 'pointer',
+                                               fontSize: '0.8rem',
+                                               fontWeight: 'bold'
+                                            }}
+                                         >
+                                            {s.status === 'Active' ? 'Active' : 'Deactivated'}
+                                         </button>
                                      </td>
                                   </tr>
                                ))}
