@@ -992,7 +992,7 @@ export default function AdminDashboard({ user }) {
                                               marginRight: '8px'
                                            }}
                                         >
-                                           🖨️ Print
+                                           📥 Download
                                         </button>
                                          <button 
                                             onClick={() => toggleStickerStatus(s.stickerId)}
