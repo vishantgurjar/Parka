@@ -4,6 +4,7 @@ import { Users, Wrench, IndianRupee, ShieldAlert, KeyRound, Send, Activity, Refr
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 import { toast } from 'react-hot-toast';
+import EmergencySticker from '../components/EmergencySticker';
 
 export default function AdminDashboard({ user }) {
   const navigate = useNavigate();
@@ -30,6 +31,12 @@ export default function AdminDashboard({ user }) {
   const [genStartNum, setGenStartNum] = useState(1);
   const [genCount, setGenCount] = useState(50);
   const [genLoading, setGenLoading] = useState(false);
+
+  // Print Sheet States
+  const [printPrefix, setPrintPrefix] = useState('PC');
+  const [printStartNum, setPrintStartNum] = useState(1);
+  const [printCount, setPrintCount] = useState(50);
+  const [isPrintView, setIsPrintView] = useState(false);
 
   const API_BASE = getBackendUrl();
 
@@ -290,6 +297,97 @@ export default function AdminDashboard({ user }) {
 
   if (loading) {
      return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', color: '#ef4444' }}><Activity className="pulse-anim" size={40} /></div>;
+  }
+
+  if (isPrintView) {
+    return (
+      <div className="print-preview-container" style={{ background: '#030712', color: '#fff', minHeight: '100vh', padding: '20px' }}>
+        <style>{`
+          @media print {
+            .no-print {
+              display: none !important;
+            }
+            body {
+              background: #030712 !important;
+              color: white !important;
+            }
+            .printable-card {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              margin: 10px !important;
+            }
+          }
+        `}</style>
+        <div className="no-print" style={{ 
+          position: 'fixed', 
+          top: '20px', 
+          right: '20px', 
+          background: 'rgba(17, 24, 39, 0.95)', 
+          padding: '16px', 
+          borderRadius: '12px', 
+          border: '1px solid rgba(139, 92, 246, 0.3)',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.5)', 
+          display: 'flex', 
+          gap: '12px', 
+          zIndex: 10000,
+          backdropFilter: 'blur(8px)'
+        }}>
+          <button 
+            onClick={() => window.print()} 
+            className="btn-gradient light-sweep" 
+            style={{ padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer', color: '#000' }}
+          >
+            🖨️ Print / Save PDF
+          </button>
+          <button 
+            onClick={() => setIsPrintView(false)} 
+            className="btn-secondary" 
+            style={{ padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
+          >
+            ✕ Close Preview
+          </button>
+        </div>
+        
+        <div style={{ textAlign: 'center', marginBottom: '30px', padding: '20px 0' }} className="no-print">
+          <h2 style={{ color: '#8b5cf6', margin: '0 0 10px 0' }}>Sticker Print Sheet Preview</h2>
+          <p style={{ color: '#9ca3af', margin: 0 }}>
+            Showing <strong>{printCount}</strong> cards starting from <strong>{printPrefix}{String(printStartNum).padStart(6, '0')}</strong>.
+          </p>
+          <p style={{ color: '#eab308', fontSize: '0.85rem', marginTop: '5px' }}>
+            💡 Tip: Set Layout to <strong>Portrait</strong> and Background Graphics to <strong>Enabled</strong> in the browser print settings for best results.
+          </p>
+        </div>
+
+        {/* Printable Grid */}
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '24px', 
+          justifyContent: 'center', 
+          padding: '20px 0',
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          {Array.from({ length: printCount }).map((_, idx) => {
+            const num = printStartNum + idx;
+            const paddedNum = String(num).padStart(6, '0');
+            const stickerId = `${printPrefix}${paddedNum}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/activate/' + stickerId)}`;
+            const dummyUser = {
+              name: 'NOT YET ACTIVATED',
+              plateNumber: 'SCAN TO BIND',
+              subscriptionTier: 'standard',
+              smartTagId: stickerId
+            };
+            return (
+              <div key={stickerId} className="printable-card" style={{ display: 'inline-block', transition: 'transform 0.2s' }}>
+                <EmergencySticker user={dummyUser} qrUrl={qrUrl} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -696,6 +794,55 @@ export default function AdminDashboard({ user }) {
                       </form>
                    </div>
 
+                    {/* 3. Bulk Print Cards */}
+                    <div className="glass-card" style={{ padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                       <div>
+                          <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', color: '#fff', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
+                             🖨️ Bulk Print Cards (PDF)
+                          </h3>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                             <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>Prefix</label>
+                                <input 
+                                   type="text" 
+                                   value={printPrefix} 
+                                   onChange={(e) => setPrintPrefix(e.target.value.toUpperCase())}
+                                   style={{ width: '100%', padding: '10px', background: '#0a0a0a', border: '1px solid #374151', color: '#fff', borderRadius: '6px' }}
+                                />
+                             </div>
+                             <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>Start No.</label>
+                                <input 
+                                   type="number" 
+                                   value={printStartNum} 
+                                   onChange={(e) => setPrintStartNum(parseInt(e.target.value) || 1)}
+                                   style={{ width: '100%', padding: '10px', background: '#0a0a0a', border: '1px solid #374151', color: '#fff', borderRadius: '6px' }}
+                                />
+                             </div>
+                             <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>Count</label>
+                                <input 
+                                   type="number" 
+                                   value={printCount} 
+                                   onChange={(e) => setPrintCount(parseInt(e.target.value) || 50)}
+                                   style={{ width: '100%', padding: '10px', background: '#0a0a0a', border: '1px solid #374151', color: '#fff', borderRadius: '6px' }}
+                                />
+                             </div>
+                          </div>
+                       </div>
+                       <button 
+                          onClick={() => {
+                             if (printCount > 1000) {
+                                return toast.error("Maximum 1000 cards can be printed at once to prevent browser lag.");
+                             }
+                             setIsPrintView(true);
+                          }}
+                          style={{ padding: '12px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                       >
+                          🖨️ Prepare Print Sheet
+                       </button>
+                    </div>
+
                    {/* 2. Actions & Exports */}
                    <div className="glass-card" style={{ padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div>
@@ -787,6 +934,35 @@ export default function AdminDashboard({ user }) {
                                         {s.activationDate ? new Date(s.activationDate).toLocaleDateString() : 'N/A'}
                                      </td>
                                      <td style={{ padding: '14px 10px', textAlign: 'right' }}>
+                                        <button 
+                                           onClick={() => {
+                                              const match = s.stickerId.match(/^([A-Za-z]+)(\d+)$/);
+                                              if (match) {
+                                                 setPrintPrefix(match[1]);
+                                                 setPrintStartNum(parseInt(match[2]));
+                                                 setPrintCount(1);
+                                                 setIsPrintView(true);
+                                              } else {
+                                                 setPrintPrefix(s.stickerId);
+                                                 setPrintStartNum(1);
+                                                 setPrintCount(1);
+                                                 setIsPrintView(true);
+                                              }
+                                           }}
+                                           style={{
+                                              background: 'rgba(56, 189, 248, 0.15)',
+                                              color: '#38bdf8',
+                                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                                              padding: '6px 12px',
+                                              borderRadius: '6px',
+                                              cursor: 'pointer',
+                                              fontSize: '0.8rem',
+                                              fontWeight: 'bold',
+                                              marginRight: '8px'
+                                           }}
+                                        >
+                                           🖨️ Print
+                                        </button>
                                         <button 
                                            onClick={() => toggleStickerStatus(s.stickerId)}
                                            style={{
