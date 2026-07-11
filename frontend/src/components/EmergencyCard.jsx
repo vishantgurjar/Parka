@@ -42,10 +42,6 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
 
              <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
                 <div className="hybrid-info-group">
-                   <span className="hybrid-label">VEHICLE PLATE</span>
-                   <span className="hybrid-value">{user.plateNumber || 'PENDING'}</span>
-                </div>
-                <div className="hybrid-info-group">
                    <span className="hybrid-label">ACCESS</span>
                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>24/7 GLOBAL</span>
                 </div>

@@ -147,33 +147,9 @@ const EmergencySticker = React.forwardRef(({ user, qrUrl }, ref) => {
               </span>
             </div>
 
-            {/* Grid for Plate & Access */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, textAlign: 'left' }}>
-                <span 
-                  style={{ 
-                    fontSize: '0.65rem', 
-                    fontWeight: '800', 
-                    color: '#94a3b8', 
-                    letterSpacing: '1px', 
-                    textTransform: 'uppercase' 
-                  }}
-                >
-                  VEHICLE PLATE
-                </span>
-                <span 
-                  style={{ 
-                    fontSize: '1.1rem', 
-                    fontWeight: '900', 
-                    color: '#fff', 
-                    textTransform: 'uppercase' 
-                  }}
-                >
-                  {user.plateNumber || 'PENDING'}
-                </span>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, textAlign: 'right' }}>
+            {/* Access Block */}
+            <div style={{ display: 'flex', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px', width: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                 <span 
                   style={{ 
                     fontSize: '0.65rem', 
