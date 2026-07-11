@@ -12,6 +12,11 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
   // Main emergency name from photo style (e.g. surname)
   const displayName = user?.name || 'VEHICLE OWNER';
 
+  const showPlate = user.plateNumber && 
+                    user.plateNumber.trim() !== '' && 
+                    user.plateNumber.toUpperCase() !== 'PENDING' && 
+                    user.plateNumber.toUpperCase() !== 'SCAN TO BIND';
+
   return (
     <div className="emergency-card-container" ref={ref} style={{ padding: '0' }}>
       <div className={`hybrid-card ${vipClass}`}>
@@ -40,16 +45,18 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
                 <span className="hybrid-helpline">+91 91122 00000</span>
              </div>
 
-             <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
-                <div className="hybrid-info-group">
-                   <span className="hybrid-label">VEHICLE PLATE</span>
-                   <span className="hybrid-value">{user.plateNumber || 'PENDING'}</span>
-                </div>
-                <div className="hybrid-info-group">
-                   <span className="hybrid-label">ACCESS</span>
-                   <span className="hybrid-value" style={{ fontSize: '1rem' }}>24/7 GLOBAL</span>
-                </div>
-             </div>
+              <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
+                {showPlate && (
+                  <div className="hybrid-info-group">
+                     <span className="hybrid-label">VEHICLE PLATE</span>
+                     <span className="hybrid-value">{user.plateNumber}</span>
+                  </div>
+                )}
+                 <div className="hybrid-info-group">
+                    <span className="hybrid-label">ACCESS</span>
+                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>24/7 GLOBAL</span>
+                 </div>
+              </div>
           </div>
 
           {/* QR Section (Right) */}
