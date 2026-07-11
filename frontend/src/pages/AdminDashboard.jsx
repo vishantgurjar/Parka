@@ -902,7 +902,7 @@ export default function AdminDashboard({ user }) {
                    >
                       <option value="">All Statuses</option>
                       <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                      <option value="Inactive">Deactivated</option>
                    </select>
                    <button 
                       onClick={() => fetchStickers(1)}
