@@ -314,11 +314,19 @@ export default function AdminDashboard({ user }) {
             body {
               background: #030712 !important;
               color: white !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             .printable-card {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
               margin: 10px !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
           }
         `}</style>
