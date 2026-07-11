@@ -226,7 +226,7 @@ router.get('/stickers', protect, isAdmin, async (req, res) => {
     const stickers = await Sticker.find(query)
       .populate('userId', 'name email phone')
       .collation({ locale: "en", numericOrdering: true })
-      .sort({ stickerId: 1 })
+      .sort({ status: 1, stickerId: 1 })
       .skip(skipNum)
       .limit(limitNum);
 
