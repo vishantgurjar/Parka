@@ -990,8 +990,8 @@ export default function AdminDashboard({ user }) {
                                             onClick={() => toggleStickerStatus(s.stickerId)}
                                             style={{
                                                background: 'transparent',
-                                               color: '#9ca3af',
-                                               border: '1px solid rgba(255, 255, 255, 0.15)',
+                                               color: s.status === 'Active' ? '#10b981' : '#ef4444',
+                                               border: `1px solid ${s.status === 'Active' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
                                                padding: '6px 12px',
                                                borderRadius: '6px',
                                                cursor: 'pointer',
@@ -999,7 +999,7 @@ export default function AdminDashboard({ user }) {
                                                fontWeight: 'bold'
                                             }}
                                          >
-                                            {s.status === 'Active' ? 'Deactivate' : 'Activate'}
+                                            {s.status === 'Active' ? 'Active' : 'Deactivate'}
                                          </button>
                                      </td>
                                   </tr>
