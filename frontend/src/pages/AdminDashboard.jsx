@@ -381,7 +381,26 @@ export default function AdminDashboard({ user }) {
             };
             return (
               <div key={stickerId} className="printable-card" style={{ display: 'inline-block', transition: 'transform 0.2s' }}>
-                <EmergencySticker user={dummyUser} qrUrl={qrUrl} />
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  background: 'rgba(255,255,255,0.01)', 
+                  padding: '24px 20px', 
+                  borderRadius: '24px', 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  overflow: 'hidden', 
+                  width: '380px' 
+                }}>
+                  <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
+                    STICKER ID: {stickerId}
+                  </span>
+                  <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px 0', overflow: 'visible' }}>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                      <EmergencySticker user={dummyUser} qrUrl={qrUrl} />
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })}
