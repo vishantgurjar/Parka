@@ -225,6 +225,7 @@ router.get('/stickers', protect, isAdmin, async (req, res) => {
     const total = await Sticker.countDocuments(query);
     const stickers = await Sticker.find(query)
       .populate('userId', 'name email phone')
+      .collation({ locale: "en", numericOrdering: true })
       .sort({ stickerId: 1 })
       .skip(skipNum)
       .limit(limitNum);

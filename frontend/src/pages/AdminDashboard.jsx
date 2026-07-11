@@ -938,10 +938,10 @@ export default function AdminDashboard({ user }) {
                                      <td style={{ padding: '14px 10px' }}>
                                         <span style={{ 
                                            fontSize: '0.75rem', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold',
-                                           background: s.status === 'Active' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                                           color: s.status === 'Active' ? '#10b981' : '#f59e0b'
+                                           background: s.status === 'Active' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                           color: s.status === 'Active' ? '#10b981' : '#ef4444'
                                         }}>
-                                           {s.status}
+                                           {s.status === 'Active' ? 'Active' : 'Deactivated'}
                                         </span>
                                      </td>
                                      <td style={{ padding: '14px 10px' }}>
@@ -999,7 +999,7 @@ export default function AdminDashboard({ user }) {
                                               fontWeight: 'bold'
                                            }}
                                         >
-                                           {s.status === 'Active' ? 'Deactivate' : 'Reactivate'}
+                                           {s.status === 'Active' ? 'Deactivate' : 'Activate'}
                                         </button>
                                      </td>
                                   </tr>
