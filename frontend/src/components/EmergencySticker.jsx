@@ -119,6 +119,18 @@ const EmergencySticker = React.forwardRef(({ user, qrUrl }, ref) => {
             >
               SCAN FOR HELP
             </span>
+            <span 
+              style={{ 
+                fontSize: '0.85rem', 
+                fontWeight: 'bold', 
+                color: '#fff', 
+                fontFamily: 'monospace',
+                letterSpacing: '1px',
+                marginTop: '2px'
+              }}
+            >
+              ID: {user.smartTagId || 'PC000001'}
+            </span>
           </div>
 
           {/* Details Section (Bottom) */}

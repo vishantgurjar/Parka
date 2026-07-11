@@ -69,6 +69,9 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
                )}
              </div>
              <span className="hybrid-scan-text">SCAN FOR HELP</span>
+             <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#9ca3af', fontFamily: 'monospace', marginTop: '4px', display: 'block', textAlign: 'center' }}>
+                ID: {user.smartTagId || 'PC000001'}
+             </span>
           </div>
 
         </div>
