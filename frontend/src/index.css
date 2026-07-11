@@ -938,7 +938,8 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     body * {
         visibility: hidden;
     }
-    .emergency-card-container, .emergency-card-container * {
+    .emergency-card-container, .emergency-card-container *,
+    .print-preview-container, .print-preview-container * {
         visibility: visible;
     }
     .emergency-card-container {
@@ -1124,8 +1125,10 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     
     .emergency-card-container, 
     .customer-card-container, 
+    .print-preview-container,
     .emergency-card-container *, 
-    .customer-card-container * {
+    .customer-card-container *,
+    .print-preview-container * {
         visibility: visible !important;
     }
     
