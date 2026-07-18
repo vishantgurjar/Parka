@@ -85,6 +85,13 @@ router.post('/book', async (req, res) => {
         isMock = false;
       } catch (err) {
         console.warn("Razorpay API failed in EV book, falling back to mock:", err.message);
+        if (process.env.NODE_ENV === 'production') {
+          return res.status(500).json({ message: "Razorpay booking failed: " + err.message });
+        }
+      }
+    } else {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'Razorpay keys not configured on backend. Real payments are required in production.' });
       }
     }
 
@@ -122,6 +129,10 @@ router.post('/verify-booking', async (req, res) => {
     if (!booking) return res.status(404).json({ message: "Booking record not found." });
 
     const isMock = razorpay_order_id && razorpay_order_id.startsWith('order_mock_');
+
+    if (isMock && process.env.NODE_ENV === 'production') {
+      return res.status(400).json({ message: 'Mock bookings are disabled in production.' });
+    }
 
     if (!isMock) {
       const keySecret = process.env.RAZORPAY_KEY_SECRET;

@@ -377,6 +377,9 @@ app.post('/api/payment/create-order', async (req, res) => {
 
     // Graceful fallback to sandbox testing if keys are not set
     if (!keyId || !keySecret || keyId === 'dummy_id' || keySecret === 'dummy_secret') {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'Razorpay keys not configured. Real payments are required in production.' });
+      }
       console.warn("Razorpay credentials missing. Fallback to Sandbox Mock Mode.");
       return res.json({
         id: `order_mock_${Date.now()}`,
@@ -402,6 +405,9 @@ app.post('/api/payment/create-order', async (req, res) => {
       res.json(order);
     } catch (apiError) {
       console.error("Razorpay API call failed. Falling back to Sandbox Mock Mode. Error:", apiError);
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'Razorpay API call failed: ' + apiError.message });
+      }
       res.json({
         id: `order_mock_${Date.now()}`,
         amount: Number(amount) * 100,
@@ -423,6 +429,10 @@ app.post('/api/payment/verify-signature', async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, entityType, entityId, amount, userId, hours } = req.body;
     
     const isMock = razorpay_order_id && razorpay_order_id.startsWith('order_mock_');
+
+    if (isMock && process.env.NODE_ENV === 'production') {
+      return res.status(400).json({ message: 'Mock payments are disabled in production.' });
+    }
 
     if (!isMock) {
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -483,6 +493,9 @@ app.post('/api/payment/create-subscription', async (req, res) => {
 
     // Graceful fallback to sandbox testing if keys are not set
     if (!keyId || !keySecret || keyId === 'dummy_id' || keySecret === 'dummy_secret') {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'Razorpay keys not configured. Real payments are required in production.' });
+      }
       console.warn("Razorpay credentials missing. Fallback to Sandbox Mock Subscription Mode.");
       return res.json({
         id: `sub_mock_${Date.now()}`,
@@ -555,6 +568,9 @@ app.post('/api/payment/create-subscription', async (req, res) => {
       res.json(subscription);
     } catch (apiError) {
       console.error("Razorpay subscription API error. Falling back to Mock mode:", apiError);
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'Razorpay subscription API error: ' + apiError.message });
+      }
       res.json({
         id: `sub_mock_${Date.now()}`,
         status: "created",
@@ -575,6 +591,10 @@ app.post('/api/payment/verify-subscription-signature', async (req, res) => {
     const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature, entityId, planName } = req.body;
     
     const isMock = razorpay_subscription_id && razorpay_subscription_id.startsWith('sub_mock_');
+
+    if (isMock && process.env.NODE_ENV === 'production') {
+      return res.status(400).json({ message: 'Mock subscriptions are disabled in production.' });
+    }
 
     if (!isMock) {
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
