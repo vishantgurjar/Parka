@@ -253,9 +253,21 @@ function App() {
     setPaymentPlan({ name, amount });
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (verifyData) => {
     try {
       const baseUrl = getBackendUrl();
+      
+      // Determine the tier code
+      let tier = 'free';
+      if (verifyData && verifyData.tier) {
+        tier = verifyData.tier;
+      } else if (paymentPlan && paymentPlan.name) {
+        const nameLower = paymentPlan.name.toLowerCase();
+        if (nameLower.includes('silver')) tier = 'silver';
+        else if (nameLower.includes('gold')) tier = 'gold';
+        else if (nameLower.includes('diamond')) tier = 'diamond';
+      }
+
       const res = await fetch(`${baseUrl}/api/user/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -264,7 +276,7 @@ function App() {
       const data = await res.json();
       if (res.ok) {
         login(data.user, localStorage.getItem('parkeToken')); // Update AuthContext user
-        toast.success(`Congratulations! You are now a ${paymentPlan.name} member.`);
+        toast.success(`Congratulations! You are now a ${paymentPlan?.name || tier.toUpperCase()} member.`);
         setPaymentPlan(null);
         // Refresh to trigger PWA detection if they just upgraded
         window.location.reload();
