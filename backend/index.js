@@ -376,17 +376,9 @@ app.post('/api/payment/create-order', async (req, res) => {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
-    // Graceful fallback to sandbox testing if keys are not set
+    // Graceful fallback disabled. Real payments are required.
     if (!keysConfigured) {
-      console.warn("Razorpay credentials missing. Fallback to Sandbox Mock Mode.");
-      return res.json({
-        id: `order_mock_${Date.now()}`,
-        amount: Number(amount) * 100,
-        currency,
-        receipt: receipt || `mock_rcpt_${Date.now()}`,
-        status: "created",
-        isMock: true
-      });
+      return res.status(400).json({ message: 'Razorpay payment gateway is not configured. Real payments are required.' });
     }
 
     try {
@@ -402,19 +394,8 @@ app.post('/api/payment/create-order', async (req, res) => {
       const order = await rzp.orders.create(options);
       res.json(order);
     } catch (apiError) {
-      console.error("Razorpay API call failed. Falling back to Sandbox Mock Mode. Error:", apiError);
-      if (process.env.NODE_ENV === 'production' && keysConfigured) {
-        return res.status(400).json({ message: 'Razorpay API call failed: ' + apiError.message });
-      }
-      res.json({
-        id: `order_mock_${Date.now()}`,
-        amount: Number(amount) * 100,
-        currency,
-        receipt: receipt || `mock_rcpt_${Date.now()}`,
-        status: "created",
-        isMock: true,
-        fallbackReason: apiError.message
-      });
+      console.error("Razorpay API call failed. Error:", apiError);
+      return res.status(400).json({ message: 'Razorpay API call failed: ' + apiError.message });
     }
   } catch (error) {
     console.error("Payment Route Error:", error);
@@ -427,22 +408,18 @@ app.post('/api/payment/verify-signature', async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, entityType, entityId, amount, userId, hours } = req.body;
     
     const isMock = razorpay_order_id && razorpay_order_id.startsWith('order_mock_');
-    const keyId = process.env.RAZORPAY_KEY_ID;
+
+    if (isMock) {
+      return res.status(400).json({ message: 'Mock payments are disabled.' });
+    }
+
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
-
-    if (isMock && process.env.NODE_ENV === 'production' && keysConfigured) {
-      return res.status(400).json({ message: 'Mock payments are disabled in production when real keys are configured.' });
+    if (!keySecret || keySecret === 'dummy_secret') {
+      return res.status(400).json({ message: 'Razorpay keys not configured' });
     }
-
-    if (!isMock) {
-      if (!keySecret || keySecret === 'dummy_secret') {
-        return res.status(400).json({ message: 'Razorpay keys not configured' });
-      }
-      const body = razorpay_order_id + "|" + razorpay_payment_id;
-      const expectedSignature = crypto.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
-      if (expectedSignature !== razorpay_signature) return res.status(400).json({ message: 'Invalid signature' });
-    }
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
+    if (expectedSignature !== razorpay_signature) return res.status(400).json({ message: 'Invalid signature' });
 
     if (entityType === 'wallet') {
       const mechanic = await Mechanic.findById(entityId);
@@ -492,16 +469,9 @@ app.post('/api/payment/create-subscription', async (req, res) => {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
-    // Graceful fallback to sandbox testing if keys are not set
+    // Mock subscription fallback disabled. Real subscriptions are required.
     if (!keysConfigured) {
-      console.warn("Razorpay credentials missing. Fallback to Sandbox Mock Subscription Mode.");
-      return res.json({
-        id: `sub_mock_${Date.now()}`,
-        status: "created",
-        isMock: true,
-        planName,
-        amount
-      });
+      return res.status(400).json({ message: 'Razorpay subscription gateway is not configured. Real payments are required.' });
     }
 
     try {
@@ -565,18 +535,8 @@ app.post('/api/payment/create-subscription', async (req, res) => {
 
       res.json(subscription);
     } catch (apiError) {
-      console.error("Razorpay subscription API error. Falling back to Mock mode:", apiError);
-      if (process.env.NODE_ENV === 'production' && keysConfigured) {
-        return res.status(400).json({ message: 'Razorpay subscription API error: ' + apiError.message });
-      }
-      res.json({
-        id: `sub_mock_${Date.now()}`,
-        status: "created",
-        isMock: true,
-        planName,
-        amount,
-        fallbackReason: apiError.message
-      });
+      console.error("Razorpay subscription API error. Error:", apiError);
+      return res.status(400).json({ message: 'Razorpay subscription API error: ' + apiError.message });
     }
   } catch (error) {
     console.error("Create Subscription Route Error:", error);
@@ -589,23 +549,19 @@ app.post('/api/payment/verify-subscription-signature', async (req, res) => {
     const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature, entityId, planName } = req.body;
     
     const isMock = razorpay_subscription_id && razorpay_subscription_id.startsWith('sub_mock_');
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
-    if (isMock && process.env.NODE_ENV === 'production' && keysConfigured) {
-      return res.status(400).json({ message: 'Mock subscriptions are disabled in production when real keys are configured.' });
+    if (isMock) {
+      return res.status(400).json({ message: 'Mock subscriptions are disabled.' });
     }
 
-    if (!isMock) {
-      if (!keySecret || keySecret === 'dummy_secret') {
-        return res.status(400).json({ message: 'Razorpay keys not configured' });
-      }
-      const body = razorpay_payment_id + "|" + razorpay_subscription_id;
-      const expectedSignature = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
-      if (expectedSignature !== razorpay_signature) {
-        return res.status(400).json({ message: 'Invalid subscription signature' });
-      }
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret || keySecret === 'dummy_secret') {
+      return res.status(400).json({ message: 'Razorpay keys not configured' });
+    }
+    const body = razorpay_payment_id + "|" + razorpay_subscription_id;
+    const expectedSignature = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Invalid subscription signature' });
     }
 
     // Identify subscription tier

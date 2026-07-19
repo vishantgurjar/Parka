@@ -398,10 +398,22 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             <button 
               className="btn-gradient full-width" 
               onClick={handleRazorpayPayment} 
-              disabled={loading}
-              style={{ padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer', background: plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : plan.name === 'Diamond PRO' ? 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)' : 'var(--gradient-primary)' }}
+              disabled={loading || (error && (error.includes('not configured') || error.includes('gateway')))}
+              style={{ 
+                padding: '16px', 
+                fontSize: '1.1rem', 
+                borderRadius: '12px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                border: 'none', 
+                cursor: (loading || (error && (error.includes('not configured') || error.includes('gateway')))) ? 'not-allowed' : 'pointer', 
+                opacity: (loading || (error && (error.includes('not configured') || error.includes('gateway')))) ? 0.6 : 1,
+                background: plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : plan.name === 'Diamond PRO' ? 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)' : 'var(--gradient-primary)' 
+              }}
             >
-              {loading ? 'Processing...' : `Pay via Razorpay`}
+              {loading ? 'Processing...' : error && (error.includes('not configured') || error.includes('gateway')) ? 'Payment Unavailable' : `Pay via Razorpay`}
             </button>
 
             <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', textAlign: 'center' }}>

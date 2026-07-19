@@ -451,11 +451,7 @@ export default function EVHub() {
       const orderData = await res.json();
       if (!res.ok) throw new Error(orderData.message || 'Failed to create order');
 
-      if (orderData.isMock) {
-        setCurrentOrder(orderData);
-        setBookingStep('mock_payment_gateway');
-        return;
-      }
+
 
       // Real Razorpay Checkout
       const options = {
