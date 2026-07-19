@@ -382,7 +382,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
               )}
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-                <img src="https://img.icons8.com/color/48/000000/upi.png" alt="UPI" style={{ height: '24px' }} />
+                <img src="https://img.icons8.com/color/48/upi.png" alt="UPI" style={{ height: '24px' }} />
                 <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" style={{ height: '24px' }} />
                 <img src="https://img.icons8.com/color/48/000000/mastercard.png" alt="Mastercard" style={{ height: '24px' }} />
                 <img src="https://img.icons8.com/color/48/000000/google-pay-india.png" alt="GPay" style={{ height: '24px' }} />

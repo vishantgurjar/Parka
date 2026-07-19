@@ -69,11 +69,12 @@ router.post('/book', async (req, res) => {
 
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
     let orderId = `order_mock_${Date.now()}`;
     let isMock = true;
 
-    if (keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret') {
+    if (keysConfigured) {
       try {
         const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
         const order = await rzp.orders.create({
@@ -85,14 +86,12 @@ router.post('/book', async (req, res) => {
         isMock = false;
       } catch (err) {
         console.warn("Razorpay API failed in EV book, falling back to mock:", err.message);
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'production' && keysConfigured) {
           return res.status(500).json({ message: "Razorpay booking failed: " + err.message });
         }
       }
     } else {
-      if (process.env.NODE_ENV === 'production') {
-        return res.status(400).json({ message: 'Razorpay keys not configured on backend. Real payments are required in production.' });
-      }
+      console.warn("Razorpay credentials missing for EV Hub. Fallback to Sandbox Mock Mode.");
     }
 
     const booking = new EVBooking({
@@ -129,13 +128,15 @@ router.post('/verify-booking', async (req, res) => {
     if (!booking) return res.status(404).json({ message: "Booking record not found." });
 
     const isMock = razorpay_order_id && razorpay_order_id.startsWith('order_mock_');
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
-    if (isMock && process.env.NODE_ENV === 'production') {
-      return res.status(400).json({ message: 'Mock bookings are disabled in production.' });
+    if (isMock && process.env.NODE_ENV === 'production' && keysConfigured) {
+      return res.status(400).json({ message: 'Mock bookings are disabled in production when real keys are configured.' });
     }
 
     if (!isMock) {
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
       if (!keySecret || keySecret === 'dummy_secret') {
         return res.status(400).json({ message: 'Razorpay keys not configured on backend.' });
       }
