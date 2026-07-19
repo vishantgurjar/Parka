@@ -449,7 +449,9 @@ export default function Home({ onOpenPayment }) {
             </div>
             
             <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: 'var(--primary)', background: 'rgba(94, 234, 212, 0.05)' }}>
-              <div className="plan-badge" style={{ background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: '0.6rem', fontWeight: '900', borderRadius: '50px' }}>BEST VALUE</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
+                <span style={{ background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: '0.65rem', fontWeight: '900', borderRadius: '50px', padding: '4px 12px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>BEST VALUE</span>
+              </div>
               <div className="plan-header">
                 <div className="plan-icon featured-icon" style={{ borderRadius: '12px' }}><ShieldCheck size={20} /></div>
                 <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Gold PRO</h3></div>
