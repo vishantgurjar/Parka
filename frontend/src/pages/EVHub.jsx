@@ -148,7 +148,7 @@ export default function EVHub() {
             </div>
             
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '2rem' }}>
-              Bhai, EV Smart Hub access karne ke liye aapke paas active **Silver, Gold PRO, ya Diamond** membership honi chahiye. Upgrade karne par aapko live charger radar, safe P2P charger sharing, aur AI diagnostics access milega!
+              To access the EV Smart Hub, you must have an active <strong>Silver, Gold PRO, or Diamond</strong> membership. Upgrading will grant you access to live charger radar, safe P2P charger sharing, and AI diagnostics!
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -157,7 +157,7 @@ export default function EVHub() {
                 className="btn-gradient light-sweep" 
                 style={{ padding: '15px', borderRadius: '12px', fontWeight: 'bold', background: 'var(--gradient-premium)', border: 'none', color: '#000' }}
               >
-                Upgrade Plan Now (मेम्बरशिप लें)
+                Upgrade Plan Now
               </button>
               <button 
                 onClick={() => window.location.href = '/'} 
