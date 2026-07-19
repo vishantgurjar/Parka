@@ -460,7 +460,7 @@ export default function Home({ onOpenPayment }) {
               <span className="period" style={{ opacity: 0.6 }}>/6 months</span>
               <ul className="plan-features" style={{ marginTop: '2rem' }}>
                 <li style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Privacy Mode Calling</li>
-                <li>Smart Sticker Delivery</li>
+                <li>EV Smart Hub Access</li>
                 <li>Up to 3 Vehicles</li>
               </ul>
               <button className="plan-btn-featured light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Gold PRO', '299')}>Upgrade to PRO</button>
