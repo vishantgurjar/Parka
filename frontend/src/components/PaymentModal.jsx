@@ -245,7 +245,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
   };
 
   return (
-    <div className="modal-overlay show" id="paymentModal" onClick={(e) => {
+    <div className="modal-overlay show" id="paymentModal" style={{ zIndex: 20000 }} onClick={(e) => {
       if(e.target.id === 'paymentModal') onClose();
     }}>
       <div className="modal-content" style={{ maxWidth: '450px', padding: '2rem' }}>
