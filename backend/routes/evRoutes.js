@@ -67,8 +67,8 @@ router.post('/book', async (req, res) => {
     const estimatedUnits = 7.5 * Number(hours);
     const totalPrice = Math.round(charger.price * estimatedUnits);
 
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
     if (!keysConfigured) {
@@ -146,7 +146,7 @@ router.post('/verify-booking', async (req, res) => {
       return res.status(400).json({ message: 'Mock bookings are disabled.' });
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     if (!keySecret || keySecret === 'dummy_secret') {
       return res.status(400).json({ message: 'Razorpay keys not configured on backend.' });
     }

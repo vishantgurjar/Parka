@@ -29,8 +29,8 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy_client_id
 
 // Razorpay Instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'dummy_id',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret'
+  key_id: (process.env.RAZORPAY_KEY_ID || 'dummy_id').trim(),
+  key_secret: (process.env.RAZORPAY_KEY_SECRET || 'dummy_secret').trim()
 });
 
 // Helper to extract descriptive error message from Razorpay SDK errors
@@ -387,8 +387,8 @@ app.get('/api/incidents', async (req, res) => {
 app.post('/api/payment/create-order', async (req, res) => {
   try {
     const { amount, currency = 'INR', receipt, entityId } = req.body;
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
     // Graceful fallback disabled. Real payments are required.
@@ -428,7 +428,7 @@ app.post('/api/payment/verify-signature', async (req, res) => {
       return res.status(400).json({ message: 'Mock payments are disabled.' });
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     if (!keySecret || keySecret === 'dummy_secret') {
       return res.status(400).json({ message: 'Razorpay keys not configured' });
     }
@@ -480,8 +480,8 @@ app.post('/api/payment/verify-signature', async (req, res) => {
 app.post('/api/payment/create-subscription', async (req, res) => {
   try {
     const { planName, amount, entityId } = req.body;
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
     // Mock subscription fallback disabled. Real subscriptions are required.
@@ -569,7 +569,7 @@ app.post('/api/payment/verify-subscription-signature', async (req, res) => {
       return res.status(400).json({ message: 'Mock subscriptions are disabled.' });
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     if (!keySecret || keySecret === 'dummy_secret') {
       return res.status(400).json({ message: 'Razorpay keys not configured' });
     }
@@ -616,7 +616,7 @@ app.post('/api/payment/verify-subscription-signature', async (req, res) => {
 app.post('/api/payment/webhook', async (req, res) => {
   try {
     const signature = req.headers['x-razorpay-signature'];
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || '').trim();
 
     // Support mock testing if secret is missing or signature is not provided
     const isMockTesting = !webhookSecret || webhookSecret === 'dummy_webhook_secret' || !signature;
