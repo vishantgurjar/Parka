@@ -33,6 +33,15 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret'
 });
 
+// Helper to extract descriptive error message from Razorpay SDK errors
+function getRazorpayErrorMessage(err) {
+  if (!err) return 'Unknown error';
+  if (err.error && typeof err.error === 'object') {
+    return err.error.description || err.error.code || JSON.stringify(err.error);
+  }
+  return err.message || String(err);
+}
+
 // Gemini AI Config
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_FALLBACK_IF_ANY");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -395,7 +404,7 @@ app.post('/api/payment/create-order', async (req, res) => {
       res.json(order);
     } catch (apiError) {
       console.error("Razorpay API call failed. Error:", apiError);
-      return res.status(400).json({ message: 'Razorpay API call failed: ' + apiError.message });
+      return res.status(400).json({ message: 'Razorpay API call failed: ' + getRazorpayErrorMessage(apiError) });
     }
   } catch (error) {
     console.error("Payment Route Error:", error);
@@ -507,7 +516,7 @@ app.post('/api/payment/create-subscription', async (req, res) => {
           planId = existing.id;
         }
       } catch (listErr) {
-        console.warn("Could not retrieve existing Razorpay plans, will attempt to create:", listErr.message);
+        console.warn("Could not retrieve existing Razorpay plans, will attempt to create:", getRazorpayErrorMessage(listErr));
       }
 
       // If plan doesn't exist, create it
@@ -536,7 +545,7 @@ app.post('/api/payment/create-subscription', async (req, res) => {
       res.json(subscription);
     } catch (apiError) {
       console.error("Razorpay subscription API error. Error:", apiError);
-      return res.status(400).json({ message: 'Razorpay subscription API error: ' + apiError.message });
+      return res.status(400).json({ message: 'Razorpay subscription API error: ' + getRazorpayErrorMessage(apiError) });
     }
   } catch (error) {
     console.error("Create Subscription Route Error:", error);

@@ -87,8 +87,11 @@ router.post('/book', async (req, res) => {
       });
       orderId = order.id;
     } catch (err) {
-      console.error("Razorpay API failed in EV book. Error:", err.message);
-      return res.status(500).json({ message: "Razorpay booking failed: " + err.message });
+      const errMsg = err.error && typeof err.error === 'object'
+        ? (err.error.description || err.error.code || JSON.stringify(err.error))
+        : (err.message || String(err));
+      console.error("Razorpay API failed in EV book. Error:", errMsg);
+      return res.status(500).json({ message: "Razorpay booking failed: " + errMsg });
     }
 
     const booking = new EVBooking({
