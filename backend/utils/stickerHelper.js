@@ -109,8 +109,51 @@ async function migrateExistingUsersWithoutStickers() {
     }
 }
 
+/**
+ * Automatically cleans up (deactivates and resets) any active stickers
+ * whose linked user no longer exists in the database.
+ */
+async function cleanOrphanedStickers() {
+    try {
+        const activeStickers = await Sticker.find({ status: 'Active' });
+        let cleanedCount = 0;
+        
+        for (const s of activeStickers) {
+            let shouldClean = false;
+            
+            if (s.userId) {
+                const userExists = await User.exists({ _id: s.userId });
+                if (!userExists) {
+                    shouldClean = true;
+                }
+            } else {
+                shouldClean = true;
+            }
+            
+            if (shouldClean) {
+                s.status = 'Inactive';
+                s.userId = null;
+                s.phone = null;
+                s.vehicleNumber = null;
+                s.activationDate = null;
+                s.activatedBy = null;
+                await s.save();
+                cleanedCount++;
+                console.log(`[Sticker Cleanup] Cleaned up orphaned active sticker: ${s.stickerId}`);
+            }
+        }
+        
+        if (cleanedCount > 0) {
+            console.log(`[Sticker Cleanup] Successfully cleaned up ${cleanedCount} orphaned active sticker(s).`);
+        }
+    } catch (err) {
+        console.error('[Sticker Cleanup] Error cleaning up orphaned stickers:', err);
+    }
+}
+
 module.exports = {
     generateNextStickerId,
     assignSequentialStickerToUser,
-    migrateExistingUsersWithoutStickers
+    migrateExistingUsersWithoutStickers,
+    cleanOrphanedStickers
 };

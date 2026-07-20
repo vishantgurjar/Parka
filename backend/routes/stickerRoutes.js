@@ -21,6 +21,20 @@ router.get('/status/:stickerId', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Invalid Sticker ID. This sticker does not exist in our database.' });
         }
 
+        // Auto-cleanup if active but linked user was deleted from DB
+        if (sticker.status === 'Active') {
+            const userExists = sticker.userId ? await User.exists({ _id: sticker.userId }) : false;
+            if (!userExists) {
+                sticker.status = 'Inactive';
+                sticker.userId = null;
+                sticker.phone = null;
+                sticker.vehicleNumber = null;
+                sticker.activationDate = null;
+                sticker.activatedBy = null;
+                await sticker.save();
+            }
+        }
+
         res.json({
             success: true,
             stickerId: sticker.stickerId,

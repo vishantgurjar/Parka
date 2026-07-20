@@ -158,6 +158,7 @@ router.delete('/chargers/:id', protect, isAdmin, async (req, res) => {
 
 // ================= STICKER HUB ADMIN ENDPOINTS =================
 const Sticker = require('../models/Sticker');
+const { cleanOrphanedStickers } = require('../utils/stickerHelper');
 
 // @route   POST /api/admin/stickers/generate
 // @desc    Bulk range-generate sticker IDs (e.g., PC000001 to PC000050)
@@ -208,6 +209,7 @@ router.post('/stickers/generate', protect, isAdmin, async (req, res) => {
 // @desc    List printed/generated stickers with search and filter
 router.get('/stickers', protect, isAdmin, async (req, res) => {
   try {
+    await cleanOrphanedStickers();
     const { search = '', status = '', page = 1, limit = 50 } = req.query;
 
     const query = {};
@@ -298,6 +300,7 @@ router.post('/stickers/:stickerId/toggle-status', protect, isAdmin, async (req, 
 // @desc    Export sticker details as CSV
 router.get('/stickers/export', protect, isAdmin, async (req, res) => {
   try {
+    await cleanOrphanedStickers();
     const stickers = await Sticker.find({})
       .populate('userId', 'name email phone')
       .sort({ stickerId: 1 });
