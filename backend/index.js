@@ -36,10 +36,16 @@ const razorpay = new Razorpay({
 // Helper to extract descriptive error message from Razorpay SDK errors
 function getRazorpayErrorMessage(err) {
   if (!err) return 'Unknown error';
-  if (err.error && typeof err.error === 'object') {
-    return err.error.description || err.error.code || JSON.stringify(err.error);
+  if (typeof err === 'string') return err;
+  if (err.error && typeof err.error === 'object' && err.error.description) {
+    return err.error.description;
   }
-  return err.message || String(err);
+  if (err.message) return err.message;
+  try {
+    return JSON.stringify(err);
+  } catch (e) {
+    return String(err);
+  }
 }
 
 // Gemini AI Config

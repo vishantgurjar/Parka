@@ -87,9 +87,22 @@ router.post('/book', async (req, res) => {
       });
       orderId = order.id;
     } catch (err) {
-      const errMsg = err.error && typeof err.error === 'object'
-        ? (err.error.description || err.error.code || JSON.stringify(err.error))
-        : (err.message || String(err));
+      let errMsg = 'Unknown error';
+      if (err) {
+        if (typeof err === 'string') {
+          errMsg = err;
+        } else if (err.error && typeof err.error === 'object' && err.error.description) {
+          errMsg = err.error.description;
+        } else if (err.message) {
+          errMsg = err.message;
+        } else {
+          try {
+            errMsg = JSON.stringify(err);
+          } catch (e) {
+            errMsg = String(err);
+          }
+        }
+      }
       console.error("Razorpay API failed in EV book. Error:", errMsg);
       return res.status(500).json({ message: "Razorpay booking failed: " + errMsg });
     }
