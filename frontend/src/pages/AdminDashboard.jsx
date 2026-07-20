@@ -927,7 +927,7 @@ export default function AdminDashboard({ user }) {
                    <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--muted)', background: 'rgba(255,255,255,0.01)', borderRadius: '12px', border: '1px solid var(--border)' }}>No pre-printed stickers found matching constraints.</div>
                 ) : (
                    <div>
-                      <div className="table-responsive" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                      <div className="table-responsive" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto' }}>
                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
                             <thead>
                                <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', textTransform: 'uppercase', color: '#9ca3af' }}>
