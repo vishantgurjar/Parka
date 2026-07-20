@@ -2,55 +2,74 @@ const Sticker = require('../models/Sticker');
 const User = require('../models/User');
 
 /**
- * Generates the next sequential unique sticker ID (e.g. PC000002)
- * by finding the maximum number in both the Sticker and User collections.
+ * Generates the next sequential unique sticker ID (e.g. PC000021)
+ * by finding the first available integer gap starting from 1 in-memory.
  */
 async function generateNextStickerId() {
-    let maxNum = 0;
-    
-    // Find all stickers with stickerId starting with 'PC' followed by digits
-    const stickers = await Sticker.find({ stickerId: /^PC\d+$/i });
+    // Fetch all existing IDs in memory to search fast
+    const stickers = await Sticker.find({}, 'stickerId');
+    const users = await User.find({}, 'smartTagId');
+
+    const usedIds = new Set();
     for (const s of stickers) {
-        const numPart = parseInt(s.stickerId.substring(2), 10);
-        if (!isNaN(numPart) && numPart > maxNum) {
-            maxNum = numPart;
-        }
+        if (s.stickerId) usedIds.add(s.stickerId.toUpperCase().trim());
     }
-    
-    // Find all users with smartTagId starting with 'PC' followed by digits
-    const users = await User.find({ smartTagId: /^PC\d+$/i });
     for (const u of users) {
-        const numPart = parseInt(u.smartTagId.substring(2), 10);
-        if (!isNaN(numPart) && numPart > maxNum) {
-            maxNum = numPart;
-        }
+        if (u.smartTagId) usedIds.add(u.smartTagId.toUpperCase().trim());
     }
-    
-    const nextNum = maxNum + 1;
-    const padded = String(nextNum).padStart(6, '0');
-    return `PC${padded}`;
+
+    let nextNum = 1;
+    while (true) {
+        const padded = String(nextNum).padStart(6, '0');
+        const candidateId = `PC${padded}`;
+        if (!usedIds.has(candidateId.toUpperCase())) {
+            return candidateId;
+        }
+        nextNum++;
+    }
 }
 
 /**
- * Generates the next sequential sticker ID, creates an Active Sticker record,
- * and sets the smartTagId field on the userInstance.
+ * Assigns the lowest available sequential sticker to the user.
+ * It first attempts to find an existing Inactive/unassigned sticker card in the DB
+ * to match physical card sequences, and falls back to generating a new sequential ID.
  * Note: The caller is responsible for saving the userInstance.
  */
 async function assignSequentialStickerToUser(userInstance) {
-    const stickerId = await generateNextStickerId();
-    
-    // Create Active Sticker document
-    const newSticker = new Sticker({
-        stickerId: stickerId,
-        status: 'Active',
-        userId: userInstance._id,
-        phone: userInstance.phone || null,
-        vehicleNumber: userInstance.plateNumber || null,
-        activationDate: new Date(),
-        activatedBy: userInstance.phone || 'System'
-    });
-    
-    await newSticker.save();
+    // 1. Try to find the first inactive/unassigned sticker in the database
+    let sticker = await Sticker.findOne({ 
+        $or: [
+            { status: 'Inactive' },
+            { userId: null },
+            { userId: { $exists: false } }
+        ]
+    }).sort({ stickerId: 1 });
+
+    let stickerId;
+    if (sticker) {
+        // Use and activate the existing inactive sticker
+        stickerId = sticker.stickerId;
+        sticker.status = 'Active';
+        sticker.userId = userInstance._id;
+        sticker.phone = userInstance.phone || null;
+        sticker.vehicleNumber = userInstance.plateNumber || null;
+        sticker.activationDate = new Date();
+        sticker.activatedBy = userInstance.phone || 'System';
+        await sticker.save();
+    } else {
+        // Generate next sequential ID if no inactive stickers exist
+        stickerId = await generateNextStickerId();
+        const newSticker = new Sticker({
+            stickerId: stickerId,
+            status: 'Active',
+            userId: userInstance._id,
+            phone: userInstance.phone || null,
+            vehicleNumber: userInstance.plateNumber || null,
+            activationDate: new Date(),
+            activatedBy: userInstance.phone || 'System'
+        });
+        await newSticker.save();
+    }
     
     // Set on user instance
     userInstance.smartTagId = stickerId;
