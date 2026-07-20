@@ -445,8 +445,20 @@ app.post('/api/payment/verify-signature', async (req, res) => {
     } else if (entityType === 'user') {
       const user = await User.findById(entityId);
       if (user) { 
-        user.subscriptionTier = 'gold'; // Upgrade user subscription to premium
-        user.isPremium = true; 
+        let tier = 'gold'; // fallback default
+        if (req.body.planName) {
+          const nameLower = req.body.planName.toLowerCase();
+          if (nameLower.includes('silver')) tier = 'silver';
+          else if (nameLower.includes('gold')) tier = 'gold';
+          else if (nameLower.includes('diamond')) tier = 'diamond';
+        } else if (amount) {
+          const amt = Number(amount);
+          if (amt <= 199) tier = 'silver';
+          else if (amt <= 299) tier = 'gold';
+          else tier = 'diamond';
+        }
+        user.subscriptionTier = tier;
+        user.isPremium = tier !== 'free'; 
         await user.save(); 
       }
     } else if (entityType === 'parking') {

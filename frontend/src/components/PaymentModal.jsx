@@ -26,7 +26,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setLoading(true);
     setError(null);
 
-    const isSubscription = entityType === 'user';
+    // Always use standard one-time orders instead of subscriptions (due to Razorpay Autopay account / RBI mandate limitations)
+    const isSubscription = false;
 
     try {
       const baseUrl = getBackendUrl();
@@ -132,7 +133,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 entityId,
                 amount: plan.amount,
                 userId: user?._id || user?.id,
-                hours: plan.hours
+                hours: plan.hours,
+                planName: plan.name
               })
             });
 
@@ -173,7 +175,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setMockStep('processing');
     setError(null);
 
-    const isSubscription = entityType === 'user';
+    const isSubscription = false;
     const baseUrl = getBackendUrl();
 
     // Helper to simulate delays
@@ -208,7 +210,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             entityId,
             amount: plan.amount,
             userId: user?._id || user?.id,
-            hours: plan.hours
+            hours: plan.hours,
+            planName: plan.name
           };
 
       const verifyUrl = isSubscription 
