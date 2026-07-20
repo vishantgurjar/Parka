@@ -174,25 +174,23 @@ export default function HostSpace() {
       <SEO title="Premium Host Console - PARXÉÉ SPACE" description="Monetize your parking spots with premium security and high earnings." />
       <div className="bg-grain"></div>
       
-      <section style={{ padding: '8rem 0 6rem', minHeight: '100vh', position: 'relative' }}>
+      <section className="host-page-section">
         <div className="container" style={{ maxWidth: '1200px' }}>
           
           {/* Host vs Book Segmented Control Tab */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}>
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '6px', borderRadius: '50px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'inline-flex', gap: '4px' }}>
+          <div className="segmented-control-wrapper">
+            <div className="segmented-control">
               <button 
                 type="button"
                 onClick={() => {}} 
-                style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                className="segmented-btn active"
               >
                 <Home size={16} /> Host Your Space
               </button>
               <button 
                 type="button"
                 onClick={() => navigate('/park')} 
-                style={{ background: 'transparent', color: 'var(--muted)', border: 'none', padding: '10px 24px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
-                onMouseEnter={(e) => e.target.style.color = '#fff'}
-                onMouseLeave={(e) => e.target.style.color = 'var(--muted)'}
+                className="segmented-btn inactive"
               >
                 <MapPin size={16} /> Book Parking Spot
               </button>
@@ -574,6 +572,57 @@ export default function HostSpace() {
 
       {/* CSS details to ensure custom UI enhancements look perfect */}
       <style dangerouslySetInnerHTML={{__html: `
+        .host-page-section {
+          padding: 8rem 0 6rem;
+          min-height: 100vh;
+          position: relative;
+        }
+        .segmented-control-wrapper {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 3rem;
+        }
+        .segmented-control {
+          background: rgba(255, 255, 255, 0.03);
+          padding: 6px;
+          border-radius: 50px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          display: inline-flex;
+          gap: 4px;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .segmented-control:hover {
+          border-color: rgba(168, 85, 247, 0.3);
+          box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.15);
+          transform: translateY(-2px);
+        }
+        .segmented-btn {
+          border: none;
+          padding: 10px 24px;
+          border-radius: 50px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.9rem;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .segmented-btn.active {
+          background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+          color: #fff;
+          box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+        }
+        .segmented-btn.inactive {
+          background: transparent;
+          color: var(--muted);
+        }
+        .segmented-btn.inactive:hover {
+          color: #fff;
+          background: rgba(255, 255, 255, 0.05);
+        }
         @keyframes pulse {
           0% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.4); }
           70% { box-shadow: 0 0 0 10px rgba(94, 234, 212, 0); }
@@ -587,6 +636,25 @@ export default function HostSpace() {
           .host-layout-grid {
             grid-template-columns: 1fr !important;
             gap: 3rem !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .host-page-section {
+            padding: 9.5rem 0 4rem !important;
+          }
+          .segmented-control-wrapper {
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+          }
+          .segmented-control {
+            width: 100%;
+            max-width: 380px;
+          }
+          .segmented-btn {
+            flex: 1;
+            justify-content: center;
+            padding: 10px 16px;
+            font-size: 0.8rem;
           }
         }
       `}} />
