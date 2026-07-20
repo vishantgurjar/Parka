@@ -363,7 +363,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                   </h4>
                   <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <li>✓ Secure WebRTC Privacy Calling</li>
-                    <li>✓ Holographic Sticker Delivery</li>
+                    <li>✓ EV Smart Hub with AI doctor</li>
                     <li>✓ Multi-Vehicle Support (Up to 3)</li>
                     <li>✓ Priority SOS Assistance</li>
                   </ul>
