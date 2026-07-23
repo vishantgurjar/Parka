@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Wrench, IndianRupee, ShieldAlert, KeyRound, Send, Activity, RefreshCw } from 'lucide-react';
+import { Users, Wrench, IndianRupee, ShieldAlert, KeyRound, Send, Activity, RefreshCw, Mail } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,9 @@ export default function AdminDashboard({ user }) {
   const [loading, setLoading] = useState(true);
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [broadcastSending, setBroadcastSending] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [activeTab, setActiveTab] = useState('sos');
   const [mechanics, setMechanics] = useState([]);
@@ -299,6 +302,35 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  const sendEmailBroadcast = async () => {
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      return toast.error("Subject and Message cannot be empty!");
+    }
+    setEmailSending(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/broadcast-email`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('parkeToken')}`
+        },
+        body: JSON.stringify({ subject: emailSubject, messageText: emailMessage })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setEmailSubject('');
+        setEmailMessage('');
+      } else {
+        toast.error(data.message || "Email Broadcast failed.");
+      }
+    } catch (err) {
+      toast.error("Network error while sending emails.");
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   if (loading) {
      return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', color: '#ef4444' }}><Activity className="pulse-anim" size={40} /></div>;
   }
@@ -496,7 +528,7 @@ export default function AdminDashboard({ user }) {
          {activeTab === 'sos' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
                
-               {/* Global Broadcast */}
+               {/* Global Push Broadcast */}
                <div className="glass-card" style={{ padding: '2rem', borderRadius: '12px' }}>
                   <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: 'var(--fg)', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
                      <Send size={20} color="#8b5cf6" /> Push Notify All Devices
@@ -504,7 +536,7 @@ export default function AdminDashboard({ user }) {
                   <textarea 
                      value={broadcastMessage}
                      onChange={(e) => setBroadcastMessage(e.target.value)}
-                     placeholder="Enter emergency or promotional broadcast message..."
+                     placeholder="Enter emergency or promotional push notification message..."
                      style={{ width: '100%', padding: '1rem', background: '#050505', border: '1px solid #374151', color: '#f3f4f6', borderRadius: '4px', minHeight: '100px', resize: 'vertical', marginBottom: '1rem', fontFamily: 'inherit' }}
                   />
                   <button 
@@ -513,6 +545,33 @@ export default function AdminDashboard({ user }) {
                      style={{ width: '100%', padding: '12px', background: broadcastSending ? '#374151' : '#8b5cf6', color: 'white', border: 'none', borderRadius: '4px', cursor: broadcastSending ? 'not-allowed' : 'pointer', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}
                   >
                      {broadcastSending ? "Broadcasting..." : "Execute Global Push"}
+                  </button>
+               </div>
+
+               {/* Global Email Broadcast */}
+               <div className="glass-card" style={{ padding: '2rem', borderRadius: '12px' }}>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1.5rem 0', color: 'var(--fg)', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                     <Mail size={20} color="#38bdf8" /> Email Broadcast All Users
+                  </h3>
+                  <input 
+                     type="text"
+                     value={emailSubject}
+                     onChange={(e) => setEmailSubject(e.target.value)}
+                     placeholder="Email Subject (e.g., Important Update from Parxéé)"
+                     style={{ width: '100%', padding: '0.8rem 1rem', background: '#050505', border: '1px solid #374151', color: '#f3f4f6', borderRadius: '4px', marginBottom: '0.8rem', fontFamily: 'inherit' }}
+                  />
+                  <textarea 
+                     value={emailMessage}
+                     onChange={(e) => setEmailMessage(e.target.value)}
+                     placeholder="Write your email message to be delivered to all registered user emails..."
+                     style={{ width: '100%', padding: '1rem', background: '#050505', border: '1px solid #374151', color: '#f3f4f6', borderRadius: '4px', minHeight: '100px', resize: 'vertical', marginBottom: '1rem', fontFamily: 'inherit' }}
+                  />
+                  <button 
+                     onClick={sendEmailBroadcast}
+                     disabled={emailSending}
+                     style={{ width: '100%', padding: '12px', background: emailSending ? '#374151' : '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: emailSending ? 'not-allowed' : 'pointer', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}
+                  >
+                     {emailSending ? "Sending Bulk Email..." : "📧 Send Email to All Users"}
                   </button>
                </div>
 

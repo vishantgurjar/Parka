@@ -83,6 +83,71 @@ router.post('/broadcast', protect, isAdmin, async (req, res) => {
     }
 });
 
+// @route   POST /api/admin/broadcast-email
+// @desc    Send email broadcast to all registered users
+router.post('/broadcast-email', protect, isAdmin, async (req, res) => {
+    try {
+        const { subject, messageText } = req.body;
+
+        if (!subject || !messageText) {
+            return res.status(400).json({ message: 'Subject and Message are required.' });
+        }
+
+        const nodemailer = require('nodemailer');
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS;
+        const emailService = process.env.EMAIL_SERVICE || 'gmail';
+
+        if (!emailUser || !emailPass || emailPass === 'your_gmail_app_password_here') {
+            return res.status(400).json({ 
+                message: 'EMAIL_USER or EMAIL_PASS is not configured in backend .env file.' 
+            });
+        }
+
+        // Fetch all registered users who have email
+        const users = await User.find({ email: { $exists: true, $ne: '' } }, 'email name');
+        const emailList = users.map(u => u.email).filter(Boolean);
+
+        if (emailList.length === 0) {
+            return res.status(400).json({ message: 'No registered user emails found.' });
+        }
+
+        const transporter = nodemailer.createTransport({
+            service: emailService,
+            auth: {
+                user: emailUser,
+                pass: emailPass
+            }
+        });
+
+        const mailOptions = {
+            from: `"Parxéé Official" <${emailUser}>`,
+            bcc: emailList,
+            subject: subject,
+            html: `
+                <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px;">
+                    <h2 style="color: #38bdf8; margin-top: 0;">📢 Notice from Parxéé Admin</h2>
+                    <div style="background-color: #1e293b; border-left: 4px solid #38bdf8; padding: 20px; border-radius: 8px; margin: 20px 0; line-height: 1.6;">
+                        <p style="white-space: pre-wrap; margin: 0; font-size: 16px; color: #e2e8f0;">${messageText}</p>
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;" />
+                    <p style="font-size: 12px; color: #94a3b8; text-align: center;">You are receiving this official update because you are a registered member of Parxéé.</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ 
+            success: true, 
+            message: `Email broadcast successfully sent to ${emailList.length} user(s)!` 
+        });
+    } catch (error) {
+        console.error('Email Broadcast Error:', error);
+        res.status(500).json({ message: error.message || 'Failed to send email broadcast.' });
+    }
+});
+
 // @route   POST /api/admin/clear-sos
 // @desc    Emergency clear of all SOS records (Debug)
 router.post('/clear-sos', protect, isAdmin, async (req, res) => {
