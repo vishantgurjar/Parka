@@ -47,26 +47,22 @@ async function assignSequentialStickerToUser(userInstance) {
 
     let stickerId;
     if (sticker) {
-        // Use and activate the existing inactive sticker
+        // Reserve existing inactive sticker for the user (remains Inactive until scanned/activated)
         stickerId = sticker.stickerId;
-        sticker.status = 'Active';
+        sticker.status = 'Inactive';
         sticker.userId = userInstance._id;
         sticker.phone = userInstance.phone || null;
         sticker.vehicleNumber = userInstance.plateNumber || null;
-        sticker.activationDate = new Date();
-        sticker.activatedBy = userInstance.phone || 'System';
         await sticker.save();
     } else {
-        // Generate next sequential ID if no inactive stickers exist
+        // Generate next sequential ID as Inactive until scanned/activated
         stickerId = await generateNextStickerId();
         const newSticker = new Sticker({
             stickerId: stickerId,
-            status: 'Active',
+            status: 'Inactive',
             userId: userInstance._id,
             phone: userInstance.phone || null,
-            vehicleNumber: userInstance.plateNumber || null,
-            activationDate: new Date(),
-            activatedBy: userInstance.phone || 'System'
+            vehicleNumber: userInstance.plateNumber || null
         });
         await newSticker.save();
     }
