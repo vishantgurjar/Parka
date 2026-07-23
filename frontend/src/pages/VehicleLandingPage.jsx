@@ -190,13 +190,34 @@ export default function VehicleLandingPage() {
     );
   }
 
-  if (error || !vehicle) {
+  if (error || !vehicle || vehicle.isInactive) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#030712', padding: '2rem', textAlign: 'center' }}>
-        <AlertTriangle size={64} color="#ef4444" style={{ marginBottom: '1.5rem' }} />
-        <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#fff' }}>Security ID Invalid</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>{error || "We could not find a verified vehicle linked to this ID."}</p>
-        <Link to="/" className="btn-gradient" style={{ textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>Register Your Own Vehicle</Link>
+        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', border: '2px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <AlertTriangle size={44} color="#ef4444" />
+        </div>
+        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: '#fff', fontWeight: '800' }}>
+          Smart QR Code Deactivated
+        </h2>
+        <p style={{ color: '#9ca3af', fontSize: '1rem', maxWidth: '420px', marginBottom: '2rem', lineHeight: '1.6' }}>
+          {error || "This Smart QR Tag (ID: " + id + ") has not been activated yet or has been deactivated by admin."}
+        </p>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '320px' }}>
+          <Link 
+            to={`/activate/${id}`} 
+            className="btn-gradient light-sweep" 
+            style={{ textDecoration: 'none', padding: '14px 24px', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', textAlign: 'center', color: '#000' }}
+          >
+            ⚡ ACTIVATE STICKER NOW
+          </Link>
+          <Link 
+            to="/" 
+            style={{ textDecoration: 'none', padding: '12px 24px', borderRadius: '12px', color: '#9ca3af', background: 'rgba(255,255,255,0.05)', fontSize: '0.85rem', fontWeight: '600', textAlign: 'center' }}
+          >
+            Go to Homepage
+          </Link>
+        </div>
       </div>
     );
   }

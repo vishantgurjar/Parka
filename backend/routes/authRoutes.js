@@ -176,6 +176,8 @@ router.get('/vehicle/:id', async (req, res) => {
             isSecondary = true;
         }
 
+        const Sticker = require('../models/Sticker');
+
         // 1. Try finding by User ObjectId
         if (mongoose.Types.ObjectId.isValid(lookupId)) {
             user = await User.findById(lookupId).select('name email phone make model plateNumber color year subscriptionTier smartTagId emergencyContact secondaryVehicles');
@@ -187,7 +189,19 @@ router.get('/vehicle/:id', async (req, res) => {
         }
 
         if (!user) {
-            return res.status(404).json({ message: 'Vehicle/User not found' });
+            return res.status(404).json({ isInactive: true, message: 'Vehicle/User not found or sticker is not linked.' });
+        }
+
+        // 3. STRICT CHECK: Verify Sticker active status in database
+        const tagToVerify = user.smartTagId || lookupId;
+        const stickerDoc = await Sticker.findOne({ stickerId: tagToVerify });
+
+        if (!stickerDoc || stickerDoc.status !== 'Active') {
+            return res.status(403).json({
+                isInactive: true,
+                stickerId: tagToVerify,
+                message: 'This Smart QR Tag is DEACTIVATED or NOT YET ACTIVATED.'
+            });
         }
 
         let vehicleDetails = {
