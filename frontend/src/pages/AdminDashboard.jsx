@@ -230,6 +230,29 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  const handleDeactivateAllStickers = async () => {
+    if (!window.confirm("⚠️ ARE YOU SURE? This will DEACTIVATE ALL user QR cards and UNLINK them across the platform!")) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/deactivate-all-stickers`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('parkeToken')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchMetrics();
+        fetchStickers(1);
+      } else {
+        toast.error(data.message || "Failed to deactivate stickers.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error deactivating stickers.");
+    }
+  };
+
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
   useEffect(() => {
@@ -819,7 +842,21 @@ export default function AdminDashboard({ user }) {
          )}
 
          {activeTab === 'stickers' && (
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                 
+                 {/* Deactivate Action Bar */}
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '1rem 1.5rem', borderRadius: '12px' }}>
+                    <div>
+                      <h4 style={{ margin: 0, color: '#ef4444', fontSize: '1rem', fontWeight: 'bold' }}>Emergency Sticker Management</h4>
+                      <p style={{ margin: '4px 0 0 0', color: '#9ca3af', fontSize: '0.8rem' }}>Deactivate all user QR cards to enforce fresh physical activation scans.</p>
+                    </div>
+                    <button 
+                       onClick={handleDeactivateAllStickers}
+                       style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                       🚫 Deactivate All Cards Globally
+                    </button>
+                 </div>
                 
                 {/* Sticker Stats Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>

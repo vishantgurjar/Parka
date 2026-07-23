@@ -159,6 +159,40 @@ router.post('/clear-sos', protect, isAdmin, async (req, res) => {
     }
 });
 
+// @route   POST /api/admin/deactivate-all-stickers
+// @desc    Deactivate all QR stickers across the platform and unlink users
+router.post('/deactivate-all-stickers', protect, isAdmin, async (req, res) => {
+    try {
+        const Sticker = require('../models/Sticker');
+        const stickerResult = await Sticker.updateMany(
+            {}, 
+            {
+                $set: {
+                    status: 'Inactive',
+                    userId: null,
+                    phone: null,
+                    vehicleNumber: null,
+                    activationDate: null,
+                    activatedBy: null
+                }
+            }
+        );
+
+        const userResult = await User.updateMany(
+            { smartTagId: { $exists: true } },
+            { $unset: { smartTagId: "" } }
+        );
+
+        res.json({ 
+            success: true, 
+            message: `Deactivated ${stickerResult.modifiedCount} stickers & unlinked ${userResult.modifiedCount} users!` 
+        });
+    } catch (error) {
+        console.error('Deactivate All Error:', error);
+        res.status(500).json({ message: 'Failed to deactivate stickers.' });
+    }
+});
+
 // @route   GET /api/admin/mechanics
 // @desc    Fetch all mechanics for admin
 router.get('/mechanics', protect, isAdmin, async (req, res) => {
