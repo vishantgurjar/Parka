@@ -35,9 +35,7 @@ router.post('/register', async (req, res) => {
             ...extendedData
         });
 
-        // Assign a unique sequential sticker ID to the new user
-        await assignSequentialStickerToUser(newUser);
-
+        // Create user without auto-assigning sticker (activation happens separately via QR scan)
         await newUser.save();
 
         // Generate token
@@ -122,8 +120,6 @@ router.post('/google', async (req, res) => {
                 email,
                 name,
             });
-            // Assign a unique sequential sticker ID to the new user
-            await assignSequentialStickerToUser(user);
             await user.save();
         }
 
