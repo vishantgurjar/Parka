@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+const Sticker = require('../models/Sticker');
 const { protect } = require('../middleware/authMiddleware');
 const { assignSequentialStickerToUser } = require('../utils/stickerHelper');
 
@@ -35,8 +36,25 @@ router.post('/register', async (req, res) => {
             ...extendedData
         });
 
-        // Create user without auto-assigning sticker (activation happens separately via QR scan)
+        // Auto-assign sequential sticker to user
+        await assignSequentialStickerToUser(newUser);
         await newUser.save();
+
+        // Ensure Sticker document is marked Active
+        if (newUser.smartTagId) {
+            await Sticker.findOneAndUpdate(
+                { stickerId: newUser.smartTagId.toUpperCase().trim() },
+                {
+                    status: 'Active',
+                    userId: newUser._id,
+                    phone: newUser.phone || null,
+                    vehicleNumber: newUser.plateNumber || null,
+                    activationDate: new Date(),
+                    activatedBy: newUser.phone || newUser.email || 'Registration'
+                },
+                { upsert: true, new: true }
+            );
+        }
 
         // Generate token
         const token = jwt.sign({ userId: newUser._id, email: newUser.email, name: newUser.name }, JWT_SECRET, { expiresIn: '7d' });

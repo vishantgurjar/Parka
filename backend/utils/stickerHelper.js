@@ -111,6 +111,35 @@ async function migrateExistingUsersWithoutStickers() {
  */
 async function cleanOrphanedStickers() {
     try {
+        // 1. Auto-sync all Users in MongoDB to Sticker collection
+        const users = await User.find({});
+        for (const u of users) {
+            if (u.smartTagId) {
+                const tag = u.smartTagId.toUpperCase().trim();
+                let sticker = await Sticker.findOne({ stickerId: tag });
+                if (!sticker) {
+                    sticker = new Sticker({
+                        stickerId: tag,
+                        status: 'Active',
+                        userId: u._id,
+                        phone: u.phone || null,
+                        vehicleNumber: u.plateNumber || null,
+                        activationDate: u.createdAt || new Date(),
+                        activatedBy: u.phone || u.email || 'Auto Sync'
+                    });
+                    await sticker.save();
+                } else if (sticker.status !== 'Active' || !sticker.userId || sticker.phone !== u.phone) {
+                    sticker.status = 'Active';
+                    sticker.userId = u._id;
+                    sticker.phone = u.phone || sticker.phone;
+                    sticker.vehicleNumber = u.plateNumber || sticker.vehicleNumber;
+                    if (!sticker.activationDate) sticker.activationDate = u.createdAt || new Date();
+                    await sticker.save();
+                }
+            }
+        }
+
+        // 2. Clean orphaned active stickers whose user was actually deleted
         const activeStickers = await Sticker.find({ status: 'Active' });
         let cleanedCount = 0;
         
@@ -123,7 +152,11 @@ async function cleanOrphanedStickers() {
                     shouldClean = true;
                 }
             } else {
-                shouldClean = true;
+                // Check if any user has this smartTagId before deactivating
+                const userWithTag = await User.exists({ smartTagId: s.stickerId });
+                if (!userWithTag) {
+                    shouldClean = true;
+                }
             }
             
             if (shouldClean) {
@@ -140,7 +173,7 @@ async function cleanOrphanedStickers() {
         }
         
         if (cleanedCount > 0) {
-            console.log(`[Sticker Cleanup] Successfully cleaned up ${cleanedCount} orphaned active sticker(s).`);
+            console.log(`[Sticker Cleanup] Cleaned up ${cleanedCount} orphaned sticker(s).`);
         }
     } catch (err) {
         console.error('[Sticker Cleanup] Error cleaning up orphaned stickers:', err);
