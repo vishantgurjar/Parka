@@ -111,7 +111,7 @@ async function migrateExistingUsersWithoutStickers() {
  */
 async function cleanOrphanedStickers() {
     try {
-        // 1. Auto-sync all Users in MongoDB to Sticker collection
+        // 1. Auto-sync user metadata to Sticker collection without forcing Active status
         const users = await User.find({});
         for (const u of users) {
             if (u.smartTagId) {
@@ -120,21 +120,18 @@ async function cleanOrphanedStickers() {
                 if (!sticker) {
                     sticker = new Sticker({
                         stickerId: tag,
-                        status: 'Active',
+                        status: 'Inactive',
                         userId: u._id,
                         phone: u.phone || null,
-                        vehicleNumber: u.plateNumber || null,
-                        activationDate: u.createdAt || new Date(),
-                        activatedBy: u.phone || u.email || 'Auto Sync'
+                        vehicleNumber: u.plateNumber || null
                     });
                     await sticker.save();
-                } else if (sticker.status !== 'Active' || !sticker.userId || sticker.phone !== u.phone) {
-                    sticker.status = 'Active';
-                    sticker.userId = u._id;
-                    sticker.phone = u.phone || sticker.phone;
-                    sticker.vehicleNumber = u.plateNumber || sticker.vehicleNumber;
-                    if (!sticker.activationDate) sticker.activationDate = u.createdAt || new Date();
-                    await sticker.save();
+                } else {
+                    let modified = false;
+                    if (!sticker.userId) { sticker.userId = u._id; modified = true; }
+                    if (u.phone && sticker.phone !== u.phone) { sticker.phone = u.phone; modified = true; }
+                    if (u.plateNumber && sticker.vehicleNumber !== u.plateNumber) { sticker.vehicleNumber = u.plateNumber; modified = true; }
+                    if (modified) await sticker.save();
                 }
             }
         }

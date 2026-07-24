@@ -40,17 +40,15 @@ router.post('/register', async (req, res) => {
         await assignSequentialStickerToUser(newUser);
         await newUser.save();
 
-        // Ensure Sticker document is marked Active
+        // Ensure Sticker document exists with Inactive status until scanned/activated by user
         if (newUser.smartTagId) {
             await Sticker.findOneAndUpdate(
                 { stickerId: newUser.smartTagId.toUpperCase().trim() },
                 {
-                    status: 'Active',
+                    status: 'Inactive',
                     userId: newUser._id,
                     phone: newUser.phone || null,
-                    vehicleNumber: newUser.plateNumber || null,
-                    activationDate: new Date(),
-                    activatedBy: newUser.phone || newUser.email || 'Registration'
+                    vehicleNumber: newUser.plateNumber || null
                 },
                 { upsert: true, new: true }
             );
