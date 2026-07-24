@@ -97,14 +97,19 @@ export default function VerificationSection({
         setPhoneOtpSent(true);
         toast.success(`SMS OTP sent to ${result.formattedPhone}! Please check your mobile messages. 📱`);
       }
-    } catch (err) {
-      console.error('Firebase SMS Error:', err);
-      // Clean user friendly error message if Firebase keys or SMS quota is pending
-      toast.error(err.message || 'Failed to send SMS to this mobile number. Please check country code (+91) and try again.');
+    } catch (error) {
+      console.error('Firebase SMS Error:', error);
+      const errMsg = error?.message || '';
+      if (errMsg.includes('api-key-not-valid') || errMsg.includes('invalid-api-key')) {
+        toast.error('Firebase SMS API Key is missing or invalid. Please set your Firebase Project API Key in .env');
+      } else {
+        toast.error(errMsg || 'Failed to send SMS. Please verify your 10-digit mobile number.');
+      }
     } finally {
       setPhoneLoading(false);
     }
   };
+
 
   // Verify Phone OTP
   const handleVerifyPhoneOtp = async () => {
