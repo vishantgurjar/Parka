@@ -84,32 +84,55 @@ export default function VerificationSection({
     }
   };
 
-  // Send Phone OTP via Firebase
+  // Send Phone OTP via Firebase or Backend Fallback
   const handleSendPhoneOtp = async () => {
     if (!phone || phone.length < 10) {
       return toast.error('Please enter a valid 10-digit phone number.');
     }
     setPhoneLoading(true);
     setDevPhoneOtp('');
+
+    const hasRealFirebaseKey = import.meta.env.VITE_FIREBASE_API_KEY && 
+      !import.meta.env.VITE_FIREBASE_API_KEY.includes('DummyKey');
+
+    // Try Firebase first if valid key exists
+    if (hasRealFirebaseKey) {
+      try {
+        const result = await sendPhoneOtp(phone, 'firebase-recaptcha-container');
+        if (result.success) {
+          setPhoneOtpSent(true);
+          toast.success(`SMS OTP sent to ${result.formattedPhone}! Please check your mobile messages. 📱`);
+          setPhoneLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.warn('Firebase SMS attempt failed, falling back to Backend OTP:', error);
+      }
+    }
+
+    // Backend Phone OTP Fallback
     try {
-      const result = await sendPhoneOtp(phone, 'firebase-recaptcha-container');
-      if (result.success) {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/auth/send-phone-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
         setPhoneOtpSent(true);
-        toast.success(`SMS OTP sent to ${result.formattedPhone}! Please check your mobile messages. 📱`);
-      }
-    } catch (error) {
-      console.error('Firebase SMS Error:', error);
-      const errMsg = error?.message || '';
-      if (errMsg.includes('api-key-not-valid') || errMsg.includes('invalid-api-key')) {
-        toast.error('Firebase SMS API Key is missing or invalid. Please set your Firebase Project API Key in .env');
+        if (data.devOtp) setDevPhoneOtp(data.devOtp);
+        toast.success(data.message || `Verification OTP sent for ${phone}! 📱`);
       } else {
-        toast.error(errMsg || 'Failed to send SMS. Please verify your 10-digit mobile number.');
+        toast.error(data.message || 'Failed to send OTP to mobile.');
       }
+    } catch (err) {
+      console.error('Backend Phone OTP error:', err);
+      toast.error('Network error sending Phone OTP.');
     } finally {
       setPhoneLoading(false);
     }
   };
-
 
   // Verify Phone OTP
   const handleVerifyPhoneOtp = async () => {
@@ -117,29 +140,52 @@ export default function VerificationSection({
       return toast.error('Enter 6-digit phone OTP received on your mobile.');
     }
     setPhoneLoading(true);
+
+    // If using Firebase confirmation result
+    if (window.confirmationResult) {
+      try {
+        const { token } = await verifyPhoneOtp(phoneOtp);
+        const baseUrl = getBackendUrl();
+        const res = await fetch(`${baseUrl}/api/auth/verify-phone-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, verificationToken: token })
+        });
+        const data = await res.json();
+        if (res.ok && data.isPhoneVerified) {
+          setIsPhoneVerified(true);
+          toast.success('Phone number verified successfully! ✅');
+          setPhoneLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Firebase token verify failed, trying backend OTP verify:', err);
+      }
+    }
+
+    // Backend Phone OTP Verify
     try {
-      const { token } = await verifyPhoneOtp(phoneOtp);
-      // Notify backend of phone verification
       const baseUrl = getBackendUrl();
-      const res = await fetch(`${baseUrl}/api/auth/verify-phone-token`, {
+      const res = await fetch(`${baseUrl}/api/auth/verify-phone-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, verificationToken: token })
+        body: JSON.stringify({ phone, otp: phoneOtp })
       });
       const data = await res.json();
       if (res.ok && data.isPhoneVerified) {
         setIsPhoneVerified(true);
         toast.success('Phone number verified successfully! ✅');
       } else {
-        toast.error(data.message || 'Invalid SMS OTP code.');
+        toast.error(data.message || 'Invalid Phone OTP code.');
       }
     } catch (err) {
       console.error('Phone OTP verify error:', err);
-      toast.error(err.message || 'Failed to verify phone OTP. Please check the code received on your mobile.');
+      toast.error('Network error verifying Phone OTP.');
     } finally {
       setPhoneLoading(false);
     }
   };
+
 
 
   return (
@@ -351,6 +397,13 @@ export default function VerificationSection({
               </button>
             )}
           </div>
+
+          {/* Phone Dev OTP helper banner */}
+          {devPhoneOtp && !isPhoneVerified && (
+            <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.3)', color: '#14b8a6', fontSize: '0.85rem' }}>
+              <strong>Phone Verification OTP Helper:</strong> Enter <strong>{devPhoneOtp}</strong> to verify mobile.
+            </div>
+          )}
 
           {/* Phone OTP Input Row */}
           {phoneOtpSent && !isPhoneVerified && (

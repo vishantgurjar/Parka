@@ -533,6 +533,114 @@ router.post('/verify-email-otp', async (req, res) => {
     }
 });
 
+// @route   POST /api/auth/send-phone-otp
+// @desc    Send 6-digit OTP to user's phone for registration verification
+router.post('/send-phone-otp', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        if (!phone) {
+            return res.status(400).json({ message: 'Phone number is required.' });
+        }
+
+        const normalizedPhone = phone.trim();
+
+        // Check if phone number already registered
+        const existingUser = await User.findOne({ phone: normalizedPhone });
+        if (existingUser) {
+            return res.status(400).json({ message: 'This phone number is already registered. Please login instead.' });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Save to OTP Collection (delete previous phone OTP for this number)
+        await Otp.deleteMany({ emailOrPhone: normalizedPhone, type: 'phone' });
+        await Otp.create({
+            emailOrPhone: normalizedPhone,
+            otp: otp,
+            type: 'phone'
+        });
+
+        let smsSent = false;
+        const fast2smsApiKey = process.env.FAST2SMS_API_KEY;
+
+        // If Fast2SMS API key is set in .env
+        if (fast2smsApiKey) {
+            try {
+                const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+                    method: 'POST',
+                    headers: {
+                        'authorization': fast2smsApiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        route: 'otp',
+                        variables_values: otp,
+                        numbers: normalizedPhone.replace(/\D/g, '')
+                    })
+                });
+                const smsData = await response.json();
+                if (smsData && smsData.return) {
+                    smsSent = true;
+                }
+            } catch (smsErr) {
+                console.error('[Send Phone OTP] Fast2SMS Error:', smsErr);
+            }
+        }
+
+        const responsePayload = {
+            success: true,
+            message: smsSent
+                ? `SMS OTP sent to ${normalizedPhone}.`
+                : `SMS OTP generated for ${normalizedPhone}.`
+        };
+
+        if (process.env.NODE_ENV !== 'production' || !smsSent) {
+            responsePayload.devOtp = otp;
+        }
+
+        res.json(responsePayload);
+    } catch (error) {
+        console.error('Send Phone OTP Error:', error);
+        res.status(500).json({ message: 'Server error generating phone OTP', error: error.message });
+    }
+});
+
+// @route   POST /api/auth/verify-phone-otp
+// @desc    Verify the submitted 6-digit phone OTP
+router.post('/verify-phone-otp', async (req, res) => {
+    try {
+        const { phone, otp } = req.body;
+        if (!phone || !otp) {
+            return res.status(400).json({ message: 'Phone number and OTP code are required.' });
+        }
+
+        const normalizedPhone = phone.trim();
+        const submittedOtp = otp.toString().trim();
+
+        const record = await Otp.findOne({ emailOrPhone: normalizedPhone, type: 'phone' });
+        if (!record) {
+            return res.status(400).json({ message: 'Phone OTP expired or not requested. Please click Resend SMS.' });
+        }
+
+        if (record.otp !== submittedOtp) {
+            return res.status(400).json({ message: 'Invalid SMS verification code. Please check and try again.' });
+        }
+
+        // Delete used OTP record
+        await Otp.deleteOne({ _id: record._id });
+
+        res.json({
+            success: true,
+            isPhoneVerified: true,
+            message: 'Phone number verified successfully!'
+        });
+    } catch (error) {
+        console.error('Verify Phone OTP Error:', error);
+        res.status(500).json({ message: 'Server error verifying phone OTP', error: error.message });
+    }
+});
+
 // @route   POST /api/auth/verify-phone-token
 // @desc    Verify Firebase phone verification payload/token
 router.post('/verify-phone-token', async (req, res) => {
@@ -562,4 +670,5 @@ router.post('/verify-phone-token', async (req, res) => {
 });
 
 module.exports = router;
+
 
