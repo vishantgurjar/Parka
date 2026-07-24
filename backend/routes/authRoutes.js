@@ -591,15 +591,12 @@ router.post('/send-phone-otp', async (req, res) => {
         const responsePayload = {
             success: true,
             message: smsSent
-                ? `SMS OTP sent to ${normalizedPhone}.`
-                : `SMS OTP generated for ${normalizedPhone}.`
+                ? `SMS OTP sent to ${normalizedPhone}. Please check your phone messages.`
+                : `SMS OTP dispatched for ${normalizedPhone}.`
         };
 
-        if (process.env.NODE_ENV !== 'production' || !smsSent) {
-            responsePayload.devOtp = otp;
-        }
-
         res.json(responsePayload);
+
     } catch (error) {
         console.error('Send Phone OTP Error:', error);
         res.status(500).json({ message: 'Server error generating phone OTP', error: error.message });

@@ -24,7 +24,6 @@ export default function VerificationSection({
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
-  const [devPhoneOtp, setDevPhoneOtp] = useState('');
 
   // Send Email OTP
   const handleSendEmailOtp = async () => {
@@ -90,7 +89,6 @@ export default function VerificationSection({
       return toast.error('Please enter a valid 10-digit phone number.');
     }
     setPhoneLoading(true);
-    setDevPhoneOtp('');
 
     const hasRealFirebaseKey = import.meta.env.VITE_FIREBASE_API_KEY && 
       !import.meta.env.VITE_FIREBASE_API_KEY.includes('DummyKey');
@@ -121,8 +119,7 @@ export default function VerificationSection({
       const data = await res.json();
       if (res.ok && data.success) {
         setPhoneOtpSent(true);
-        if (data.devOtp) setDevPhoneOtp(data.devOtp);
-        toast.success(data.message || `Verification OTP sent for ${phone}! 📱`);
+        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile. 📱`);
       } else {
         toast.error(data.message || 'Failed to send OTP to mobile.');
       }
@@ -133,6 +130,7 @@ export default function VerificationSection({
       setPhoneLoading(false);
     }
   };
+
 
   // Verify Phone OTP
   const handleVerifyPhoneOtp = async () => {
