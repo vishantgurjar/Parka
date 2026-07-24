@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { Mail, Lock, ChevronRight, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ChevronRight, ShieldCheck, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -15,6 +15,7 @@ export default function LoginPage() {
   // Login State
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Forgot Password / Password Recovery State
   const [forgotEmail, setForgotEmail] = useState('');
@@ -22,8 +23,11 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [devOtp, setDevOtp] = useState('');
   const [loading, setLoading] = useState(false);
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -213,15 +217,25 @@ export default function LoginPage() {
                    <Lock size={22} strokeWidth={1.5} />
                  </div>
                  <input 
-                   type="password" 
+                   type={showLoginPassword ? "text" : "password"} 
                    placeholder="Password" 
                    required 
                    value={loginPassword} 
                    onChange={e => setLoginPassword(e.target.value)} 
-                   style={{ width: '100%', padding: '18px 18px 18px 54px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', color: '#fff', fontSize: '1.1rem', outline: 'none', transition: 'all 0.3s ease', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }} 
+                   style={{ width: '100%', padding: '18px 54px 18px 54px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', color: '#fff', fontSize: '1.1rem', outline: 'none', transition: 'all 0.3s ease', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }} 
                    onFocus={(e) => { e.target.style.borderColor = 'var(--primary)'; e.target.style.background = 'rgba(20, 184, 166, 0.05)'; e.target.style.boxShadow = '0 0 0 4px rgba(20, 184, 166, 0.1)'; }}
                    onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.03)'; e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.1)'; }}
                  />
+                 <button 
+                   type="button" 
+                   onClick={() => setShowLoginPassword(!showLoginPassword)}
+                   style={{ position: 'absolute', right: '18px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                   onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                   onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                   title={showLoginPassword ? "Hide password" : "Show password"}
+                 >
+                   {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                 </button>
                </div>
 
                {/* Forgot Password Link */}

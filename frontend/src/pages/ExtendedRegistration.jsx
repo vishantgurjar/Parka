@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { User, Mail, Calendar, MapPin, Car, FileText, Bookmark, Lock } from 'lucide-react';
+import { User, Mail, Calendar, MapPin, Car, FileText, Bookmark, Lock, Eye, EyeOff } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -12,9 +12,10 @@ export default function ExtendedRegistration() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Verification States
+  // Verification & Password Visbility States
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -165,7 +166,27 @@ export default function ExtendedRegistration() {
                     <div className="form-grid form-grid-2">
                         <div className="form-group">
                             <label className="form-label"><Lock size={16}/> Account Password</label>
-                            <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Create account password" required />
+                            <div style={{ position: 'relative' }}>
+                                <input 
+                                  type={showPassword ? "text" : "password"} 
+                                  name="password" 
+                                  value={formData.password} 
+                                  onChange={handleChange} 
+                                  placeholder="Create account password" 
+                                  required 
+                                  style={{ paddingRight: '46px' }}
+                                />
+                                <button 
+                                  type="button" 
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                                  title={showPassword ? "Hide password" : "Show password"}
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
                         <div className="form-group">
                             <label className="form-label"><Calendar size={16}/> Date of Birth</label>
