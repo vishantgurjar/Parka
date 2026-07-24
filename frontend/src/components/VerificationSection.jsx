@@ -396,13 +396,6 @@ export default function VerificationSection({
             )}
           </div>
 
-          {/* Phone Dev OTP helper banner */}
-          {devPhoneOtp && !isPhoneVerified && (
-            <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.3)', color: '#14b8a6', fontSize: '0.85rem' }}>
-              <strong>Phone Verification OTP Helper:</strong> Enter <strong>{devPhoneOtp}</strong> to verify mobile.
-            </div>
-          )}
-
           {/* Phone OTP Input Row */}
           {phoneOtpSent && !isPhoneVerified && (
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
