@@ -246,16 +246,6 @@ export default function LoginPage() {
                <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '1rem', color: 'var(--muted)' }}>
                  Don't have an account? <button type="button" onClick={() => setMode('register')} style={{ color: '#fff', background:'none', border:'none', fontWeight: 'bold', cursor: 'pointer', marginLeft: '6px', borderBottom: '1px solid var(--primary)', paddingBottom: '2px' }}>Apply Now</button>
                </div>
-               
-               <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0' }}>
-                 <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-                 <span style={{ padding: '0 1rem', color: 'var(--muted)', fontSize: '0.85rem', fontWeight: '600', letterSpacing: '1px' }}>OR</span>
-                 <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-               </div>
-               
-               <Link to="/register" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.02)', color: '#fff', textDecoration: 'none', fontSize: '1.05rem', fontWeight: '600', transition: 'all 0.2s ease' }} onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}>
-                  <ShieldCheck size={20} color="var(--primary)" /> Extended Portal
-               </Link>
              </form>
           ) : mode === 'forgot' ? (
              <form onSubmit={forgotStep === 1 ? handleRequestOtp : handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
