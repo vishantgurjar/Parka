@@ -84,7 +84,7 @@ export default function VerificationSection({
     }
   };
 
-  // Send Phone OTP via Firebase (with dev fallback)
+  // Send Phone OTP via Firebase
   const handleSendPhoneOtp = async () => {
     if (!phone || phone.length < 10) {
       return toast.error('Please enter a valid 10-digit phone number.');
@@ -95,15 +95,12 @@ export default function VerificationSection({
       const result = await sendPhoneOtp(phone, 'firebase-recaptcha-container');
       if (result.success) {
         setPhoneOtpSent(true);
-        toast.success(`SMS OTP sent to ${result.formattedPhone}! 📱`);
+        toast.success(`SMS OTP sent to ${result.formattedPhone}! Please check your mobile messages. 📱`);
       }
     } catch (err) {
-      console.warn('Firebase SMS warning / fallback:', err);
-      // Fallback in case of mock/demo API key in dev mode
-      setPhoneOtpSent(true);
-      const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setDevPhoneOtp(mockCode);
-      toast.success('Verification code generated for your phone number!');
+      console.error('Firebase SMS Error:', err);
+      // Clean user friendly error message if Firebase keys or SMS quota is pending
+      toast.error(err.message || 'Failed to send SMS to this mobile number. Please check country code (+91) and try again.');
     } finally {
       setPhoneLoading(false);
     }
@@ -112,17 +109,10 @@ export default function VerificationSection({
   // Verify Phone OTP
   const handleVerifyPhoneOtp = async () => {
     if (!phoneOtp || phoneOtp.length !== 6) {
-      return toast.error('Enter 6-digit phone OTP.');
+      return toast.error('Enter 6-digit phone OTP received on your mobile.');
     }
     setPhoneLoading(true);
     try {
-      if (devPhoneOtp && phoneOtp === devPhoneOtp) {
-        setIsPhoneVerified(true);
-        toast.success('Phone number verified successfully! ✅');
-        setPhoneLoading(false);
-        return;
-      }
-
       const { token } = await verifyPhoneOtp(phoneOtp);
       // Notify backend of phone verification
       const baseUrl = getBackendUrl();
@@ -140,17 +130,12 @@ export default function VerificationSection({
       }
     } catch (err) {
       console.error('Phone OTP verify error:', err);
-      // If dev fallback code matches
-      if (devPhoneOtp && phoneOtp === devPhoneOtp) {
-        setIsPhoneVerified(true);
-        toast.success('Phone verified! ✅');
-      } else {
-        toast.error(err.message || 'Failed to verify phone OTP.');
-      }
+      toast.error(err.message || 'Failed to verify phone OTP. Please check the code received on your mobile.');
     } finally {
       setPhoneLoading(false);
     }
   };
+
 
   return (
     <div style={{
@@ -361,13 +346,6 @@ export default function VerificationSection({
               </button>
             )}
           </div>
-
-          {/* Phone Dev OTP helper banner */}
-          {devPhoneOtp && !isPhoneVerified && (
-            <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.3)', color: '#14b8a6', fontSize: '0.85rem' }}>
-              <strong>Phone Verification OTP Helper:</strong> Enter <strong>{devPhoneOtp}</strong> to verify mobile.
-            </div>
-          )}
 
           {/* Phone OTP Input Row */}
           {phoneOtpSent && !isPhoneVerified && (
