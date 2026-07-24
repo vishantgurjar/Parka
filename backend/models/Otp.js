@@ -1,25 +1,26 @@
 const mongoose = require('mongoose');
 
 const OtpSchema = new mongoose.Schema({
-  phone: {
+  emailOrPhone: {
     type: String,
     required: true,
+    trim: true,
+    lowercase: true
   },
   otp: {
     type: String,
-    required: true,
+    required: true
   },
-  attempts: {
-    type: Number,
-    default: 0,
+  type: {
+    type: String,
+    enum: ['email', 'phone'],
+    default: 'email'
   },
-  expiresAt: {
+  createdAt: {
     type: Date,
-    required: true,
+    default: Date.now,
+    expires: 300 // 5 minutes TTL auto-expiration
   }
-}, { timestamps: true });
-
-// Auto-delete document from DB after expiresAt time has passed
-OtpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+});
 
 module.exports = mongoose.model('Otp', OtpSchema);

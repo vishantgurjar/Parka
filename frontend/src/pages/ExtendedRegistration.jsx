@@ -1,14 +1,20 @@
 import { useState, useContext } from 'react';
-import { User, Mail, Calendar, MapPin, Car, FileText, Bookmark, CreditCard } from 'lucide-react';
+import { User, Mail, Calendar, MapPin, Car, FileText, Bookmark, Lock } from 'lucide-react';
 import { AuthContext } from '../App';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { toast } from 'react-hot-toast';
 import { getBackendUrl } from '../utils/api';
+import VerificationSection from '../components/VerificationSection';
 
 export default function ExtendedRegistration() {
   const [step, setStep] = useState(1);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Verification States
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -16,6 +22,7 @@ export default function ExtendedRegistration() {
     lastName: '',
     email: '',
     phone: '',
+    password: '',
     dateOfBirth: '',
     address: '',
     city: '',
@@ -41,23 +48,31 @@ export default function ExtendedRegistration() {
 
   const handlePersonalSubmit = (e) => {
     e.preventDefault();
+    if (!isEmailVerified) {
+      return toast.error('Please verify your Email Address OTP to continue.');
+    }
+    if (!isPhoneVerified) {
+      return toast.error('Please verify your Mobile Phone SMS OTP to continue.');
+    }
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleVehicleSubmit = async (e) => {
     e.preventDefault();
+    if (!isEmailVerified || !isPhoneVerified) {
+      return toast.error('Email & Phone number verification are mandatory to complete registration.');
+    }
     
-    // Validate passwords manually if added to form, but basic form we just set a default password for the demo if not collected, 
-    // Or we should ideally add a password field to the ExtendedRegistration. Let's add a default password logic or prompt.
-    // Actually, let's collect a password or use a default one like 'parke123' since it wasn't in original UI.
-    const password = prompt("Please enter a password to secure your account:") || 'parkecity123';
+    const password = formData.password || 'parkecity123';
 
     const payload = {
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
       password: password,
+      isEmailVerified: isEmailVerified,
+      isPhoneVerified: isPhoneVerified,
       make: formData.make,
       model: formData.model,
       year: formData.year,
@@ -134,24 +149,28 @@ export default function ExtendedRegistration() {
 
                 <div className="separator"></div>
 
-                {/* Contact Info */}
+                {/* Contact & Verification Info */}
+                <VerificationSection 
+                  email={formData.email}
+                  setEmail={(val) => setFormData(prev => ({ ...prev, email: val }))}
+                  phone={formData.phone}
+                  setPhone={(val) => setFormData(prev => ({ ...prev, phone: val }))}
+                  isEmailVerified={isEmailVerified}
+                  setIsEmailVerified={setIsEmailVerified}
+                  isPhoneVerified={isPhoneVerified}
+                  setIsPhoneVerified={setIsPhoneVerified}
+                />
+
                 <div style={{marginBottom: '32px'}}>
-                    <h3 className="section-title">
-                        <Mail /> Contact Information
-                    </h3>
                     <div className="form-grid form-grid-2">
                         <div className="form-group">
-                            <label className="form-label">Email Address</label>
-                            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="name@example.com" required />
+                            <label className="form-label"><Lock size={16}/> Account Password</label>
+                            <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Create account password" required />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Phone Number</label>
-                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 (97xxxxxxxx43)" required />
+                            <label className="form-label"><Calendar size={16}/> Date of Birth</label>
+                            <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
                         </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label"><Calendar size={16}/> Date of Birth</label>
-                        <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
                     </div>
                 </div>
 

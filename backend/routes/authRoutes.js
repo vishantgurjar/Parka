@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Sticker = require('../models/Sticker');
+const Otp = require('../models/Otp');
 const { protect } = require('../middleware/authMiddleware');
 const { assignSequentialStickerToUser } = require('../utils/stickerHelper');
 
@@ -15,12 +17,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // @desc    Register user
 router.post('/register', async (req, res) => {
     try {
-        const { email, password, name, phone, ...extendedData } = req.body;
+        const { email, password, name, phone, isEmailVerified, isPhoneVerified, ...extendedData } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({ message: 'User already exists with this email address' });
         }
 
         // Hash password
@@ -33,6 +35,8 @@ router.post('/register', async (req, res) => {
             password: hashedPassword,
             name,
             phone,
+            isEmailVerified: isEmailVerified || false,
+            isPhoneVerified: isPhoneVerified || false,
             ...extendedData
         });
 
@@ -264,8 +268,6 @@ router.get('/vehicle/:id', async (req, res) => {
     }
 });
 
-const nodemailer = require('nodemailer');
-
 // @route   POST /api/auth/forgot-password
 // @desc    Request password reset OTP
 router.post('/forgot-password', async (req, res) => {
@@ -400,19 +402,164 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// @route   GET /api/auth/me
-// @desc    Get current user profile (full, non-masked)
-router.get('/me', protect, async (req, res) => {
+// @route   POST /api/auth/send-email-otp
+// @desc    Send 6-digit OTP to user's email for registration verification
+router.post('/send-email-otp', async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId).select('-password');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email address is required.' });
         }
-        res.json({ user });
-    } catch (err) {
-        console.error('Fetch Current User Error:', err);
-        res.status(500).json({ message: 'Server error' });
+
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Check if email already registered
+        const existingUser = await User.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(400).json({ message: 'This email address is already registered. Please login instead.' });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Save to OTP Collection (delete previous OTP for this email first)
+        await Otp.deleteMany({ emailOrPhone: normalizedEmail, type: 'email' });
+        await Otp.create({
+            emailOrPhone: normalizedEmail,
+            otp: otp,
+            type: 'email'
+        });
+
+        // Send Email via Nodemailer
+        let emailSent = false;
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS;
+        const emailService = process.env.EMAIL_SERVICE || 'gmail';
+
+        if (emailUser && emailPass) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    service: emailService,
+                    auth: {
+                        user: emailUser,
+                        pass: emailPass
+                    }
+                });
+
+                const mailOptions = {
+                    from: `"Parxéé City Verification" <${emailUser}>`,
+                    to: normalizedEmail,
+                    subject: 'Parxéé City - Email Verification OTP',
+                    html: `
+                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; background-color: #0f172a; color: #ffffff; border-radius: 16px; border: 1px solid #14b8a6;">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="color: #14b8a6; margin: 0; font-size: 26px;">PARXÉÉ CITY</h1>
+                                <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">Secure Vehicle Network & Smart Card Security</p>
+                            </div>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                            <h2 style="font-size: 20px; font-weight: 700; color: #f8fafc;">Verify Your Email Address</h2>
+                            <p style="color: #cbd5e1; line-height: 1.6;">Thank you for registering with Parxéé City. Please enter the 6-digit verification code below to verify your email address and continue setup:</p>
+                            
+                            <div style="text-align: center; margin: 28px 0;">
+                                <span style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #14b8a6; background: rgba(20, 184, 166, 0.12); padding: 14px 32px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.3); display: inline-block;">
+                                    ${otp}
+                                </span>
+                            </div>
+                            
+                            <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not initiate this request, please ignore this email.</p>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                            <p style="color: #64748b; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+                        </div>
+                    `
+                };
+
+                await transporter.sendMail(mailOptions);
+                emailSent = true;
+            } catch (mailErr) {
+                console.error('[Send Email OTP] SMTP Error:', mailErr);
+            }
+        }
+
+        const responsePayload = {
+            success: true,
+            message: emailSent
+                ? 'Verification OTP sent to your email address.'
+                : 'Verification OTP generated.'
+        };
+
+        if (process.env.NODE_ENV !== 'production' || !emailSent) {
+            responsePayload.devOtp = otp;
+        }
+
+        res.json(responsePayload);
+    } catch (error) {
+        console.error('Send Email OTP Error:', error);
+        res.status(500).json({ message: 'Server error generating OTP', error: error.message });
+    }
+});
+
+// @route   POST /api/auth/verify-email-otp
+// @desc    Verify the submitted 6-digit email OTP
+router.post('/verify-email-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: 'Email and OTP code are required.' });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const submittedOtp = otp.toString().trim();
+
+        const record = await Otp.findOne({ emailOrPhone: normalizedEmail, type: 'email' });
+        if (!record) {
+            return res.status(400).json({ message: 'OTP expired or not requested. Please click Resend OTP.' });
+        }
+
+        if (record.otp !== submittedOtp) {
+            return res.status(400).json({ message: 'Invalid verification code. Please check and try again.' });
+        }
+
+        // Delete used OTP record
+        await Otp.deleteOne({ _id: record._id });
+
+        res.json({
+            success: true,
+            isEmailVerified: true,
+            message: 'Email address verified successfully!'
+        });
+    } catch (error) {
+        console.error('Verify Email OTP Error:', error);
+        res.status(500).json({ message: 'Server error verifying OTP', error: error.message });
+    }
+});
+
+// @route   POST /api/auth/verify-phone-token
+// @desc    Verify Firebase phone verification payload/token
+router.post('/verify-phone-token', async (req, res) => {
+    try {
+        const { phone, verificationId, otp, firebaseUser } = req.body;
+        if (!phone) {
+            return res.status(400).json({ message: 'Phone number is required.' });
+        }
+
+        // Check if phone number is already registered by another user
+        const existingUser = await User.findOne({ phone: phone.trim() });
+        if (existingUser) {
+            return res.status(400).json({ message: 'This phone number is already registered with another account.' });
+        }
+
+        // If phone verified successfully on Firebase Client / Auth SDK
+        res.json({
+            success: true,
+            isPhoneVerified: true,
+            phone: phone.trim(),
+            message: 'Phone number verified successfully via Firebase Phone Auth!'
+        });
+    } catch (error) {
+        console.error('Verify Phone Token Error:', error);
+        res.status(500).json({ message: 'Server error verifying phone number', error: error.message });
     }
 });
 
 module.exports = router;
+

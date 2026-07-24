@@ -20,6 +20,14 @@ const UserSchema = new mongoose.Schema({
   phone: {
     type: String,
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  isPhoneVerified: {
+    type: Boolean,
+    default: false,
+  },
   
   // Extended Vehicle Details (Optional for quick login, required for Extended)
   make: { type: String },
