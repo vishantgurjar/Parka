@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import EmergencySticker from '../components/EmergencySticker';
 import { toPng } from 'html-to-image';
 import { getBackendUrl } from '../utils/api';
+import { INDIAN_CAR_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../utils/vehicleData';
 
 export default function Profile() {
   const { user, login } = useContext(AuthContext);
@@ -16,7 +17,7 @@ export default function Profile() {
   const [isSecondaryCardModalOpen, setIsSecondaryCardModalOpen] = useState(false);
   const [selectedVehicleForCard, setSelectedVehicleForCard] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [newVehicle, setNewVehicle] = useState({ make: '', model: '', year: '', color: '', plateNumber: '' });
+  const [newVehicle, setNewVehicle] = useState({ make: '', customMake: '', model: '', customModel: '', year: '', color: '', customColor: '', plateNumber: '' });
   const secondaryQrRef = useRef(null);
 
   const downloadSecondaryQR = async () => {
@@ -92,7 +93,11 @@ export default function Profile() {
 
   const handleAddVehicle = async (e) => {
     e.preventDefault();
-    if (!newVehicle.make || !newVehicle.model || !newVehicle.year || !newVehicle.color || !newVehicle.plateNumber) {
+    const finalMake = newVehicle.make === 'Other Brand' ? (newVehicle.customMake || 'Other') : newVehicle.make;
+    const finalModel = newVehicle.model === 'Other' ? (newVehicle.customModel || 'Other') : newVehicle.model;
+    const finalColor = newVehicle.color === 'Other Color' ? (newVehicle.customColor || 'Other') : newVehicle.color;
+
+    if (!newVehicle.plateNumber || !finalMake || !finalModel || !newVehicle.year || !finalColor) {
       return toast.error("Please fill in all vehicle details.");
     }
     setIsLoading(true);
@@ -101,14 +106,21 @@ export default function Profile() {
       const res = await fetch(`${baseUrl}/api/user/add-secondary-vehicle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user._id || user.id, ...newVehicle })
+        body: JSON.stringify({ 
+          userId: user._id || user.id, 
+          plateNumber: newVehicle.plateNumber.toUpperCase(),
+          make: finalMake,
+          model: finalModel,
+          year: newVehicle.year,
+          color: finalColor
+        })
       });
       const data = await res.json();
       if (res.ok) {
         login(data.user, localStorage.getItem('parkeToken'));
         toast.success("Secondary vehicle added successfully!");
         setIsAddVehicleModalOpen(false);
-        setNewVehicle({ make: '', model: '', year: '', color: '', plateNumber: '' });
+        setNewVehicle({ make: '', customMake: '', model: '', customModel: '', year: '', color: '', customColor: '', plateNumber: '' });
       } else {
         toast.error(data.message || 'Failed to add vehicle.');
       }
@@ -651,79 +663,147 @@ export default function Profile() {
 
       {/* ADD VEHICLE MODAL */}
       {isAddVehicleModalOpen && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="glass-card" style={{ width: '95%', maxWidth: '500px', padding: '0', overflow: 'hidden', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+            <div className="glass-card" style={{ width: '100%', maxWidth: '520px', padding: '0', overflow: 'hidden', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                 <div style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                    <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Car size={20} color="#10b981" /> Add Secondary Vehicle
+                    <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                        <Car size={22} color="#10b981" /> Add Secondary Vehicle
                     </h3>
-                    <button onClick={() => setIsAddVehicleModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X /></button>
+                    <button onClick={() => setIsAddVehicleModalOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18} /></button>
                 </div>
-                <form onSubmit={handleAddVehicle} style={{ padding: '24px' }}>
-                    <div className="form-group" style={{ marginBottom: '15px', textAlign: 'left' }}>
-                        <label className="form-label" style={{ fontSize: '0.75rem' }}>PLATE NUMBER</label>
+                <form onSubmit={handleAddVehicle} style={{ padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
+                    
+                    {/* PLATE NUMBER */}
+                    <div className="form-group" style={{ marginBottom: '18px', textAlign: 'left' }}>
+                        <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.5px', color: '#10b981', marginBottom: '6px', display: 'block' }}>PLATE NUMBER</label>
                         <input 
                           type="text" 
-                          placeholder="e.g. DL 3C AB 1234" 
-                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                          placeholder="e.g. UP11VP0004 or DL 3C AB 1234" 
+                          style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '12px 14px', width: '100%', outline: 'none', fontSize: '0.95rem', fontWeight: '600', letterSpacing: '1px' }}
                           value={newVehicle.plateNumber}
-                          onChange={(e) => setNewVehicle({ ...newVehicle, plateNumber: e.target.value })}
+                          onChange={(e) => setNewVehicle({ ...newVehicle, plateNumber: e.target.value.toUpperCase() })}
                           required
                         />
                     </div>
-                    <div className="form-grid form-grid-2" style={{ gap: '15px', marginBottom: '15px' }}>
+
+                    {/* BRAND/MAKE & MODEL GRID */}
+                    <div className="form-grid form-grid-2" style={{ gap: '15px', marginBottom: '18px' }}>
+                        
+                        {/* BRAND/MAKE DROPDOWN */}
                         <div className="form-group" style={{ textAlign: 'left' }}>
-                            <label className="form-label" style={{ fontSize: '0.75rem' }}>BRAND/MAKE</label>
-                            <input 
-                              type="text" 
-                              placeholder="e.g. Honda" 
-                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                            <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.5px', color: '#9ca3af', marginBottom: '6px', display: 'block' }}>BRAND/MAKE</label>
+                            <select 
+                              style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: newVehicle.make ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
                               value={newVehicle.make}
-                              onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value, model: '', customMake: '', customModel: '' })}
                               required
-                            />
+                            >
+                              <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>-- Select Brand --</option>
+                              {Object.keys(INDIAN_CAR_BRANDS).map(brand => (
+                                <option key={brand} value={brand} style={{ background: '#111827', color: '#fff' }}>
+                                  {brand}
+                                </option>
+                              ))}
+                            </select>
+                            {newVehicle.make === 'Other Brand' && (
+                              <input 
+                                type="text"
+                                placeholder="Type Brand Name..."
+                                style={{ background: '#0d1527', border: '1px solid #10b981', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                                value={newVehicle.customMake}
+                                onChange={(e) => setNewVehicle({ ...newVehicle, customMake: e.target.value })}
+                                required
+                              />
+                            )}
                         </div>
+
+                        {/* MODEL DROPDOWN (DEPENDENT ON BRAND) */}
                         <div className="form-group" style={{ textAlign: 'left' }}>
-                            <label className="form-label" style={{ fontSize: '0.75rem' }}>MODEL</label>
-                            <input 
-                              type="text" 
-                              placeholder="e.g. City" 
-                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                            <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.5px', color: '#9ca3af', marginBottom: '6px', display: 'block' }}>MODEL</label>
+                            <select 
+                              style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: newVehicle.model ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: newVehicle.make ? 'pointer' : 'not-allowed' }}
                               value={newVehicle.model}
-                              onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value, customModel: '' })}
+                              disabled={!newVehicle.make}
                               required
-                            />
+                            >
+                              <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>
+                                {newVehicle.make ? `-- Select ${newVehicle.make} Model --` : '-- Select Brand First --'}
+                              </option>
+                              {newVehicle.make && (INDIAN_CAR_BRANDS[newVehicle.make] || ["Other"]).map(model => (
+                                <option key={model} value={model} style={{ background: '#111827', color: '#fff' }}>
+                                  {model}
+                                </option>
+                              ))}
+                            </select>
+                            {newVehicle.model === 'Other' && (
+                              <input 
+                                type="text"
+                                placeholder="Type Model Name..."
+                                style={{ background: '#0d1527', border: '1px solid #10b981', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                                value={newVehicle.customModel}
+                                onChange={(e) => setNewVehicle({ ...newVehicle, customModel: e.target.value })}
+                                required
+                              />
+                            )}
                         </div>
                     </div>
-                    <div className="form-grid form-grid-2" style={{ gap: '15px', marginBottom: '20px' }}>
+
+                    {/* YEAR & COLOR GRID */}
+                    <div className="form-grid form-grid-2" style={{ gap: '15px', marginBottom: '24px' }}>
+                        
+                        {/* YEAR DROPDOWN */}
                         <div className="form-group" style={{ textAlign: 'left' }}>
-                            <label className="form-label" style={{ fontSize: '0.75rem' }}>YEAR</label>
-                            <input 
-                              type="text" 
-                              placeholder="e.g. 2023" 
-                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                            <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.5px', color: '#9ca3af', marginBottom: '6px', display: 'block' }}>YEAR</label>
+                            <select 
+                              style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: newVehicle.year ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
                               value={newVehicle.year}
                               onChange={(e) => setNewVehicle({ ...newVehicle, year: e.target.value })}
                               required
-                            />
+                            >
+                              <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>-- Select Year --</option>
+                              {VEHICLE_YEARS.map(year => (
+                                <option key={year} value={year} style={{ background: '#111827', color: '#fff' }}>
+                                  {year}
+                                </option>
+                              ))}
+                            </select>
                         </div>
+
+                        {/* COLOR DROPDOWN */}
                         <div className="form-group" style={{ textAlign: 'left' }}>
-                            <label className="form-label" style={{ fontSize: '0.75rem' }}>COLOR</label>
-                            <input 
-                              type="text" 
-                              placeholder="e.g. Pearl White" 
-                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}
+                            <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.5px', color: '#9ca3af', marginBottom: '6px', display: 'block' }}>COLOR</label>
+                            <select 
+                              style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: newVehicle.color ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
                               value={newVehicle.color}
-                              onChange={(e) => setNewVehicle({ ...newVehicle, color: e.target.value })}
+                              onChange={(e) => setNewVehicle({ ...newVehicle, color: e.target.value, customColor: '' })}
                               required
-                            />
+                            >
+                              <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>-- Select Color --</option>
+                              {VEHICLE_COLORS.map(color => (
+                                <option key={color} value={color} style={{ background: '#111827', color: '#fff' }}>
+                                  {color}
+                                </option>
+                              ))}
+                            </select>
+                            {newVehicle.color === 'Other Color' && (
+                              <input 
+                                type="text"
+                                placeholder="Type Custom Color..."
+                                style={{ background: '#0d1527', border: '1px solid #10b981', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                                value={newVehicle.customColor}
+                                onChange={(e) => setNewVehicle({ ...newVehicle, customColor: e.target.value })}
+                                required
+                              />
+                            )}
                         </div>
                     </div>
+
                     <button 
                         type="submit" 
                         disabled={isLoading}
                         className="btn-gradient full-width" 
-                        style={{ padding: '16px', borderRadius: '12px', fontWeight: 'bold', border: 'none' }}
+                        style={{ padding: '16px', borderRadius: '12px', fontWeight: 'bold', border: 'none', fontSize: '1rem', cursor: 'pointer', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' }}
                     >
                         {isLoading ? 'Adding Vehicle...' : 'Add Vehicle to Profile'}
                     </button>

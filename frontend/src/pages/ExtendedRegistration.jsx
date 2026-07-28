@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import { toast } from 'react-hot-toast';
 import { getBackendUrl } from '../utils/api';
 import VerificationSection from '../components/VerificationSection';
+import { INDIAN_CAR_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../utils/vehicleData';
 
 export default function ExtendedRegistration() {
   const [step, setStep] = useState(1);
@@ -249,28 +250,31 @@ export default function ExtendedRegistration() {
                     </h3>
                     <div className="form-grid form-grid-2">
                         <div className="form-group">
-                            <label className="form-label">Make</label>
-                            <select name="make" value={formData.make} onChange={handleChange} required>
-                                <option value="">Select make</option>
-                                {['Toyota','Honda','Ford','Suzuki','BMW','Mercedes-Benz','Audi','Nissan','Hyundai','Kia','Range Rover','Mahindra','Tata','MG Motor','Lexus','Renault','Volkswagen','Jeep','Other'].map(m => <option key={m} value={m}>{m}</option>)}
+                            <label className="form-label">Make / Brand</label>
+                            <select name="make" value={formData.make} onChange={(e) => setFormData(prev => ({ ...prev, make: e.target.value, model: '' }))} required>
+                                <option value="" disabled>Select make</option>
+                                {Object.keys(INDIAN_CAR_BRANDS).map(m => <option key={m} value={m} style={{ background: '#111827', color: '#fff' }}>{m}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Model</label>
-                            <input type="text" name="model" value={formData.model} onChange={handleChange} placeholder="Camry, Accord, F-150..." required />
+                            <select name="model" value={formData.model} onChange={handleChange} disabled={!formData.make} required>
+                                <option value="" disabled>{formData.make ? `Select ${formData.make} model` : 'Select Make First'}</option>
+                                {formData.make && (INDIAN_CAR_BRANDS[formData.make] || ['Other']).map(mod => <option key={mod} value={mod} style={{ background: '#111827', color: '#fff' }}>{mod}</option>)}
+                            </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Year</label>
                             <select name="year" value={formData.year} onChange={handleChange} required>
-                                <option value="">Select year</option>
-                                {years.map(y => <option key={y} value={y}>{y}</option>)}
+                                <option value="" disabled>Select year</option>
+                                {VEHICLE_YEARS.map(y => <option key={y} value={y} style={{ background: '#111827', color: '#fff' }}>{y}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Color</label>
                             <select name="color" value={formData.color} onChange={handleChange} required>
-                                <option value="">Select color</option>
-                                {['White','Black','Silver','Gray','Red','Blue','Green','Brown','Orange','Yellow','Purple','Gold'].map(c => <option key={c} value={c}>{c}</option>)}
+                                <option value="" disabled>Select color</option>
+                                {VEHICLE_COLORS.map(c => <option key={c} value={c} style={{ background: '#111827', color: '#fff' }}>{c}</option>)}
                             </select>
                         </div>
                     </div>
