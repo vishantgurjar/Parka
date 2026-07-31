@@ -120,27 +120,34 @@ router.post('/broadcast-email', protect, isAdmin, async (req, res) => {
             }
         });
 
-        const mailOptions = {
-            from: `"Parxéé Official" <${emailUser}>`,
-            bcc: emailList,
-            subject: subject,
-            html: `
-                <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px;">
-                    <h2 style="color: #38bdf8; margin-top: 0;">📢 Notice from Parxéé Admin</h2>
-                    <div style="background-color: #1e293b; border-left: 4px solid #38bdf8; padding: 20px; border-radius: 8px; margin: 20px 0; line-height: 1.6;">
-                        <p style="white-space: pre-wrap; margin: 0; font-size: 16px; color: #e2e8f0;">${messageText}</p>
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;" />
-                    <p style="font-size: 12px; color: #94a3b8; text-align: center;">You are receiving this official update because you are a registered member of Parxéé.</p>
-                </div>
-            `
-        };
-
-        await transporter.sendMail(mailOptions);
+        // Send email to each user (individual 'to' header prevents Gmail BCC drops & Spam flags)
+        let sentCount = 0;
+        for (const recipient of emailList) {
+            try {
+                await transporter.sendMail({
+                    from: `"Parxéé Official" <${emailUser}>`,
+                    to: recipient,
+                    subject: subject,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px;">
+                            <h2 style="color: #38bdf8; margin-top: 0;">📢 Notice from Parxéé Admin</h2>
+                            <div style="background-color: #1e293b; border-left: 4px solid #38bdf8; padding: 20px; border-radius: 8px; margin: 20px 0; line-height: 1.6;">
+                                <p style="white-space: pre-wrap; margin: 0; font-size: 16px; color: #e2e8f0;">${messageText}</p>
+                            </div>
+                            <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;" />
+                            <p style="font-size: 12px; color: #94a3b8; text-align: center;">You are receiving this official update because you are a registered member of Parxéé.</p>
+                        </div>
+                    `
+                });
+                sentCount++;
+            } catch (singleErr) {
+                console.error(`Failed to send email broadcast to ${recipient}:`, singleErr);
+            }
+        }
 
         res.json({ 
             success: true, 
-            message: `Email broadcast successfully sent to ${emailList.length} user(s)!` 
+            message: `Email broadcast successfully sent to ${sentCount} of ${emailList.length} user(s)!` 
         });
     } catch (error) {
         console.error('Email Broadcast Error:', error);
