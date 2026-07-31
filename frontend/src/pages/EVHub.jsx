@@ -977,7 +977,7 @@ export default function EVHub() {
               Futuristic EV <span className="text-gradient" style={{ backgroundImage: 'var(--gradient-premium)' }}>Smart Hub</span>
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-              Grid sharing safely, on-demand highway battery rescue, dynamic range predictions, and Gemini AI vehicle diagnostics.
+              Grid sharing safely, on-demand highway battery rescue, dynamic range predictions, and AI vehicle diagnostics.
             </p>
           </div>
 
