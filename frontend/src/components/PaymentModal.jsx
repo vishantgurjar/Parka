@@ -13,6 +13,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
   const [isMockPayment, setIsMockPayment] = useState(false);
   const [mockStep, setMockStep] = useState('none'); // 'none', 'select_method', 'processing', 'success'
   const [mockMethod, setMockMethod] = useState('upi'); // 'upi', 'card'
+  const [upiId, setUpiId] = useState('');
   const [mockOrderData, setMockOrderData] = useState(null);
   const [mockProcessingText, setMockProcessingText] = useState('Connecting to sandbox gateway...');
 
@@ -182,21 +183,38 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     // Helper to simulate delays
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
+    const isTrial = plan.isTrial || plan.name?.toLowerCase().includes('silver') || plan.amount === 0;
+
+    if (isTrial && mockMethod === 'upi' && (!upiId || !upiId.includes('@'))) {
+      setError("Please enter a valid UPI ID (e.g. 7830119922@ybl or username@okaxis) to authorize AutoPay mandate.");
+      setLoading(false);
+      setMockStep('select_method');
+      return;
+    }
+
+    setMockStep('processing');
+    setLoading(true);
+
     try {
-      setMockProcessingText("Connecting to PARXÉÉ Secure Sandbox Gateway...");
+      setMockProcessingText("Connecting to Razorpay RBI-Compliant Mandate Gateway...");
       await delay(1200);
 
-      const isTrial = plan.isTrial || plan.name?.toLowerCase().includes('silver') || plan.amount === 0;
-      setMockProcessingText(isTrial 
-        ? "Setting up ₹0 Auto-Pay Mandate & 1 Month FREE Silver Trial..." 
-        : `Simulating ${mockMethod.toUpperCase()} transaction of ₹${plan.amount}...`);
-      await delay(1500);
+      if (isTrial) {
+        setMockProcessingText(`Sending AutoPay Mandate request to ${upiId || 'UPI App'}...`);
+        await delay(1600);
 
-      setMockProcessingText("Authorizing mock bank auto-debit credentials...");
-      await delay(1200);
+        setMockProcessingText(`Mandate Approved on ${upiId || 'UPI App'}! Registering ₹199/month Recurring Billing...`);
+        await delay(1600);
 
-      setMockProcessingText("Verifying mock signature & activating subscription...");
-      await delay(1200);
+        setMockProcessingText("AutoPay Mandate active! Activating 1 Month FREE Silver Trial...");
+        await delay(1400);
+      } else {
+        setMockProcessingText(`Simulating ${mockMethod.toUpperCase()} transaction of ₹${plan.amount}...`);
+        await delay(1500);
+
+        setMockProcessingText("Authorizing bank credentials & verifying payment signature...");
+        await delay(1400);
+      }
 
       const verifyBody = isSubscription 
         ? {
@@ -282,8 +300,29 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                   </div>
                 )}
 
+                {/* UPI AutoPay Mandate Box for Free Trial */}
+                {isFreeTrialPlan && (
+                  <div style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '14px', padding: '14px', marginBottom: '1.2rem', textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ShieldCheck size={16} /> UPI AutoPay Mandate Details (YouTube-Style)
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span>Due Today (1 Month Free):</span>
+                      <strong style={{ color: '#22c55e' }}>₹0.00 FREE</strong>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span>First Auto-Debit Billing:</span>
+                      <strong>After 30 Days</strong>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Recurring Charge:</span>
+                      <strong style={{ color: '#38bdf8' }}>₹199 / Month (Cancel anytime)</strong>
+                    </div>
+                  </div>
+                )}
+
                 {/* Method selector options */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.5rem', textAlign: 'left' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.2rem', textAlign: 'left' }}>
                   <button 
                     type="button" 
                     onClick={() => setMockMethod('upi')}
@@ -324,6 +363,55 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                     </div>
                   </button>
                 </div>
+
+                {/* UPI ID Input field for Mandate Authorization */}
+                {mockMethod === 'upi' && (
+                  <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+                    <label style={{ fontSize: '0.82rem', color: '#cbd5e1', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
+                      UPI ID for AutoPay Authorization: <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 7830119922@ybl or username@okaxis"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        background: 'rgba(0,0,0,0.3)',
+                        color: '#fff',
+                        outline: 'none',
+                        fontSize: '0.9rem',
+                        marginBottom: '8px'
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {['@gpay', '@phonepe', '@paytm', '@ybl', '@okaxis'].map(app => (
+                        <button
+                          key={app}
+                          type="button"
+                          onClick={() => {
+                            const base = upiId ? upiId.split('@')[0] : (user?.phone || '7830119922');
+                            setUpiId(`${base}${app}`);
+                          }}
+                          style={{
+                            fontSize: '0.72rem',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                            background: 'rgba(56, 189, 248, 0.1)',
+                            color: '#38bdf8',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {app}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Due Today:</span>
