@@ -433,19 +433,33 @@ export default function Home({ onOpenPayment }) {
             <h2 className="section-title" style={{ fontSize: '3rem', letterSpacing: 'var(--tracking-tight)', marginTop: '1.5rem' }}>Simple, Powerful <span className="text-gradient">Access.</span></h2>
           </div>
           <div className="pricing-grid">
-            <div className="pricing-card bento-item reveal light-sweep">
-              <div className="plan-header">
-                <div className="plan-icon" style={{ borderRadius: '12px' }}><CheckCircle size={20} /></div>
-                <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Silver</h3></div>
+            <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: '#38bdf8', background: 'rgba(56, 189, 248, 0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
+                <span style={{ background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', color: '#fff', fontSize: '0.65rem', fontWeight: '900', borderRadius: '50px', padding: '4px 12px', letterSpacing: '0.5px', textTransform: 'uppercase', boxShadow: '0 0 12px rgba(56, 189, 248, 0.4)' }}>🔥 FIRST 50 USERS - 1 MONTH FREE</span>
               </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">199</span></div>
-              <span className="period" style={{ opacity: 0.6 }}>/month</span>
-              <ul className="plan-features" style={{ marginTop: '2rem' }}>
+              <div className="plan-header">
+                <div className="plan-icon" style={{ borderRadius: '12px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}><CheckCircle size={20} /></div>
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Silver</h3>
+                  <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 'bold' }}>Auto-Pay Subscription</span>
+                </div>
+              </div>
+              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}>
+                <span className="currency" style={{ fontSize: '1.5rem', color: '#38bdf8' }}>₹</span>
+                <span className="amount" style={{ color: '#38bdf8' }}>0</span>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '-4px' }}>
+                <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: '6px' }}>₹199</span>
+                <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>1st Month FREE</span>
+              </div>
+              <span className="period" style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '4px', display: 'block' }}>Autopay ₹199/mo starts after 30 days · Cancel anytime</span>
+              <ul className="plan-features" style={{ marginTop: '1.5rem' }}>
+                <li style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓ 1 Month Free Trial</li>
                 <li>Standard QR Profile</li>
                 <li>SMS Alert System</li>
                 <li>1 Vehicle Limit</li>
               </ul>
-              <button className="plan-btn glass light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Silver', '199')}>Start Silver</button>
+              <button className="plan-btn glass light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', color: '#fff', fontWeight: 'bold', border: 'none' }} onClick={() => onOpenPayment({ name: 'Silver (1-Month Free)', amount: 0, isTrial: true, recurringAmount: 199 })}>Get 1 Month FREE (Auto-Pay)</button>
             </div>
             
             <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: 'var(--primary)', background: 'rgba(94, 234, 212, 0.05)' }}>

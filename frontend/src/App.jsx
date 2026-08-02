@@ -244,13 +244,17 @@ function App() {
     setIncomingCall(null);
   };
 
-  const handleOpenPayment = (name, amount) => {
+  const handleOpenPayment = (name, amount, extraOpts = {}) => {
     if (!user) {
       toast.error("Please log in or register before subscribing.");
       window.location.href = '/login';
       return;
     }
-    setPaymentPlan({ name, amount });
+    if (typeof name === 'object' && name !== null) {
+      setPaymentPlan(name);
+    } else {
+      setPaymentPlan({ name, amount, ...extraOpts });
+    }
   };
 
   const handlePaymentSuccess = async (verifyData) => {

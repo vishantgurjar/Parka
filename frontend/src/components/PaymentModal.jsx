@@ -53,7 +53,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: plan.amount,
-            receipt: `${entityId}_${Date.now()}`
+            receipt: `${entityId}_${Date.now()}`,
+            isTrial: plan.isTrial || plan.name?.toLowerCase().includes('silver')
           })
         });
         orderData = await orderRes.json();
@@ -185,13 +186,16 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
       setMockProcessingText("Connecting to PARXÉÉ Secure Sandbox Gateway...");
       await delay(1200);
 
-      setMockProcessingText(`Simulating ${mockMethod.toUpperCase()} transaction of ₹${plan.amount}...`);
+      const isTrial = plan.isTrial || plan.name?.toLowerCase().includes('silver') || plan.amount === 0;
+      setMockProcessingText(isTrial 
+        ? "Setting up ₹0 Auto-Pay Mandate & 1 Month FREE Silver Trial..." 
+        : `Simulating ${mockMethod.toUpperCase()} transaction of ₹${plan.amount}...`);
       await delay(1500);
 
-      setMockProcessingText("Authorizing mock bank response & credentials...");
+      setMockProcessingText("Authorizing mock bank auto-debit credentials...");
       await delay(1200);
 
-      setMockProcessingText("Verifying mock signature at backend/verify-signature...");
+      setMockProcessingText("Verifying mock signature & activating subscription...");
       await delay(1200);
 
       const verifyBody = isSubscription 
@@ -229,7 +233,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
       if (verifyRes.ok) {
         setMockStep('success');
         await delay(1200);
-        toast.success("Payment Successful! ✓");
+        toast.success(isTrial ? "1-Month Free Trial Activated! ✓" : "Payment Successful! ✓");
         if (onSuccess) onSuccess(verifyData);
         onClose();
       } else {
@@ -243,6 +247,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
       setLoading(false);
     }
   };
+
+  const isFreeTrialPlan = plan.isTrial || plan.name?.toLowerCase().includes('silver') || plan.amount === 0;
 
   return (
     <div className="modal-overlay show" id="paymentModal" style={{ zIndex: 20000 }} onClick={(e) => {
@@ -258,12 +264,16 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             {/* Step 1: Select Method */}
             {mockStep === 'select_method' && (
               <div>
-                <div style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <div style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                   <ShieldCheck size={32} />
                 </div>
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Sandbox Test Gateway</h3>
+                <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>
+                  {isFreeTrialPlan ? 'Authorize Free Trial Auto-Pay' : 'Sandbox Test Gateway'}
+                </h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1.5rem' }}>
-                  No Razorpay API keys configured. Select a payment method to simulate the transaction.
+                  {isFreeTrialPlan 
+                    ? 'Select payment method to authorize ₹0 Auto-Pay mandate for 1 Month FREE Silver plan.' 
+                    : 'Select a payment method to simulate the transaction in test mode.'}
                 </p>
 
                 {error && (
@@ -278,15 +288,19 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                     type="button" 
                     onClick={() => setMockMethod('upi')}
                     style={{
-                      background: mockMethod === 'upi' ? 'rgba(13, 148, 136, 0.08)' : 'rgba(0,0,0,0.2)',
-                      border: mockMethod === 'upi' ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.06)',
+                      background: mockMethod === 'upi' ? 'rgba(56, 189, 248, 0.08)' : 'rgba(0,0,0,0.2)',
+                      border: mockMethod === 'upi' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.06)',
                       borderRadius: '12px', padding: '14px', cursor: 'pointer', display: 'flex', width: '100%', alignItems: 'center', gap: '12px', transition: 'all 0.2s'
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>📱</span>
                     <div>
-                      <span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.9rem', color: mockMethod === 'upi' ? '#fff' : 'var(--muted)' }}>Simulate UPI Transaction</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Mock Google Pay, PhonePe, Paytm payment</span>
+                      <span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.9rem', color: mockMethod === 'upi' ? '#fff' : 'var(--muted)' }}>
+                        {isFreeTrialPlan ? 'UPI AutoPay Mandate (Google Pay / PhonePe / Paytm)' : 'Simulate UPI Transaction'}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                        {isFreeTrialPlan ? '₹0 charged today. Auto-debit ₹199/mo after 30 days.' : 'Mock UPI payment'}
+                      </span>
                     </div>
                   </button>
 
@@ -294,31 +308,35 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                     type="button" 
                     onClick={() => setMockMethod('card')}
                     style={{
-                      background: mockMethod === 'card' ? 'rgba(13, 148, 136, 0.08)' : 'rgba(0,0,0,0.2)',
-                      border: mockMethod === 'card' ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.06)',
+                      background: mockMethod === 'card' ? 'rgba(56, 189, 248, 0.08)' : 'rgba(0,0,0,0.2)',
+                      border: mockMethod === 'card' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.06)',
                       borderRadius: '12px', padding: '14px', cursor: 'pointer', display: 'flex', width: '100%', alignItems: 'center', gap: '12px', transition: 'all 0.2s'
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>💳</span>
                     <div>
-                      <span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.9rem', color: mockMethod === 'card' ? '#fff' : 'var(--muted)' }}>Simulate Credit/Debit Card</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Mock Visa/Mastercard 3D-Secure workflow</span>
+                      <span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.9rem', color: mockMethod === 'card' ? '#fff' : 'var(--muted)' }}>
+                        {isFreeTrialPlan ? 'Card Recurring Mandate (Visa / Mastercard)' : 'Simulate Credit/Debit Card'}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                        {isFreeTrialPlan ? '₹0 charged today. Auto-debit ₹199/mo after 30 days.' : 'Mock Card workflow'}
+                      </span>
                     </div>
                   </button>
                 </div>
 
                 <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Pay Amount:</span>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)' }}>₹{plan.amount}</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Due Today:</span>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#38bdf8' }}>₹{plan.amount}</span>
                 </div>
 
                 <button 
                   onClick={executeSandboxSimulation}
                   disabled={loading}
                   className="btn-gradient full-width" 
-                  style={{ padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                  style={{ padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)' }}
                 >
-                  Pay via Sandbox Simulator
+                  {isFreeTrialPlan ? 'Authorize ₹0 Auto-Pay & Claim 1 Month Free' : 'Pay via Sandbox Simulator'}
                 </button>
               </div>
             )}
@@ -326,11 +344,11 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             {/* Step 2: Processing simulation */}
             {mockStep === 'processing' && (
               <div style={{ padding: '2rem 0' }}>
-                <div className="spinner" style={{ border: '4px solid rgba(255,255,255,0.1)', borderTop: '4px solid var(--primary)', borderRadius: '50%', width: '48px', height: '48px', margin: '0 auto 1.5rem', animation: 'spin 1s linear infinite' }} />
-                <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Processing Payment</h3>
+                <div className="spinner" style={{ border: '4px solid rgba(255,255,255,0.1)', borderTop: '4px solid #38bdf8', borderRadius: '50%', width: '48px', height: '48px', margin: '0 auto 1.5rem', animation: 'spin 1s linear infinite' }} />
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Processing Authorization</h3>
                 <p style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>{mockProcessingText}</p>
                 <div style={{ width: '80%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', margin: '1.5rem auto 0', overflow: 'hidden', position: 'relative' }}>
-                  <div style={{ height: '100%', width: '40%', background: 'var(--primary)', borderRadius: 'inherit', position: 'absolute', animation: 'shimmer 1.5s infinite linear' }} />
+                  <div style={{ height: '100%', width: '40%', background: '#38bdf8', borderRadius: 'inherit', position: 'absolute', animation: 'shimmer 1.5s infinite linear' }} />
                 </div>
               </div>
             )}
@@ -341,8 +359,8 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', border: '2px solid #10b981', animation: 'pulse 1s infinite' }}>
                   <ShieldCheck size={40} />
                 </div>
-                <h3 style={{ fontSize: '1.5rem', color: '#10b981', marginBottom: '8px' }}>Payment Authorized</h3>
-                <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>₹{plan.amount} mock transaction completed successfully!</p>
+                <h3 style={{ fontSize: '1.5rem', color: '#10b981', marginBottom: '8px' }}>1-Month Free Trial Activated</h3>
+                <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>Silver plan features unlocked! Auto-Pay mandate set for ₹199/mo starting in 30 days.</p>
               </div>
             )}
 
@@ -351,12 +369,28 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           /* REGULAR RAZORPAY / PRODUCTION FLOW */
           <div>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+              <div style={{ background: isFreeTrialPlan ? 'rgba(56, 189, 248, 0.1)' : 'rgba(13, 148, 136, 0.1)', color: isFreeTrialPlan ? '#38bdf8' : 'var(--primary)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                 <CreditCard size={32} />
               </div>
-              <h3 id="modalTitle" style={{ fontSize: '1.5rem' }}>Pay ₹{plan.amount}</h3>
-              
-              {plan.name === 'Gold PRO' ? (
+              <h3 id="modalTitle" style={{ fontSize: '1.5rem' }}>
+                {isFreeTrialPlan ? 'Claim 1-Month FREE Trial' : `Pay ₹${plan.amount}`}
+              </h3>
+
+              {isFreeTrialPlan ? (
+                <div style={{ background: 'rgba(56, 189, 248, 0.08)', padding: '15px', borderRadius: '12px', marginTop: '1rem', textAlign: 'left', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                  <h4 style={{ color: '#38bdf8', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldCheck size={18} /> 🔥 First 50 Users Special Offer
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: '#e2e8f0', margin: '0 0 8px 0' }}>
+                    <strong>Today's Charge: ₹0</strong> (1 Month FREE Trial)
+                  </p>
+                  <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>✓ Standard QR Emergency Profile</li>
+                    <li>✓ Auto-Pay mandate registered (₹199/mo after 30 days)</li>
+                    <li>✓ Cancel anytime with 1-click before 30 days</li>
+                  </ul>
+                </div>
+              ) : plan.name === 'Gold PRO' ? (
                 <div style={{ background: 'rgba(234, 179, 8, 0.1)', padding: '15px', borderRadius: '12px', marginTop: '1rem', textAlign: 'left', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
                   <h4 style={{ color: '#eab308', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <ShieldCheck size={18} /> Upgrade to Gold PRO
@@ -401,7 +435,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
             <button 
               className="btn-gradient full-width" 
               onClick={handleRazorpayPayment} 
-              disabled={loading || (error && (error.includes('not configured') || error.includes('gateway')))}
+              disabled={loading}
               style={{ 
                 padding: '16px', 
                 fontSize: '1.1rem', 
@@ -411,18 +445,18 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 justifyContent: 'center', 
                 gap: '8px', 
                 border: 'none', 
-                cursor: (loading || (error && (error.includes('not configured') || error.includes('gateway')))) ? 'not-allowed' : 'pointer', 
-                opacity: (loading || (error && (error.includes('not configured') || error.includes('gateway')))) ? 0.6 : 1,
-                background: plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : plan.name === 'Diamond PRO' ? 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)' : 'var(--gradient-primary)' 
+                cursor: loading ? 'not-allowed' : 'pointer', 
+                opacity: loading ? 0.6 : 1,
+                background: isFreeTrialPlan ? 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)' : plan.name === 'Gold PRO' ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)' : plan.name === 'Diamond PRO' ? 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)' : 'var(--gradient-primary)' 
               }}
             >
-              {loading ? 'Processing...' : error && (error.includes('not configured') || error.includes('gateway')) ? 'Payment Unavailable' : `Pay via Razorpay`}
+              {loading ? 'Processing...' : isFreeTrialPlan ? 'Authorize ₹0 Auto-Pay & Start Free Trial' : `Pay via Razorpay`}
             </button>
 
             <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', textAlign: 'center' }}>
               <p className="modal-trust" style={{ color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                 <ShieldCheck size={14} />
-                Secured by Razorpay · 128-bit Encryption
+                Secured by Razorpay · Auto-Pay Mandate Encryption
               </p>
             </div>
           </div>
