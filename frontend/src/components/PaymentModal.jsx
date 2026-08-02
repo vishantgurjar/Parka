@@ -17,6 +17,10 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
   const [mockOrderData, setMockOrderData] = useState(null);
   const [mockProcessingText, setMockProcessingText] = useState('Connecting to sandbox gateway...');
 
+  useEffect(() => {
+    handleRazorpayPayment();
+  }, []);
+
   const handleRazorpayPayment = async () => {
     if (!entityId || entityId === 'undefined') {
       setError("Please log in to upgrade your account.");
@@ -275,8 +279,13 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
       <div className="modal-content" style={{ maxWidth: '450px', padding: '2rem' }}>
         <button className="modal-close" onClick={onClose}><X size={20} /></button>
         
-        {/* MOCK PAYMENTS SUB-FLOW */}
-        {isMockPayment && mockStep !== 'none' ? (
+        {loading && !isMockPayment ? (
+          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <div className="spinner" style={{ border: '4px solid rgba(255,255,255,0.1)', borderTop: '4px solid #38bdf8', borderRadius: '50%', width: '48px', height: '48px', margin: '0 auto 1.5rem', animation: 'spin 1s linear infinite' }} />
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Initializing Checkout</h3>
+            <p style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Connecting to Razorpay secure gateway...</p>
+          </div>
+        ) : isMockPayment && mockStep !== 'none' ? (
           <div style={{ textAlign: 'center' }}>
             
             {/* Step 1: Select Method */}
