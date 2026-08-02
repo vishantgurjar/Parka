@@ -562,19 +562,23 @@ router.post('/send-phone-otp', async (req, res) => {
             type: 'phone'
         });
 
-        // Dispatch SMS via SMS helper (Fast2SMS / Twilio)
+        // Dispatch SMS via SMS helper (Fast2SMS / 2Factor / Twilio)
         const smsResult = await sendSmsOtp(normalizedPhone, otp);
 
-        const responsePayload = {
-            success: true,
-            devOtp: otp, // Included for instant verification & fallback when SMS keys are unconfigured
-            smsSent: smsResult.success,
-            message: smsResult.success
-                ? `SMS OTP sent to ${normalizedPhone} via ${smsResult.provider}. Please check your mobile messages.`
-                : `SMS OTP code generated (${otp}).`
-        };
+        if (smsResult.success) {
+            return res.json({
+                success: true,
+                smsSent: true,
+                message: `SMS OTP sent to ${normalizedPhone} via ${smsResult.provider}. Please check your mobile messages. 📱`
+            });
+        }
 
-        res.json(responsePayload);
+        // If SMS gateway fails or is unconfigured
+        return res.status(400).json({
+            success: false,
+            smsSent: false,
+            message: `SMS Delivery Error: ${smsResult.error}`
+        });
 
     } catch (error) {
         console.error('Send Phone OTP Error:', error);
