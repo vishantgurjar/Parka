@@ -383,6 +383,17 @@ app.get('/api/incidents', async (req, res) => {
   }
 });
 
+app.get('/api/payment/debug-keys', (req, res) => {
+  const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+  res.json({
+    keysConfigured: !!(keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret'),
+    keyIdPrefix: keyId ? keyId.substring(0, 8) : 'Not Set',
+    hasSecret: !!keySecret,
+    nodeEnv: process.env.NODE_ENV || 'development'
+  });
+});
+
 // --- PAYMENT ROUTES (Razorpay) ---
 app.post('/api/payment/create-order', async (req, res) => {
   try {
