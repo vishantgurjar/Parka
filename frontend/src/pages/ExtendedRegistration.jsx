@@ -103,14 +103,14 @@ export default function ExtendedRegistration() {
       
       if (res.ok) {
         login(data.user, data.token);
-        alert(`Registration Complete, ${data.user.name}! You are now logged in.`);
+        toast.success(`Registration Complete, ${data.user.name || 'User'}! You are now logged in. 🎉`);
         navigate('/');
       } else {
-        alert(data.message || 'Registration failed.');
+        toast.error(data.message || 'Registration failed. Please check details.');
       }
     } catch (err) {
       console.error('Registration error:', err);
-      alert('Network error connecting to the server.');
+      toast.error('Network error connecting to the server.');
     }
   };
 
