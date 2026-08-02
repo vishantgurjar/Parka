@@ -36,14 +36,27 @@ async function generateNextStickerId() {
  * Note: The caller is responsible for saving the userInstance.
  */
 async function assignSequentialStickerToUser(userInstance) {
+    // Fetch all smartTagIds currently assigned to active users in the database to prevent duplicate assignment
+    const usersWithTags = await User.find({ smartTagId: { $ne: null, $exists: true } }, 'smartTagId');
+    const assignedUserTags = new Set(usersWithTags.map(u => u.smartTagId.toUpperCase().trim()));
+
     // 1. Try to find the first inactive/unassigned sticker in the database
-    let sticker = await Sticker.findOne({ 
+    let stickers = await Sticker.find({ 
         $or: [
             { status: 'Inactive' },
             { userId: null },
             { userId: { $exists: false } }
         ]
     }).sort({ stickerId: 1 });
+
+    // Find the first one that is NOT already assigned to a User
+    let sticker = null;
+    for (const s of stickers) {
+        if (s.stickerId && !assignedUserTags.has(s.stickerId.toUpperCase().trim())) {
+            sticker = s;
+            break;
+        }
+    }
 
     let stickerId;
     if (sticker) {
