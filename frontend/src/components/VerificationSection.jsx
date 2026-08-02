@@ -18,13 +18,11 @@ export default function VerificationSection({
   const [emailOtp, setEmailOtp] = useState('');
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
-  const [devEmailOtp, setDevEmailOtp] = useState('');
 
   // Phone OTP state
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
-  const [devPhoneOtp, setDevPhoneOtp] = useState('');
 
   // Send Email OTP
   const handleSendEmailOtp = async () => {
@@ -32,7 +30,6 @@ export default function VerificationSection({
       return toast.error('Please enter a valid email address.');
     }
     setEmailLoading(true);
-    setDevEmailOtp('');
     const baseUrl = getBackendUrl();
     try {
       const res = await fetch(`${baseUrl}/api/auth/send-email-otp`, {
@@ -43,8 +40,7 @@ export default function VerificationSection({
       const data = await res.json();
       if (res.ok && data.success) {
         setEmailOtpSent(true);
-        if (data.devOtp) setDevEmailOtp(data.devOtp);
-        toast.success(data.message || 'OTP sent to your email!');
+        toast.success(data.message || 'OTP sent to your email address!');
       } else {
         toast.error(data.message || 'Failed to send OTP to email.');
       }
@@ -90,7 +86,6 @@ export default function VerificationSection({
       return toast.error('Please enter a valid 10-digit phone number.');
     }
     setPhoneLoading(true);
-    setDevPhoneOtp('');
 
     const hasRealFirebaseKey = import.meta.env.VITE_FIREBASE_API_KEY && 
       !import.meta.env.VITE_FIREBASE_API_KEY.includes('DummyKey');
@@ -122,8 +117,7 @@ export default function VerificationSection({
       if (res.ok && data.success) {
         setPhoneOtpSent(true);
         setPhoneOtp('');
-        if (data.devOtp) setDevPhoneOtp(data.devOtp);
-        toast.success(data.message || `Verification OTP sent to ${phone}! Please check your mobile. 📱`);
+        toast.success(data.message || `Verification OTP sent to ${phone} and email! 📱`);
       } else {
         toast.error(data.message || 'Failed to send OTP to mobile.');
       }
@@ -283,13 +277,6 @@ export default function VerificationSection({
             )}
           </div>
 
-          {/* Email Dev OTP helper banner */}
-          {devEmailOtp && !isEmailVerified && (
-            <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.3)', color: '#14b8a6', fontSize: '0.85rem' }}>
-              <strong>Verification OTP Helper:</strong> Enter <strong>{devEmailOtp}</strong> to verify email.
-            </div>
-          )}
-
           {/* Email OTP Input Row */}
           {emailOtpSent && !isEmailVerified && (
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
@@ -399,13 +386,6 @@ export default function VerificationSection({
               </button>
             )}
           </div>
-
-          {/* Phone Dev OTP helper banner */}
-          {devPhoneOtp && !isPhoneVerified && (
-            <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.3)', color: '#14b8a6', fontSize: '0.85rem' }}>
-              <strong>Verification OTP Helper:</strong> Enter <strong>{devPhoneOtp}</strong> to verify phone.
-            </div>
-          )}
 
           {/* Phone OTP Input Row */}
           {phoneOtpSent && !isPhoneVerified && (

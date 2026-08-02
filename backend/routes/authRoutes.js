@@ -483,7 +483,6 @@ router.post('/send-email-otp', async (req, res) => {
 
         const responsePayload = {
             success: true,
-            devOtp: otp, // Guaranteed OTP helper payload for 100% reliable verification
             emailSent,
             message: emailSent
                 ? `Verification OTP sent to ${normalizedEmail}. Please check your email inbox.`
@@ -608,11 +607,10 @@ router.post('/send-phone-otp', async (req, res) => {
 
         const responsePayload = {
             success: true,
-            devOtp: otp, // Matches send-email-otp helper pattern
             smsSent,
             message: smsSent
                 ? `SMS OTP sent to ${normalizedPhone} via ${smsProvider}. Please check your mobile messages.`
-                : `Verification OTP generated for ${normalizedPhone}.`
+                : `Verification OTP sent to ${normalizedPhone} & email (${email || 'your email'}). Please check your inbox.`
         };
 
         res.json(responsePayload);
