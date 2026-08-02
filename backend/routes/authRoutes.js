@@ -414,12 +414,6 @@ router.post('/send-email-otp', async (req, res) => {
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        // Check if email already registered
-        const existingUser = await User.findOne({ email: normalizedEmail });
-        if (existingUser) {
-            return res.status(400).json({ message: 'This email address is already registered. Please login instead.' });
-        }
-
         // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
