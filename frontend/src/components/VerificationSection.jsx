@@ -111,13 +111,13 @@ export default function VerificationSection({
       const res = await fetch(`${baseUrl}/api/auth/send-phone-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, email })
+        body: JSON.stringify({ phone })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setPhoneOtpSent(true);
         setPhoneOtp('');
-        toast.success(data.message || `Verification OTP sent to ${phone} and email! 📱`);
+        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile messages. 📱`);
       } else {
         toast.error(data.message || 'Failed to send OTP to mobile.');
       }
