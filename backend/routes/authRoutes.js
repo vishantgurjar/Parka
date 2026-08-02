@@ -431,53 +431,66 @@ router.post('/send-email-otp', async (req, res) => {
             type: 'email'
         });
 
-        // Send Email via Nodemailer
+        // Send Email via Nodemailer with SSL SMTP for 100% Vercel & Cloud delivery
         let emailSent = false;
         const emailUser = process.env.EMAIL_USER;
         const emailPass = process.env.EMAIL_PASS;
         const emailService = process.env.EMAIL_SERVICE || 'gmail';
 
         if (emailUser && emailPass) {
+            const mailOptions = {
+                from: `"Parxéé City Verification" <${emailUser}>`,
+                to: normalizedEmail,
+                subject: 'Parxéé City - Email Verification OTP',
+                html: `
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; background-color: #0f172a; color: #ffffff; border-radius: 16px; border: 1px solid #14b8a6;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="color: #14b8a6; margin: 0; font-size: 26px;">PARXÉÉ CITY</h1>
+                            <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">Secure Vehicle Network & Smart Card Security</p>
+                        </div>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <h2 style="font-size: 20px; font-weight: 700; color: #f8fafc;">Verify Your Email Address</h2>
+                        <p style="color: #cbd5e1; line-height: 1.6;">Thank you for registering with Parxéé City. Please enter the 6-digit verification code below to verify your email address and continue setup:</p>
+                        
+                        <div style="text-align: center; margin: 28px 0;">
+                            <span style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #14b8a6; background: rgba(20, 184, 166, 0.12); padding: 14px 32px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.3); display: inline-block;">
+                                ${otp}
+                            </span>
+                        </div>
+                        
+                        <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not initiate this request, please ignore this email.</p>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="color: #64748b; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+                    </div>
+                `
+            };
+
+            // Attempt 1: Direct SSL SMTP (smtp.gmail.com:465)
             try {
                 const transporter = nodemailer.createTransport({
-                    service: emailService,
-                    auth: {
-                        user: emailUser,
-                        pass: emailPass
-                    }
+                    host: 'smtp.gmail.com',
+                    port: 465,
+                    secure: true,
+                    auth: { user: emailUser, pass: emailPass },
+                    tls: { rejectUnauthorized: false }
                 });
-
-                const mailOptions = {
-                    from: `"Parxéé City Verification" <${emailUser}>`,
-                    to: normalizedEmail,
-                    subject: 'Parxéé City - Email Verification OTP',
-                    html: `
-                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; background-color: #0f172a; color: #ffffff; border-radius: 16px; border: 1px solid #14b8a6;">
-                            <div style="text-align: center; margin-bottom: 20px;">
-                                <h1 style="color: #14b8a6; margin: 0; font-size: 26px;">PARXÉÉ CITY</h1>
-                                <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">Secure Vehicle Network & Smart Card Security</p>
-                            </div>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                            <h2 style="font-size: 20px; font-weight: 700; color: #f8fafc;">Verify Your Email Address</h2>
-                            <p style="color: #cbd5e1; line-height: 1.6;">Thank you for registering with Parxéé City. Please enter the 6-digit verification code below to verify your email address and continue setup:</p>
-                            
-                            <div style="text-align: center; margin: 28px 0;">
-                                <span style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #14b8a6; background: rgba(20, 184, 166, 0.12); padding: 14px 32px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.3); display: inline-block;">
-                                    ${otp}
-                                </span>
-                            </div>
-                            
-                            <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not initiate this request, please ignore this email.</p>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                            <p style="color: #64748b; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-                        </div>
-                    `
-                };
-
                 await transporter.sendMail(mailOptions);
                 emailSent = true;
+                console.log(`[Send Email OTP] SSL SMTP Email sent successfully to ${normalizedEmail}`);
             } catch (mailErr) {
-                console.error('[Send Email OTP] SMTP Error:', mailErr);
+                console.error('[Send Email OTP] SSL SMTP Error:', mailErr.message);
+                // Attempt 2: Fallback to service gmail
+                try {
+                    const fallbackTransporter = nodemailer.createTransport({
+                        service: emailService,
+                        auth: { user: emailUser, pass: emailPass }
+                    });
+                    await fallbackTransporter.sendMail(mailOptions);
+                    emailSent = true;
+                    console.log(`[Send Email OTP] Service Gmail fallback sent successfully to ${normalizedEmail}`);
+                } catch (fbErr) {
+                    console.error('[Send Email OTP] Service Gmail Fallback Error:', fbErr.message);
+                }
             }
         }
 
