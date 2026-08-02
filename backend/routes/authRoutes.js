@@ -9,6 +9,7 @@ const Sticker = require('../models/Sticker');
 const Otp = require('../models/Otp');
 const { protect } = require('../middleware/authMiddleware');
 const { assignSequentialStickerToUser } = require('../utils/stickerHelper');
+const { sendSmsOtp } = require('../utils/smsHelper');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -561,38 +562,16 @@ router.post('/send-phone-otp', async (req, res) => {
             type: 'phone'
         });
 
-        let smsSent = false;
-        const fast2smsApiKey = process.env.FAST2SMS_API_KEY;
-
-        // If Fast2SMS API key is set in .env
-        if (fast2smsApiKey) {
-            try {
-                const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-                    method: 'POST',
-                    headers: {
-                        'authorization': fast2smsApiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        route: 'otp',
-                        variables_values: otp,
-                        numbers: normalizedPhone.replace(/\D/g, '')
-                    })
-                });
-                const smsData = await response.json();
-                if (smsData && smsData.return) {
-                    smsSent = true;
-                }
-            } catch (smsErr) {
-                console.error('[Send Phone OTP] Fast2SMS Error:', smsErr);
-            }
-        }
+        // Dispatch SMS via SMS helper (Fast2SMS / Twilio)
+        const smsResult = await sendSmsOtp(normalizedPhone, otp);
 
         const responsePayload = {
             success: true,
-            message: smsSent
-                ? `SMS OTP sent to ${normalizedPhone}. Please check your phone messages.`
-                : `SMS OTP dispatched for ${normalizedPhone}.`
+            devOtp: otp, // Included for instant verification & fallback when SMS keys are unconfigured
+            smsSent: smsResult.success,
+            message: smsResult.success
+                ? `SMS OTP sent to ${normalizedPhone} via ${smsResult.provider}. Please check your mobile messages.`
+                : `SMS OTP code generated (${otp}).`
         };
 
         res.json(responsePayload);

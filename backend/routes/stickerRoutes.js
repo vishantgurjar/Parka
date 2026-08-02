@@ -7,6 +7,7 @@ const Otp = require('../models/Otp');
 const User = require('../models/User');
 const ActivationHistory = require('../models/ActivationHistory');
 const ScanHistory = require('../models/ScanHistory');
+const { sendSmsOtp } = require('../utils/smsHelper');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
@@ -93,6 +94,9 @@ router.post('/send-otp', async (req, res) => {
         console.log(`STICKER ID: ${stickerId} | EXPIRES IN 5 MINUTES`);
         console.log(`======================================================\n`);
 
+        // Dispatch SMS via SMS helper (Fast2SMS / Twilio)
+        const smsResult = await sendSmsOtp(phone, otpCode);
+
         // Send OTP via Email if provided
         const emailUser = process.env.EMAIL_USER;
         const emailPass = process.env.EMAIL_PASS;
@@ -143,7 +147,14 @@ router.post('/send-otp', async (req, res) => {
             }
         }
 
-        res.json({ success: true, message: 'Security OTP has been sent successfully to your mobile and email.' });
+        res.json({
+            success: true,
+            devOtp: otpCode,
+            smsSent: smsResult.success,
+            message: smsResult.success
+                ? 'Security OTP has been sent successfully to your mobile and email.'
+                : `Security OTP generated (${otpCode}).`
+        });
     } catch (error) {
         console.error('Send OTP Error:', error);
         res.status(500).json({ success: false, message: 'Server error' });

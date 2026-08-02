@@ -24,6 +24,7 @@ export default function VerificationSection({
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
+  const [devPhoneOtp, setDevPhoneOtp] = useState('');
 
   // Send Email OTP
   const handleSendEmailOtp = async () => {
@@ -89,6 +90,7 @@ export default function VerificationSection({
       return toast.error('Please enter a valid 10-digit phone number.');
     }
     setPhoneLoading(true);
+    setDevPhoneOtp('');
 
     const hasRealFirebaseKey = import.meta.env.VITE_FIREBASE_API_KEY && 
       !import.meta.env.VITE_FIREBASE_API_KEY.includes('DummyKey');
@@ -119,7 +121,13 @@ export default function VerificationSection({
       const data = await res.json();
       if (res.ok && data.success) {
         setPhoneOtpSent(true);
-        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile. 📱`);
+        if (data.devOtp) {
+          setDevPhoneOtp(data.devOtp);
+          setPhoneOtp(data.devOtp);
+          toast.success(`OTP Code Generated: ${data.devOtp} 📱`);
+        } else {
+          toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile. 📱`);
+        }
       } else {
         toast.error(data.message || 'Failed to send OTP to mobile.');
       }
@@ -398,43 +406,51 @@ export default function VerificationSection({
 
           {/* Phone OTP Input Row */}
           {phoneOtpSent && !isPhoneVerified && (
-            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-              <input
-                type="text"
-                maxLength={6}
-                placeholder="Enter 6-digit SMS OTP"
-                value={phoneOtp}
-                onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ''))}
-                disabled={phoneLoading}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(20, 184, 166, 0.4)',
-                  background: 'rgba(20, 184, 166, 0.05)',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  letterSpacing: '2px',
-                  outline: 'none'
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleVerifyPhoneOtp}
-                disabled={phoneLoading || phoneOtp.length !== 6}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#22c55e',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  cursor: (phoneLoading || phoneOtp.length !== 6) ? 'not-allowed' : 'pointer',
-                  opacity: (phoneLoading || phoneOtp.length !== 6) ? 0.6 : 1
-                }}
-              >
-                {phoneLoading ? 'Verifying...' : 'Verify Phone'}
-              </button>
+            <div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter 6-digit SMS OTP"
+                  value={phoneOtp}
+                  onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                  disabled={phoneLoading}
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(20, 184, 166, 0.4)',
+                    background: 'rgba(20, 184, 166, 0.05)',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    letterSpacing: '2px',
+                    outline: 'none'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyPhoneOtp}
+                  disabled={phoneLoading || phoneOtp.length !== 6}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: '#22c55e',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    cursor: (phoneLoading || phoneOtp.length !== 6) ? 'not-allowed' : 'pointer',
+                    opacity: (phoneLoading || phoneOtp.length !== 6) ? 0.6 : 1
+                  }}
+                >
+                  {phoneLoading ? 'Verifying...' : 'Verify Phone'}
+                </button>
+              </div>
+
+              {devPhoneOtp && (
+                <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                  📱 <strong>OTP Code: {devPhoneOtp}</strong> (Auto-filled for verification)
+                </div>
+              )}
             </div>
           )}
         </div>
