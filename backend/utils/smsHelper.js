@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+// Use native fetch (Node 18+) or fallback
+const fetchFn = typeof fetch !== 'undefined' ? fetch : global.fetch;
 
 /**
  * Send SMS OTP via Fast2SMS or Twilio API
@@ -14,9 +15,9 @@ async function sendSmsOtp(phone, otpCode) {
   const twilioFrom = (process.env.TWILIO_PHONE_NUMBER || '').trim();
 
   // 1. Try Fast2SMS POST endpoint first
-  if (fast2smsKey) {
+  if (fast2smsKey && typeof fetchFn === 'function') {
     try {
-      const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+      const response = await fetchFn('https://www.fast2sms.com/dev/bulkV2', {
         method: 'POST',
         headers: {
           'authorization': fast2smsKey,
@@ -41,7 +42,7 @@ async function sendSmsOtp(phone, otpCode) {
     // Fast2SMS GET route fallback
     try {
       const getUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(fast2smsKey)}&route=otp&variables_values=${otpCode}&numbers=${cleanPhone}`;
-      const response = await fetch(getUrl);
+      const response = await fetchFn(getUrl);
       const smsData = await response.json();
       if (smsData && (smsData.return || smsData.status_code === 200)) {
         console.log(`[SMS Helper] Fast2SMS GET OTP sent successfully to ${cleanPhone}`);
@@ -53,7 +54,7 @@ async function sendSmsOtp(phone, otpCode) {
   }
 
   // 2. Try Twilio if configured
-  if (twilioSid && twilioToken && twilioFrom) {
+  if (twilioSid && twilioToken && twilioFrom && typeof fetchFn === 'function') {
     try {
       const auth = Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64');
       const formattedPhone = cleanPhone.length === 10 ? `+91${cleanPhone}` : `+${cleanPhone}`;
@@ -62,7 +63,7 @@ async function sendSmsOtp(phone, otpCode) {
       params.append('From', twilioFrom);
       params.append('Body', `Your Parxéé City verification code is ${otpCode}. Valid for 5 minutes.`);
 
-      const twilioRes = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
+      const twilioRes = await fetchFn(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
         method: 'POST',
         headers: {
           'Authorization': `Basic ${auth}`,

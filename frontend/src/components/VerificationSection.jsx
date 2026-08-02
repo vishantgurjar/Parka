@@ -133,7 +133,7 @@ export default function VerificationSection({
       }
     } catch (err) {
       console.error('Backend Phone OTP error:', err);
-      toast.error('Network error sending Phone OTP.');
+      toast.error(err.message || 'Unable to connect to OTP service. Please try again.');
     } finally {
       setPhoneLoading(false);
     }
