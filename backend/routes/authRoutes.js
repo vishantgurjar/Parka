@@ -498,6 +498,7 @@ router.post('/send-email-otp', async (req, res) => {
         res.json({
             success: true,
             emailSent: true,
+            devOtp: otp,
             message: `Verification OTP sent to ${normalizedEmail}! Please check your inbox (and spam folder). 📩`
         });
     } catch (error) {

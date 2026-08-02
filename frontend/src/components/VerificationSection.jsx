@@ -40,7 +40,11 @@ export default function VerificationSection({
       const data = await res.json();
       if (res.ok && data.success) {
         setEmailOtpSent(true);
-        toast.success(data.message || 'OTP sent to your email address!');
+        if (data.devOtp) {
+          toast.success(`OTP Code: ${data.devOtp} 📩 (Sent to ${email})`, { duration: 6000 });
+        } else {
+          toast.success(data.message || 'OTP sent to your email address!');
+        }
       } else {
         toast.error(data.message || 'Failed to send OTP to email.');
       }
