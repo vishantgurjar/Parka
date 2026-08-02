@@ -72,18 +72,17 @@ router.post('/send-otp', async (req, res) => {
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expiryTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
 
-        // Upsert OTP record
-        let otpRecord = await Otp.findOne({ phone });
+        // Upsert OTP record using schema fields
+        let otpRecord = await Otp.findOne({ emailOrPhone: phone, type: 'phone' });
         if (otpRecord) {
             otpRecord.otp = otpCode;
-            otpRecord.attempts = 0;
-            otpRecord.expiresAt = expiryTime;
+            otpRecord.createdAt = new Date();
             await otpRecord.save();
         } else {
             otpRecord = new Otp({
-                phone,
+                emailOrPhone: phone,
                 otp: otpCode,
-                expiresAt: expiryTime
+                type: 'phone'
             });
             await otpRecord.save();
         }
@@ -97,53 +96,64 @@ router.post('/send-otp', async (req, res) => {
         // Dispatch SMS via SMS helper (Fast2SMS / Twilio)
         const smsResult = await sendSmsOtp(phone, otpCode);
 
-        // Send OTP via Email if provided
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
+        // Send OTP via Email if provided using direct SSL SMTP fallback
+        const emailUser = (process.env.EMAIL_USER || 'panwarvishant9@gmail.com').trim();
+        const emailPass = (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').replace(/\s+/g, '');
         const emailService = process.env.EMAIL_SERVICE || 'gmail';
 
         if (email && emailUser && emailPass) {
+            const mailOptions = {
+                from: `"Parxéé City Support" <${emailUser}>`,
+                to: email.toLowerCase().trim(),
+                subject: 'Parxéé City - Smart Sticker Activation OTP',
+                html: `
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #06b6d4;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="color: #06b6d4; margin: 0;">PARXÉÉ CITY</h1>
+                            <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Smart QR Sticker Activation</p>
+                        </div>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <h2 style="font-size: 20px; font-weight: 600; color: #06b6d4;">Security Verification OTP</h2>
+                        <p style="color: #d1d5db; line-height: 1.6;">Hello,</p>
+                        <p style="color: #d1d5db; line-height: 1.6;">Please use the following 6-digit verification code to activate your Parxéé City Smart QR Sticker (Sticker ID: <strong>${stickerId}</strong>):</p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #06b6d4; background: rgba(6, 182, 212, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2); display: inline-block;">
+                                ${otpCode}
+                            </span>
+                        </div>
+                        
+                        <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+                    </div>
+                `
+            };
+
+            // Attempt 1: Direct SSL SMTP (smtp.gmail.com:465)
             try {
                 const transporter = nodemailer.createTransport({
-                    service: emailService,
-                    auth: {
-                        user: emailUser,
-                        pass: emailPass
-                    }
+                    host: 'smtp.gmail.com',
+                    port: 465,
+                    secure: true,
+                    auth: { user: emailUser, pass: emailPass },
+                    tls: { rejectUnauthorized: false }
                 });
-
-                const mailOptions = {
-                    from: `"Parxéé City Support" <${emailUser}>`,
-                    to: email.toLowerCase().trim(),
-                    subject: 'Parxéé City - Smart Sticker Activation OTP',
-                    html: `
-                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #06b6d4;">
-                            <div style="text-align: center; margin-bottom: 20px;">
-                                <h1 style="color: #06b6d4; margin: 0;">PARXÉÉ CITY</h1>
-                                <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Smart QR Sticker Activation</p>
-                            </div>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                            <h2 style="font-size: 20px; font-weight: 600; color: #06b6d4;">Security Verification OTP</h2>
-                            <p style="color: #d1d5db; line-height: 1.6;">Hello,</p>
-                            <p style="color: #d1d5db; line-height: 1.6;">Please use the following 6-digit verification code to activate your Parxéé City Smart QR Sticker (Sticker ID: <strong>${stickerId}</strong>):</p>
-                            
-                            <div style="text-align: center; margin: 30px 0;">
-                                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #06b6d4; background: rgba(6, 182, 212, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2); display: inline-block;">
-                                    ${otpCode}
-                                </span>
-                            </div>
-                            
-                            <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                            <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-                        </div>
-                    `
-                };
-
                 await transporter.sendMail(mailOptions);
                 console.log(`[Email Sent] Activation OTP sent successfully to ${email}`);
             } catch (mailErr) {
-                console.error('Failed to send activation email:', mailErr);
+                console.error('[Email Sent] SSL SMTP Error:', mailErr.message);
+                // Attempt 2: Fallback to service gmail
+                try {
+                    const fallbackTransporter = nodemailer.createTransport({
+                        service: emailService,
+                        auth: { user: emailUser, pass: emailPass }
+                    });
+                    await fallbackTransporter.sendMail(mailOptions);
+                    console.log(`[Email Sent] Service Gmail fallback sent successfully to ${email}`);
+                } catch (fbErr) {
+                    console.error('[Email Sent] Service Gmail Fallback Error:', fbErr.message);
+                }
             }
         }
 
@@ -172,25 +182,15 @@ router.post('/verify-otp', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Phone, OTP, and Sticker ID are required.' });
         }
 
-        const otpRecord = await Otp.findOne({ phone });
+        const otpRecord = await Otp.findOne({ emailOrPhone: phone, type: 'phone' });
         if (!otpRecord) {
             return res.status(400).json({ success: false, message: 'OTP has expired or does not exist. Please request a new OTP.' });
         }
 
-        // Enforce maximum 5 attempts limit
-        if (otpRecord.attempts >= 5) {
-            return res.status(400).json({ success: false, message: 'Too many incorrect attempts. Please request a new OTP.' });
-        }
-
-        // Increment attempts
-        otpRecord.attempts += 1;
-        await otpRecord.save();
-
         if (otpRecord.otp !== otp.trim()) {
-            const remaining = 5 - otpRecord.attempts;
             return res.status(400).json({ 
                 success: false, 
-                message: `Incorrect OTP. You have ${remaining} attempts remaining.` 
+                message: `Incorrect OTP. Please check the code and try again.` 
             });
         }
 
