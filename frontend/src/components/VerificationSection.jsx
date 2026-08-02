@@ -321,6 +321,7 @@ export default function VerificationSection({
         </div>
 
         {/* 2. PHONE VERIFICATION BOX */}
+        {/* 2. PHONE NUMBER INPUT BOX (NO OTP REQUIRED) */}
         <div style={{
           background: isPhoneVerified ? 'rgba(34, 197, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)',
           border: isPhoneVerified ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
@@ -334,11 +335,11 @@ export default function VerificationSection({
             </label>
             {isPhoneVerified ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                <CheckCircle2 size={16} /> Phone Verified
+                <CheckCircle2 size={16} /> Phone Added
               </span>
             ) : (
-              <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: '600' }}>
-                *Verification Required
+              <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+                Enter 10-digit number
               </span>
             )}
           </div>
@@ -348,8 +349,15 @@ export default function VerificationSection({
               type="tel"
               placeholder="+91 9876543210"
               value={phone}
-              onChange={(e) => { setPhone(e.target.value); setIsPhoneVerified(false); setPhoneOtpSent(false); }}
-              disabled={isPhoneVerified || phoneLoading}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPhone(val);
+                if (val.replace(/\D/g, '').length >= 10) {
+                  setIsPhoneVerified(true);
+                } else {
+                  setIsPhoneVerified(false);
+                }
+              }}
               style={{
                 flex: 1,
                 minWidth: '200px',
@@ -361,75 +369,7 @@ export default function VerificationSection({
                 outline: 'none'
               }}
             />
-            {!isPhoneVerified && (
-              <button
-                type="button"
-                onClick={handleSendPhoneOtp}
-                disabled={phoneLoading || !phone}
-                style={{
-                  padding: '12px 18px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: '#fff',
-                  fontWeight: '600',
-                  fontSize: '0.85rem',
-                  cursor: (phoneLoading || !phone) ? 'not-allowed' : 'pointer',
-                  opacity: (phoneLoading || !phone) ? 0.6 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                {phoneLoading ? <RefreshCw size={14} className="spin" /> : <KeyRound size={14} />}
-                {phoneOtpSent ? 'Resend SMS' : 'Send SMS OTP'}
-              </button>
-            )}
           </div>
-
-          {/* Phone OTP Input Row */}
-          {phoneOtpSent && !isPhoneVerified && (
-            <div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="Enter 6-digit SMS OTP"
-                  value={phoneOtp}
-                  onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ''))}
-                  disabled={phoneLoading}
-                  style={{
-                    flex: 1,
-                    padding: '10px 14px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(20, 184, 166, 0.4)',
-                    background: 'rgba(20, 184, 166, 0.05)',
-                    color: '#fff',
-                    fontSize: '1rem',
-                    letterSpacing: '2px',
-                    outline: 'none'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleVerifyPhoneOtp}
-                  disabled={phoneLoading || phoneOtp.length !== 6}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    background: '#22c55e',
-                    color: '#fff',
-                    fontWeight: 'bold',
-                    cursor: (phoneLoading || phoneOtp.length !== 6) ? 'not-allowed' : 'pointer',
-                    opacity: (phoneLoading || phoneOtp.length !== 6) ? 0.6 : 1
-                  }}
-                >
-                  {phoneLoading ? 'Verifying...' : 'Verify Phone'}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
       </div>
