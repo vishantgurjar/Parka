@@ -452,7 +452,7 @@ export default function Home({ onOpenPayment }) {
                 <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: '6px' }}>₹199</span>
                 <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>1st Month FREE</span>
               </div>
-              <span className="period" style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '4px', display: 'block' }}>Autopay ₹199/mo starts after 30 days · Cancel anytime</span>
+              <span className="period" style={{ opacity: 0.6 }}>/month</span>
               <ul className="plan-features" style={{ marginTop: '1.5rem' }}>
                 <li style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓ 1 Month Free Trial</li>
                 <li>Standard QR Profile</li>
