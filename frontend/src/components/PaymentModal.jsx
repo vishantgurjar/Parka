@@ -31,8 +31,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setLoading(true);
     setError(null);
 
-    // Always use standard one-time orders instead of subscriptions (due to Razorpay Autopay account / RBI mandate limitations)
-    const isSubscription = false;
+    const isSubscription = plan.name?.toLowerCase().includes('silver') || !!plan.recurringAmount;
 
     try {
       const baseUrl = getBackendUrl();
@@ -181,7 +180,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setMockStep('processing');
     setError(null);
 
-    const isSubscription = false;
+    const isSubscription = plan.name?.toLowerCase().includes('silver') || !!plan.recurringAmount;
     const baseUrl = getBackendUrl();
 
     // Helper to simulate delays
