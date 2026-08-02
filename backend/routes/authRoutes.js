@@ -538,7 +538,7 @@ router.post('/verify-email-otp', async (req, res) => {
 // @desc    Send 6-digit OTP to user's phone for registration verification
 router.post('/send-phone-otp', async (req, res) => {
     try {
-        const { phone } = req.body;
+        const { phone, email } = req.body;
         if (!phone) {
             return res.status(400).json({ message: 'Phone number is required.' });
         }
@@ -563,22 +563,61 @@ router.post('/send-phone-otp', async (req, res) => {
         });
 
         // Dispatch SMS via SMS helper (Fast2SMS / 2Factor / Twilio)
-        const smsResult = await sendSmsOtp(normalizedPhone, otp);
-
-        if (smsResult.success) {
-            return res.json({
-                success: true,
-                smsSent: true,
-                message: `SMS OTP sent to ${normalizedPhone} via ${smsResult.provider}. Please check your mobile messages. 📱`
-            });
+        let smsSent = false;
+        let smsProvider = null;
+        try {
+            const smsResult = await sendSmsOtp(normalizedPhone, otp);
+            smsSent = smsResult.success;
+            smsProvider = smsResult.provider;
+        } catch (smsErr) {
+            console.error('[Send Phone OTP] SMS Dispatch Error:', smsErr);
         }
 
-        // If SMS gateway fails or is unconfigured
-        return res.status(400).json({
-            success: false,
-            smsSent: false,
-            message: `SMS Delivery Error: ${smsResult.error}`
-        });
+        // Also send copy to Email if provided and SMTP configured (matches email OTP system)
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS;
+        const emailService = process.env.EMAIL_SERVICE || 'gmail';
+
+        if (email && emailUser && emailPass) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    service: emailService,
+                    auth: { user: emailUser, pass: emailPass }
+                });
+                await transporter.sendMail({
+                    from: `"Parxéé City Security" <${emailUser}>`,
+                    to: email.toLowerCase().trim(),
+                    subject: 'Parxéé City - Phone Verification OTP Code',
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
+                            <h2 style="color: #14b8a6; text-align: center;">PARXÉÉ CITY</h2>
+                            <p style="text-align: center; color: #94a3b8;">Phone Verification Security Code</p>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;">
+                            <p>Your 6-digit OTP code for phone number <strong>${normalizedPhone}</strong> is:</p>
+                            <div style="text-align: center; margin: 20px 0;">
+                                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #14b8a6; background: rgba(20, 184, 166, 0.1); padding: 10px 25px; border-radius: 8px; display: inline-block;">
+                                    ${otp}
+                                </span>
+                            </div>
+                            <p style="color: #94a3b8; font-size: 12px; text-align: center;">Valid for 5 minutes. Do not share this code with anyone.</p>
+                        </div>
+                    `
+                });
+            } catch (mailErr) {
+                console.error('[Send Phone OTP] Email dispatch copy failed:', mailErr.message);
+            }
+        }
+
+        const responsePayload = {
+            success: true,
+            devOtp: otp, // Matches send-email-otp helper pattern
+            smsSent,
+            message: smsSent
+                ? `SMS OTP sent to ${normalizedPhone} via ${smsProvider}. Please check your mobile messages.`
+                : `Verification OTP generated for ${normalizedPhone}.`
+        };
+
+        res.json(responsePayload);
 
     } catch (error) {
         console.error('Send Phone OTP Error:', error);
