@@ -428,7 +428,7 @@ router.post('/send-email-otp', async (req, res) => {
         // Send Email via Nodemailer with SSL SMTP for 100% Vercel & Cloud delivery
         let emailSent = false;
         const emailUser = (process.env.EMAIL_USER || 'panwarvishant9@gmail.com').trim();
-        const emailPass = (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').trim();
+        const emailPass = (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').replace(/\s+/g, '');
         const emailService = process.env.EMAIL_SERVICE || 'gmail';
 
         if (emailUser && emailPass) {
@@ -498,8 +498,7 @@ router.post('/send-email-otp', async (req, res) => {
         res.json({
             success: true,
             emailSent: true,
-            devOtp: otp,
-            message: `Verification OTP sent to ${normalizedEmail}! Please check your inbox (and spam folder). 📩`
+            message: `Verification OTP sent to ${normalizedEmail}! Please check your email inbox (and spam folder). 📩`
         });
     } catch (error) {
         console.error('Send Email OTP Error:', error);
