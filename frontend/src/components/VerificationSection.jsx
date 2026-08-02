@@ -24,7 +24,6 @@ export default function VerificationSection({
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
-  const [devPhoneOtp, setDevPhoneOtp] = useState('');
 
   // Send Email OTP
   const handleSendEmailOtp = async () => {
@@ -121,13 +120,8 @@ export default function VerificationSection({
       const data = await res.json();
       if (res.ok && data.success) {
         setPhoneOtpSent(true);
-        if (data.devOtp) {
-          setDevPhoneOtp(data.devOtp);
-          setPhoneOtp(data.devOtp);
-          toast.success(`OTP Code Generated: ${data.devOtp} 📱`);
-        } else {
-          toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile. 📱`);
-        }
+        setPhoneOtp('');
+        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile messages. 📱`);
       } else {
         toast.error(data.message || 'Failed to send OTP to mobile.');
       }
@@ -445,12 +439,6 @@ export default function VerificationSection({
                   {phoneLoading ? 'Verifying...' : 'Verify Phone'}
                 </button>
               </div>
-
-              {devPhoneOtp && (
-                <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-                  📱 <strong>OTP Code: {devPhoneOtp}</strong> (Auto-filled for verification)
-                </div>
-              )}
             </div>
           )}
         </div>

@@ -98,12 +98,8 @@ export default function ActivateSticker() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.devOtp) {
-          setOtp(data.devOtp);
-          toast.success(`OTP Code: ${data.devOtp} 📱`);
-        } else {
-          toast.success(data.message || 'OTP sent successfully!');
-        }
+        setOtp('');
+        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile. 📱`);
         setStep('otp_verify');
       } else {
         toast.error(data.message || 'Failed to send OTP.');
