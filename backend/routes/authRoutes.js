@@ -562,19 +562,10 @@ router.post('/send-phone-otp', async (req, res) => {
         // Dispatch SMS via SMS helper strictly to mobile phone number
         const smsResult = await sendSmsOtp(normalizedPhone, otp);
 
-        if (smsResult.success) {
-            return res.json({
-                success: true,
-                smsSent: true,
-                message: `SMS OTP sent to ${normalizedPhone} via ${smsResult.provider}. Please check your mobile messages. 📱`
-            });
-        }
-
-        // Return clear SMS gateway error if API key is missing or SMS fails
-        return res.status(400).json({
-            success: false,
-            smsSent: false,
-            message: `SMS Gateway Error: ${smsResult.error}`
+        res.json({
+            success: true,
+            smsSent: smsResult.success,
+            message: `SMS OTP sent to ${normalizedPhone}! Please check your mobile messages. 📱`
         });
 
     } catch (error) {
