@@ -1,8 +1,4 @@
-import { useState } from 'react';
-import { Mail, Phone, CheckCircle2, ShieldCheck, RefreshCw, KeyRound } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { getBackendUrl } from '../utils/api';
-import { sendPhoneOtp, verifyPhoneOtp } from '../utils/firebase';
+import { Mail, Phone, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export default function VerificationSection({
   email,
@@ -14,176 +10,6 @@ export default function VerificationSection({
   isPhoneVerified,
   setIsPhoneVerified
 }) {
-  // Email OTP state
-  const [emailOtp, setEmailOtp] = useState('');
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailLoading, setEmailLoading] = useState(false);
-
-  // Phone OTP state
-  const [phoneOtp, setPhoneOtp] = useState('');
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
-  const [phoneLoading, setPhoneLoading] = useState(false);
-
-  // Send Email OTP
-  const handleSendEmailOtp = async () => {
-    if (!email || !email.includes('@')) {
-      return toast.error('Please enter a valid email address.');
-    }
-    setEmailLoading(true);
-    const baseUrl = getBackendUrl();
-    try {
-      const res = await fetch(`${baseUrl}/api/auth/send-email-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setEmailOtpSent(true);
-        toast.success(data.message || `Verification OTP sent to ${email}! Please check your inbox. 📩`);
-      } else {
-        toast.error(data.message || 'Failed to send OTP to email.');
-      }
-    } catch (err) {
-      console.error('Email OTP send error:', err);
-      toast.error('Network error sending Email OTP.');
-    } finally {
-      setEmailLoading(false);
-    }
-  };
-
-  // Verify Email OTP
-  const handleVerifyEmailOtp = async () => {
-    if (!emailOtp || emailOtp.length !== 6) {
-      return toast.error('Enter 6-digit email OTP.');
-    }
-    setEmailLoading(true);
-    const baseUrl = getBackendUrl();
-    try {
-      const res = await fetch(`${baseUrl}/api/auth/verify-email-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp: emailOtp })
-      });
-      const data = await res.json();
-      if (res.ok && data.isEmailVerified) {
-        setIsEmailVerified(true);
-        toast.success('Email verified successfully! ✅');
-      } else {
-        toast.error(data.message || 'Invalid email OTP.');
-      }
-    } catch (err) {
-      console.error('Email OTP verify error:', err);
-      toast.error('Network error verifying Email OTP.');
-    } finally {
-      setEmailLoading(false);
-    }
-  };
-
-  // Send Phone OTP via Firebase or Backend Fallback
-  const handleSendPhoneOtp = async () => {
-    if (!phone || phone.length < 10) {
-      return toast.error('Please enter a valid 10-digit phone number.');
-    }
-    setPhoneLoading(true);
-
-    const hasRealFirebaseKey = import.meta.env.VITE_FIREBASE_API_KEY && 
-      !import.meta.env.VITE_FIREBASE_API_KEY.includes('DummyKey');
-
-    // Try Firebase first if valid key exists
-    if (hasRealFirebaseKey) {
-      try {
-        const result = await sendPhoneOtp(phone, 'firebase-recaptcha-container');
-        if (result.success) {
-          setPhoneOtpSent(true);
-          toast.success(`SMS OTP sent to ${result.formattedPhone}! Please check your mobile messages. 📱`);
-          setPhoneLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.warn('Firebase SMS attempt failed, falling back to Backend OTP:', error);
-      }
-    }
-
-    // Backend Phone OTP Fallback
-    try {
-      const baseUrl = getBackendUrl();
-      const res = await fetch(`${baseUrl}/api/auth/send-phone-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setPhoneOtpSent(true);
-        setPhoneOtp('');
-        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile messages. 📱`);
-      } else {
-        toast.error(data.message || 'Failed to send OTP to mobile.');
-      }
-    } catch (err) {
-      console.error('Backend Phone OTP error:', err);
-      toast.error(err.message || 'Unable to connect to OTP service. Please try again.');
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
-
-
-  // Verify Phone OTP
-  const handleVerifyPhoneOtp = async () => {
-    if (!phoneOtp || phoneOtp.length !== 6) {
-      return toast.error('Enter 6-digit phone OTP received on your mobile.');
-    }
-    setPhoneLoading(true);
-
-    // If using Firebase confirmation result
-    if (window.confirmationResult) {
-      try {
-        const { token } = await verifyPhoneOtp(phoneOtp);
-        const baseUrl = getBackendUrl();
-        const res = await fetch(`${baseUrl}/api/auth/verify-phone-token`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone, verificationToken: token })
-        });
-        const data = await res.json();
-        if (res.ok && data.isPhoneVerified) {
-          setIsPhoneVerified(true);
-          toast.success('Phone number verified successfully! ✅');
-          setPhoneLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn('Firebase token verify failed, trying backend OTP verify:', err);
-      }
-    }
-
-    // Backend Phone OTP Verify
-    try {
-      const baseUrl = getBackendUrl();
-      const res = await fetch(`${baseUrl}/api/auth/verify-phone-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp: phoneOtp })
-      });
-      const data = await res.json();
-      if (res.ok && data.isPhoneVerified) {
-        setIsPhoneVerified(true);
-        toast.success('Phone number verified successfully! ✅');
-      } else {
-        toast.error(data.message || 'Invalid Phone OTP code.');
-      }
-    } catch (err) {
-      console.error('Phone OTP verify error:', err);
-      toast.error('Network error verifying Phone OTP.');
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
-
-
-
   return (
     <div style={{
       background: 'rgba(15, 23, 42, 0.6)',
@@ -193,24 +19,21 @@ export default function VerificationSection({
       marginBottom: '1.5rem',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
     }}>
-      {/* Hidden Recaptcha Container */}
-      <div id="firebase-recaptcha-container"></div>
-
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
         <ShieldCheck color="var(--primary)" size={24} />
         <div>
           <h4 style={{ margin: 0, color: '#fff', fontSize: '1.1rem', fontWeight: '700' }}>
-            Real-Time Identity Verification
+            Contact & Identity Details
           </h4>
           <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.85rem' }}>
-            Verify your Email & Phone to prevent fake registrations
+            Enter your email & phone number to create your vehicle account
           </p>
         </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         
-        {/* 1. EMAIL VERIFICATION BOX */}
+        {/* 1. EMAIL ADDRESS INPUT BOX (NO OTP REQUIRED) */}
         <div style={{
           background: isEmailVerified ? 'rgba(34, 197, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)',
           border: isEmailVerified ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
@@ -224,11 +47,11 @@ export default function VerificationSection({
             </label>
             {isEmailVerified ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                <CheckCircle2 size={16} /> Email Verified
+                <CheckCircle2 size={16} /> Email Added
               </span>
             ) : (
-              <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: '600' }}>
-                *Verification Required
+              <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+                Enter valid email address
               </span>
             )}
           </div>
@@ -238,8 +61,15 @@ export default function VerificationSection({
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setIsEmailVerified(false); setEmailOtpSent(false); }}
-              disabled={isEmailVerified || emailLoading}
+              onChange={(e) => {
+                const val = e.target.value;
+                setEmail(val);
+                if (val && val.includes('@') && val.includes('.')) {
+                  setIsEmailVerified(true);
+                } else {
+                  setIsEmailVerified(false);
+                }
+              }}
               style={{
                 flex: 1,
                 minWidth: '200px',
@@ -251,76 +81,9 @@ export default function VerificationSection({
                 outline: 'none'
               }}
             />
-            {!isEmailVerified && (
-              <button
-                type="button"
-                onClick={handleSendEmailOtp}
-                disabled={emailLoading || !email}
-                style={{
-                  padding: '12px 18px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: '#fff',
-                  fontWeight: '600',
-                  fontSize: '0.85rem',
-                  cursor: (emailLoading || !email) ? 'not-allowed' : 'pointer',
-                  opacity: (emailLoading || !email) ? 0.6 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                {emailLoading ? <RefreshCw size={14} className="spin" /> : <KeyRound size={14} />}
-                {emailOtpSent ? 'Resend OTP' : 'Send OTP'}
-              </button>
-            )}
           </div>
-
-          {/* Email OTP Input Row */}
-          {emailOtpSent && !isEmailVerified && (
-            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-              <input
-                type="text"
-                maxLength={6}
-                placeholder="Enter 6-digit Email OTP"
-                value={emailOtp}
-                onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ''))}
-                disabled={emailLoading}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(20, 184, 166, 0.4)',
-                  background: 'rgba(20, 184, 166, 0.05)',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  letterSpacing: '2px',
-                  outline: 'none'
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleVerifyEmailOtp}
-                disabled={emailLoading || emailOtp.length !== 6}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#22c55e',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  cursor: (emailLoading || emailOtp.length !== 6) ? 'not-allowed' : 'pointer',
-                  opacity: (emailLoading || emailOtp.length !== 6) ? 0.6 : 1
-                }}
-              >
-                {emailLoading ? 'Verifying...' : 'Verify Email'}
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* 2. PHONE VERIFICATION BOX */}
         {/* 2. PHONE NUMBER INPUT BOX (NO OTP REQUIRED) */}
         <div style={{
           background: isPhoneVerified ? 'rgba(34, 197, 94, 0.08)' : 'rgba(255, 255, 255, 0.02)',
