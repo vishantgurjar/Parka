@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const { sendEmail } = require('../utils/emailHelper');
 
 // @route   POST /api/user/upgrade
 // @desc    Upgrade user to PRO (Mock payment flow validation)
@@ -87,25 +88,7 @@ router.post('/report-issue', async (req, res) => {
     console.log(`Time: ${new Date().toLocaleString()}\n\n`);
 
     try {
-      const nodemailer = require('nodemailer');
-      const emailUser = process.env.EMAIL_USER;
-      const emailPass = process.env.EMAIL_PASS;
-      const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-      if (emailUser && emailPass && emailPass !== 'your_gmail_app_password_here') {
-        const transporter = nodemailer.createTransport({
-          service: emailService,
-          auth: {
-            user: emailUser,
-            pass: emailPass
-          }
-        });
-
-        const mailOptions = {
-          from: `"Parxéé City Neighborhood Help" <${emailUser}>`,
-          to: vehicleOwner.email,
-          subject: `📢 Vehicle Issue Reported: [${issueType.toUpperCase().replace('_', ' ')}] - Parxéé City`,
-          html: `
+      const mailHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
               <div style="text-align: center; margin-bottom: 20px;">
                 <h1 style="color: #14b8a6; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">PARXÉÉ CITY</h1>
@@ -132,13 +115,15 @@ router.post('/report-issue', async (req, res) => {
               <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
               <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
             </div>
-          `
-        };
-        await transporter.sendMail(mailOptions);
-        console.log(`[Report Issue Email Alert] Sent successfully to ${vehicleOwner.email}`);
-      }
+          `;
+      await sendEmail({
+        to: vehicleOwner.email,
+        subject: `📢 Vehicle Issue Reported: [${issueType.toUpperCase().replace('_', ' ')}] - Parxéé City`,
+        html: mailHtml,
+        fromName: 'Parxéé City Neighborhood Help'
+      });
     } catch (mailErr) {
-      console.error("Failed to send report issue email alert:", mailErr);
+      console.error('[Report Issue Email Alert] Error sending email:', mailErr.message);
     }
 
     // 2. Reward Reporter (if logged in)
@@ -179,26 +164,7 @@ router.post('/contact', async (req, res) => {
     console.log(`Category: ${category}`);
     console.log(`Message: ${message}\n\n`);
 
-    const nodemailer = require('nodemailer');
-    const emailUser = process.env.EMAIL_USER;
-    const emailPass = process.env.EMAIL_PASS;
-    const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-    if (emailUser && emailPass && emailPass !== 'your_gmail_app_password_here') {
-      const transporter = nodemailer.createTransport({
-        service: emailService,
-        auth: {
-          user: emailUser,
-          pass: emailPass
-        }
-      });
-
-      // 1. Send notification to the Admin (Founder/Support inbox)
-      const adminMailOptions = {
-        from: `"Parxéé City Support" <${emailUser}>`,
-        to: emailUser,
-        subject: `New Support Inquiry - [${category}] - Parxéé City`,
-        html: `
+    const adminMailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
             <h2 style="color: #14b8a6; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 0;">New Contact Submission</h2>
             <p><strong>Name:</strong> ${name}</p>
@@ -208,15 +174,9 @@ router.post('/contact', async (req, res) => {
             <p><strong>Message:</strong></p>
             <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #14b8a6; white-space: pre-wrap; line-height: 1.6;">${message}</div>
           </div>
-        `
-      };
+        `;
 
-      // 2. Send automated confirmation copy to the User
-      const userMailOptions = {
-        from: `"Parxéé City Support" <${emailUser}>`,
-        to: email,
-        subject: `We've received your request - Parxéé City`,
-        html: `
+    const userMailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
             <div style="text-align: center; margin-bottom: 20px;">
               <h1 style="color: #14b8a6; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">PARXÉÉ CITY</h1>
@@ -236,15 +196,25 @@ router.post('/contact', async (req, res) => {
             <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
             <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
           </div>
-        `
-      };
+        `;
 
-      await transporter.sendMail(adminMailOptions);
-      await transporter.sendMail(userMailOptions);
-      console.log(`[Support Contact Mail] Sent confirmation and admin notification successfully.`);
-    } else {
-      console.log(`[Support Contact Mail] SMTP environment variables not configured/placeholder. Simulated send successfully.`);
-    }
+    // 1. Send notification to the Admin (Founder/Support inbox)
+    const adminEmailDest = process.env.EMAIL_USER || 'panwarvishant9@gmail.com';
+    await sendEmail({
+      to: adminEmailDest,
+      subject: `New Support Inquiry - [${category}] - Parxéé City`,
+      html: adminMailHtml,
+      fromName: 'Parxéé City Support'
+    });
+
+    // 2. Send automated confirmation copy to the User
+    await sendEmail({
+      to: email,
+      subject: `We've received your request - Parxéé City`,
+      html: userMailHtml,
+      fromName: 'Parxéé City Support'
+    });
+    console.log(`[Support Contact Mail] Sent confirmation and admin notification successfully.`);
 
     res.json({ success: true, message: 'Your message has been dispatched successfully!' });
   } catch (error) {

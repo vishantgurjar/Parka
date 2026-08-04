@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const { sendEmail } = require('../utils/emailHelper');
 const Mechanic = require('../models/Mechanic');
 const SOSRequest = require('../models/SOSRequest');
 const EVCharger = require('../models/EVCharger');
@@ -93,17 +94,6 @@ router.post('/broadcast-email', protect, isAdmin, async (req, res) => {
             return res.status(400).json({ message: 'Subject and Message are required.' });
         }
 
-        const nodemailer = require('nodemailer');
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
-        const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-        if (!emailUser || !emailPass || emailPass === 'your_gmail_app_password_here') {
-            return res.status(400).json({ 
-                message: 'EMAIL_USER or EMAIL_PASS is not configured in backend .env file.' 
-            });
-        }
-
         // Fetch all registered users who have email
         const users = await User.find({ email: { $exists: true, $ne: '' } }, 'email name');
         const emailList = users.map(u => u.email).filter(Boolean);
@@ -112,23 +102,11 @@ router.post('/broadcast-email', protect, isAdmin, async (req, res) => {
             return res.status(400).json({ message: 'No registered user emails found.' });
         }
 
-        const transporter = nodemailer.createTransport({
-            service: emailService,
-            auth: {
-                user: emailUser,
-                pass: emailPass
-            }
-        });
-
         // Send email to each user (individual 'to' header prevents Gmail BCC drops & Spam flags)
         let sentCount = 0;
         for (const recipient of emailList) {
             try {
-                await transporter.sendMail({
-                    from: `"Parxéé Official" <${emailUser}>`,
-                    to: recipient,
-                    subject: subject,
-                    html: `
+                const mailHtml = `
                         <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px;">
                             <h2 style="color: #38bdf8; margin-top: 0;">📢 Notice from Parxéé Admin</h2>
                             <div style="background-color: #1e293b; border-left: 4px solid #38bdf8; padding: 20px; border-radius: 8px; margin: 20px 0; line-height: 1.6;">
@@ -137,9 +115,16 @@ router.post('/broadcast-email', protect, isAdmin, async (req, res) => {
                             <hr style="border: 0; border-top: 1px solid #334155; margin: 25px 0;" />
                             <p style="font-size: 12px; color: #94a3b8; text-align: center;">You are receiving this official update because you are a registered member of Parxéé.</p>
                         </div>
-                    `
+                    `;
+                const mailResult = await sendEmail({
+                    to: recipient,
+                    subject: subject,
+                    html: mailHtml,
+                    fromName: 'Parxéé Official'
                 });
-                sentCount++;
+                if (mailResult.success) {
+                    sentCount++;
+                }
             } catch (singleErr) {
                 console.error(`Failed to send email broadcast to ${recipient}:`, singleErr);
             }

@@ -10,6 +10,7 @@ const Otp = require('../models/Otp');
 const { protect } = require('../middleware/authMiddleware');
 const { assignSequentialStickerToUser } = require('../utils/stickerHelper');
 const { sendSmsOtp } = require('../utils/smsHelper');
+const { sendEmail } = require('../utils/emailHelper');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -312,27 +313,7 @@ router.post('/forgot-password', async (req, res) => {
         await user.save();
 
         let emailSent = false;
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
-        const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-        console.log(`[Forgot Password] Generated OTP for user ${email}: ${otp}`);
-
-        if (emailUser && emailPass) {
-            try {
-                const transporter = nodemailer.createTransport({
-                    service: emailService,
-                    auth: {
-                        user: emailUser,
-                        pass: emailPass
-                    }
-                });
-
-                const mailOptions = {
-                    from: `"Parxéé City Support" <${emailUser}>`,
-                    to: user.email,
-                    subject: 'Parxéé City - Password Recovery OTP',
-                    html: `
+        const mailHtml = `
                         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
                             <div style="text-align: center; margin-bottom: 20px;">
                                 <h1 style="color: #14b8a6; margin: 0;">PARXÉÉ CITY</h1>
@@ -353,15 +334,15 @@ router.post('/forgot-password', async (req, res) => {
                             <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
                             <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
                         </div>
-                    `
-                };
+                    `;
 
-                await transporter.sendMail(mailOptions);
-                emailSent = true;
-            } catch (mailErr) {
-                console.error('[Forgot Password] Mail sending failed:', mailErr);
-            }
-        }
+        const mailResult = await sendEmail({
+            to: user.email,
+            subject: 'Parxéé City - Password Recovery OTP',
+            html: mailHtml,
+            fromName: 'Parxéé City Support'
+        });
+        emailSent = mailResult.success;
 
         // Response payload
         const responsePayload = { 
@@ -445,18 +426,8 @@ router.post('/send-email-otp', async (req, res) => {
             type: 'email'
         });
 
-        // Send Email via Nodemailer with SSL SMTP for 100% Vercel & Cloud delivery
-        let emailSent = false;
-        const emailUser = (process.env.EMAIL_USER || 'panwarvishant9@gmail.com').trim();
-        const emailPass = (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').replace(/\s+/g, '');
-        const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-        if (emailUser && emailPass) {
-            const mailOptions = {
-                from: `"Parxéé City Verification" <${emailUser}>`,
-                to: normalizedEmail,
-                subject: 'Parxéé City - Email Verification OTP',
-                html: `
+        // Send Email via centralized email helper
+        const mailHtml = `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; background-color: #0f172a; color: #ffffff; border-radius: 16px; border: 1px solid #14b8a6;">
                         <div style="text-align: center; margin-bottom: 20px;">
                             <h1 style="color: #14b8a6; margin: 0; font-size: 26px;">PARXÉÉ CITY</h1>
@@ -476,37 +447,15 @@ router.post('/send-email-otp', async (req, res) => {
                         <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
                         <p style="color: #64748b; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
                     </div>
-                `
-            };
+                `;
 
-            // Attempt 1: Direct SSL SMTP (smtp.gmail.com:465)
-            try {
-                const transporter = nodemailer.createTransport({
-                    host: 'smtp.gmail.com',
-                    port: 465,
-                    secure: true,
-                    auth: { user: emailUser, pass: emailPass },
-                    tls: { rejectUnauthorized: false }
-                });
-                await transporter.sendMail(mailOptions);
-                emailSent = true;
-                console.log(`[Send Email OTP] SSL SMTP Email sent successfully to ${normalizedEmail}`);
-            } catch (mailErr) {
-                console.error('[Send Email OTP] SSL SMTP Error:', mailErr.message);
-                // Attempt 2: Fallback to service gmail
-                try {
-                    const fallbackTransporter = nodemailer.createTransport({
-                        service: emailService,
-                        auth: { user: emailUser, pass: emailPass }
-                    });
-                    await fallbackTransporter.sendMail(mailOptions);
-                    emailSent = true;
-                    console.log(`[Send Email OTP] Service Gmail fallback sent successfully to ${normalizedEmail}`);
-                } catch (fbErr) {
-                    console.error('[Send Email OTP] Service Gmail Fallback Error:', fbErr.message);
-                }
-            }
-        }
+        const mailResult = await sendEmail({
+            to: normalizedEmail,
+            subject: 'Parxéé City - Email Verification OTP',
+            html: mailHtml,
+            fromName: 'Parxéé City Verification'
+        });
+        emailSent = mailResult.success;
 
         if (!emailSent) {
             return res.status(500).json({
@@ -600,23 +549,10 @@ router.post('/send-phone-otp', async (req, res) => {
             });
         }
 
-        // Email backup for Phone OTP if SMS gateway is unconfigured or failed
+        // Email backup for Phone OTP using centralized helper
         let emailSent = false;
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
-        const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-        if (email && emailUser && emailPass) {
-            try {
-                const transporter = nodemailer.createTransport({
-                    service: emailService,
-                    auth: { user: emailUser, pass: emailPass }
-                });
-                await transporter.sendMail({
-                    from: `"Parxéé City Security" <${emailUser}>`,
-                    to: email.toLowerCase().trim(),
-                    subject: 'Parxéé City - Phone Verification OTP Code',
-                    html: `
+        if (email) {
+            const mailHtml = `
                         <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
                             <h2 style="color: #14b8a6; text-align: center;">PARXÉÉ CITY</h2>
                             <p style="text-align: center; color: #94a3b8;">Phone Verification Security Code</p>
@@ -629,12 +565,14 @@ router.post('/send-phone-otp', async (req, res) => {
                             </div>
                             <p style="color: #94a3b8; font-size: 12px; text-align: center;">Valid for 5 minutes. Do not share this code with anyone.</p>
                         </div>
-                    `
-                });
-                emailSent = true;
-            } catch (mailErr) {
-                console.error('[Send Phone OTP] Email backup failed:', mailErr.message);
-            }
+                    `;
+            const mailResult = await sendEmail({
+                to: email.toLowerCase().trim(),
+                subject: 'Parxéé City - Phone Verification OTP Code',
+                html: mailHtml,
+                fromName: 'Parxéé City Security'
+            });
+            emailSent = mailResult.success;
         }
 
         res.json({

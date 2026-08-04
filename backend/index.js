@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { sendEmail } = require('./utils/emailHelper');
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require('cors');
@@ -762,26 +763,9 @@ app.post('/api/alerts/scan', async (req, res) => {
                 else locationMsg = " (Location access denied)";
             }
 
-            // Send actual email via nodemailer
-            const nodemailer = require('nodemailer');
-            const emailUser = process.env.EMAIL_USER;
-            const emailPass = process.env.EMAIL_PASS;
-            const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-            if (emailUser && emailPass && emailPass !== 'your_gmail_app_password_here') {
-                const transporter = nodemailer.createTransport({
-                    service: emailService,
-                    auth: {
-                        user: emailUser,
-                        pass: emailPass
-                    }
-                });
-
-                const mailOptions = {
-                    from: `"Parxéé City Alerts" <${emailUser}>`,
-                    to: owner.email,
-                    subject: `⚠️ QR Code Scanned - Parxéé City`,
-                    html: `
+            // Send actual email via centralized email helper
+            if (owner.email) {
+                const mailHtml = `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #f43f5e;">
                             <h2 style="color: #f43f5e; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 0;">⚠️ Security Notice: QR Scan</h2>
                             <p>Hello ${owner.name || 'Driver'},</p>
@@ -794,9 +778,13 @@ app.post('/api/alerts/scan', async (req, res) => {
                             </div>
                             <p style="color: #9ca3af; font-size: 13px;">Stay safe and secure with Parxéé City Protection.</p>
                         </div>
-                    `
-                };
-                await transporter.sendMail(mailOptions);
+                    `;
+                await sendEmail({
+                    to: owner.email,
+                    subject: `⚠️ QR Code Scanned - Parxéé City`,
+                    html: mailHtml,
+                    fromName: 'Parxéé City Alerts'
+                });
                 console.log(`[QR Scan Email Alert] Sent successfully to ${owner.email}`);
             }
         }

@@ -8,6 +8,7 @@ const User = require('../models/User');
 const ActivationHistory = require('../models/ActivationHistory');
 const ScanHistory = require('../models/ScanHistory');
 const { sendSmsOtp } = require('../utils/smsHelper');
+const { sendEmail } = require('../utils/emailHelper');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
@@ -96,17 +97,9 @@ router.post('/send-otp', async (req, res) => {
         // Dispatch SMS via SMS helper (Fast2SMS / Twilio)
         const smsResult = await sendSmsOtp(phone, otpCode);
 
-        // Send OTP via Email if provided using direct SSL SMTP fallback
-        const emailUser = (process.env.EMAIL_USER || 'panwarvishant9@gmail.com').trim();
-        const emailPass = (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').replace(/\s+/g, '');
-        const emailService = process.env.EMAIL_SERVICE || 'gmail';
-
-        if (email && emailUser && emailPass) {
-            const mailOptions = {
-                from: `"Parxéé City Support" <${emailUser}>`,
-                to: email.toLowerCase().trim(),
-                subject: 'Parxéé City - Smart Sticker Activation OTP',
-                html: `
+        // Send OTP via Email if provided using centralized email helper
+        if (email) {
+            const mailHtml = `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #06b6d4;">
                         <div style="text-align: center; margin-bottom: 20px;">
                             <h1 style="color: #06b6d4; margin: 0;">PARXÉÉ CITY</h1>
@@ -127,34 +120,13 @@ router.post('/send-otp', async (req, res) => {
                         <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
                         <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
                     </div>
-                `
-            };
-
-            // Attempt 1: Direct SSL SMTP (smtp.gmail.com:465)
-            try {
-                const transporter = nodemailer.createTransport({
-                    host: 'smtp.gmail.com',
-                    port: 465,
-                    secure: true,
-                    auth: { user: emailUser, pass: emailPass },
-                    tls: { rejectUnauthorized: false }
-                });
-                await transporter.sendMail(mailOptions);
-                console.log(`[Email Sent] Activation OTP sent successfully to ${email}`);
-            } catch (mailErr) {
-                console.error('[Email Sent] SSL SMTP Error:', mailErr.message);
-                // Attempt 2: Fallback to service gmail
-                try {
-                    const fallbackTransporter = nodemailer.createTransport({
-                        service: emailService,
-                        auth: { user: emailUser, pass: emailPass }
-                    });
-                    await fallbackTransporter.sendMail(mailOptions);
-                    console.log(`[Email Sent] Service Gmail fallback sent successfully to ${email}`);
-                } catch (fbErr) {
-                    console.error('[Email Sent] Service Gmail Fallback Error:', fbErr.message);
-                }
-            }
+                `;
+            await sendEmail({
+                to: email.toLowerCase().trim(),
+                subject: 'Parxéé City - Smart Sticker Activation OTP',
+                html: mailHtml,
+                fromName: 'Parxéé City Support'
+            });
         }
 
         res.json({
