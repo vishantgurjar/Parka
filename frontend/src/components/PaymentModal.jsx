@@ -47,7 +47,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             planName: plan.name,
-            amount: plan.recurringAmount || 199,
+            amount: plan.recurringAmount || plan.amount || 199,
             entityId
           })
         });
