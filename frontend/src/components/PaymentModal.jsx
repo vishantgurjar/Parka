@@ -294,11 +294,11 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                   <ShieldCheck size={32} />
                 </div>
                 <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>
-                  {isFreeTrialPlan ? 'Authorize Free Trial Auto-Pay' : 'Sandbox Test Gateway'}
+                  {isSubscription ? 'Authorize Auto-Pay Mandate' : 'Sandbox Test Gateway'}
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1.5rem' }}>
-                  {isFreeTrialPlan 
-                    ? 'Select payment method to authorize ₹0 Auto-Pay mandate for 1 Month FREE Silver plan.' 
+                  {isSubscription 
+                    ? `Select payment method to authorize Auto-Pay mandate for ${plan.name} plan.` 
                     : 'Select a payment method to simulate the transaction in test mode.'}
                 </p>
 
@@ -308,23 +308,23 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                   </div>
                 )}
 
-                {/* UPI AutoPay Mandate Box for Free Trial */}
-                {isFreeTrialPlan && (
+                {/* AutoPay Mandate Details Box */}
+                {isSubscription && (
                   <div style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '14px', padding: '14px', marginBottom: '1.2rem', textAlign: 'left' }}>
                     <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <ShieldCheck size={16} /> UPI AutoPay Mandate Details (YouTube-Style)
+                      <ShieldCheck size={16} /> AutoPay Mandate Details
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span>Due Today (1 Month Free):</span>
-                      <strong style={{ color: '#22c55e' }}>₹0.00 FREE</strong>
+                      <span>Due Today:</span>
+                      <strong style={{ color: isFreeTrialPlan ? '#22c55e' : '#fff' }}>₹{plan.amount}</strong>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <span>First Auto-Debit Billing:</span>
-                      <strong>After 30 Days</strong>
+                      <strong>{isFreeTrialPlan ? 'After 30 Days' : `After ${plan.name?.toLowerCase().includes('gold') ? '6 Months' : plan.name?.toLowerCase().includes('diamond') ? '1 Year' : '30 Days'}`}</strong>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', justifyContent: 'space-between' }}>
                       <span>Recurring Charge:</span>
-                      <strong style={{ color: '#38bdf8' }}>₹199 / Month (Cancel anytime)</strong>
+                      <strong style={{ color: '#38bdf8' }}>₹{plan.recurringAmount || plan.amount} / {plan.name?.toLowerCase().includes('gold') ? '6 Months' : plan.name?.toLowerCase().includes('diamond') ? 'Year' : 'Month'} (Cancel anytime)</strong>
                     </div>
                   </div>
                 )}
@@ -343,10 +343,12 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                     <span style={{ fontSize: '1.5rem' }}>📱</span>
                     <div>
                       <span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.9rem', color: mockMethod === 'upi' ? '#fff' : 'var(--muted)' }}>
-                        {isFreeTrialPlan ? 'UPI AutoPay Mandate (Google Pay / PhonePe / Paytm)' : 'Simulate UPI Transaction'}
+                        {isSubscription ? 'UPI AutoPay Mandate (Google Pay / PhonePe / Paytm)' : 'Simulate UPI Transaction'}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                        {isFreeTrialPlan ? '₹0 charged today. Auto-debit ₹199/mo after 30 days.' : 'Mock UPI payment'}
+                        {isSubscription 
+                          ? `₹${plan.amount} charged today. Auto-debit ₹${plan.recurringAmount || plan.amount}/${plan.name?.toLowerCase().includes('gold') ? '6mo' : plan.name?.toLowerCase().includes('diamond') ? 'yr' : 'mo'} after.` 
+                          : 'Mock UPI payment'}
                       </span>
                     </div>
                   </button>
@@ -363,10 +365,12 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                     <span style={{ fontSize: '1.5rem' }}>💳</span>
                     <div>
                       <span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.9rem', color: mockMethod === 'card' ? '#fff' : 'var(--muted)' }}>
-                        {isFreeTrialPlan ? 'Card Recurring Mandate (Visa / Mastercard)' : 'Simulate Credit/Debit Card'}
+                        {isSubscription ? 'Card Recurring Mandate (Visa / Mastercard)' : 'Simulate Credit/Debit Card'}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                        {isFreeTrialPlan ? '₹0 charged today. Auto-debit ₹199/mo after 30 days.' : 'Mock Card workflow'}
+                        {isSubscription 
+                          ? `₹${plan.amount} charged today. Auto-debit ₹${plan.recurringAmount || plan.amount}/${plan.name?.toLowerCase().includes('gold') ? '6mo' : plan.name?.toLowerCase().includes('diamond') ? 'yr' : 'mo'} after.` 
+                          : 'Mock Card workflow'}
                       </span>
                     </div>
                   </button>
@@ -432,7 +436,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                   className="btn-gradient full-width" 
                   style={{ padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)' }}
                 >
-                  {isFreeTrialPlan ? 'Authorize ₹0 Auto-Pay & Claim 1 Month Free' : 'Pay via Sandbox Simulator'}
+                  {isSubscription ? `Authorize Auto-Pay & Pay ₹${plan.amount}` : 'Pay via Sandbox Simulator'}
                 </button>
               </div>
             )}
@@ -461,7 +465,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>
                   {isFreeTrialPlan 
                     ? 'Silver plan features unlocked! Auto-Pay mandate set for ₹199/mo starting in 30 days.' 
-                    : `${plan.name || 'Plan'} features successfully unlocked!`}
+                    : `${plan.name || 'Plan'} features successfully unlocked! Auto-Pay mandate set for ₹${plan.amount}/${plan.name?.toLowerCase().includes('gold') ? '6 months' : plan.name?.toLowerCase().includes('diamond') ? 'year' : 'month'}.`}
                 </p>
               </div>
             )}
@@ -529,6 +533,14 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 </div>
               ) : (
                 <p className="modal-desc" style={{ fontSize: '0.95rem' }}>Complete payment for <strong>{plan.name}</strong> securely via Razorpay.</p>
+              )}
+
+              {isSubscription && !isFreeTrialPlan && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', width: '100%' }}>
+                  <p style={{ fontSize: '0.82rem', color: '#10b981', fontWeight: 'bold', textAlign: 'center', background: 'rgba(16, 185, 129, 0.06)', padding: '10px 15px', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.2)', display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'center', width: '100%' }}>
+                    🔄 Auto-Pay Mandate Active: Automatic renewal every {plan.name?.toLowerCase().includes('gold') ? '6 months' : plan.name?.toLowerCase().includes('diamond') ? 'year' : 'month'}.
+                  </p>
+                </div>
               )}
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
