@@ -31,7 +31,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setLoading(true);
     setError(null);
 
-    const isSubscription = plan.name?.toLowerCase().includes('silver') || !!plan.recurringAmount;
+    const isSubscription = plan.name?.toLowerCase().includes('silver') || plan.name?.toLowerCase().includes('gold') || plan.name?.toLowerCase().includes('diamond') || !!plan.recurringAmount;
 
     try {
       const baseUrl = getBackendUrl();
@@ -180,7 +180,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setMockStep('processing');
     setError(null);
 
-    const isSubscription = plan.name?.toLowerCase().includes('silver') || !!plan.recurringAmount;
+    const isSubscription = plan.name?.toLowerCase().includes('silver') || plan.name?.toLowerCase().includes('gold') || plan.name?.toLowerCase().includes('diamond') || !!plan.recurringAmount;
     const baseUrl = getBackendUrl();
 
     // Helper to simulate delays

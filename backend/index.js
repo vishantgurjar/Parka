@@ -539,7 +539,7 @@ app.post('/api/payment/create-subscription', async (req, res) => {
       let interval = 1;
       const normalizedPlan = planName.toLowerCase();
       
-      if (normalizedPlan.includes('6 months') || normalizedPlan.includes('half')) {
+      if (normalizedPlan.includes('gold') || normalizedPlan.includes('6 months') || normalizedPlan.includes('half')) {
         period = 'monthly';
         interval = 6;
       } else if (normalizedPlan.includes('year') || normalizedPlan.includes('annual') || normalizedPlan.includes('diamond')) {
@@ -615,8 +615,26 @@ app.post('/api/payment/verify-subscription-signature', async (req, res) => {
     if (isMock) {
       const user = await User.findById(entityId);
       if (user) {
-        user.subscriptionTier = 'silver';
+        let tier = 'silver';
+        if (planName) {
+          const nameLower = planName.toLowerCase();
+          if (nameLower.includes('silver')) tier = 'silver';
+          else if (nameLower.includes('gold')) tier = 'gold';
+          else if (nameLower.includes('diamond')) tier = 'diamond';
+        }
+        user.subscriptionTier = tier;
         user.isPremium = true;
+
+        let durationDays = 30;
+        if (tier === 'gold') durationDays = 180;
+        else if (tier === 'diamond') durationDays = 365;
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + durationDays);
+
+        user.razorpaySubscriptionId = razorpay_subscription_id;
+        user.subscriptionStatus = 'active';
+        user.subscriptionExpiresAt = expiresAt;
         await user.save();
       }
       return res.json({ success: true, message: 'Mock subscription verified' });
