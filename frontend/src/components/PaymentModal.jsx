@@ -9,6 +9,9 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const isSubscription = plan.name?.toLowerCase().includes('silver') || plan.name?.toLowerCase().includes('gold') || plan.name?.toLowerCase().includes('diamond') || !!plan.recurringAmount;
+  const isFreeTrialPlan = plan.isTrial || plan.amount === 0 || plan.name?.toLowerCase().includes('free') || plan.name?.toLowerCase().includes('trial');
+
   // Sandbox simulation states
   const [isMockPayment, setIsMockPayment] = useState(false);
   const [mockStep, setMockStep] = useState('none'); // 'none', 'select_method', 'processing', 'success'
@@ -31,7 +34,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setLoading(true);
     setError(null);
 
-    const isSubscription = plan.name?.toLowerCase().includes('silver') || plan.name?.toLowerCase().includes('gold') || plan.name?.toLowerCase().includes('diamond') || !!plan.recurringAmount;
+    // isSubscription is defined at component scope
 
     try {
       const baseUrl = getBackendUrl();
@@ -180,7 +183,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     setMockStep('processing');
     setError(null);
 
-    const isSubscription = plan.name?.toLowerCase().includes('silver') || plan.name?.toLowerCase().includes('gold') || plan.name?.toLowerCase().includes('diamond') || !!plan.recurringAmount;
+    // isSubscription is defined at component scope
     const baseUrl = getBackendUrl();
 
     // Helper to simulate delays
@@ -269,7 +272,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     }
   };
 
-  const isFreeTrialPlan = plan.isTrial || plan.amount === 0 || plan.name?.toLowerCase().includes('free') || plan.name?.toLowerCase().includes('trial');
+  // isFreeTrialPlan is defined at component scope
 
   return (
     <div className="modal-overlay show" id="paymentModal" style={{ zIndex: 20000 }} onClick={(e) => {
