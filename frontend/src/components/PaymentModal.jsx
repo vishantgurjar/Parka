@@ -58,7 +58,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
           body: JSON.stringify({
             amount: plan.amount,
             receipt: `${entityId}_${Date.now()}`,
-            isTrial: plan.isTrial || plan.name?.toLowerCase().includes('silver')
+            isTrial: plan.isTrial || plan.amount === 0 || plan.name?.toLowerCase().includes('free') || plan.name?.toLowerCase().includes('trial')
           })
         });
         orderData = await orderRes.json();
@@ -186,7 +186,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     // Helper to simulate delays
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
-    const isTrial = plan.isTrial || plan.name?.toLowerCase().includes('silver') || plan.amount === 0;
+    const isTrial = plan.isTrial || plan.amount === 0 || plan.name?.toLowerCase().includes('free') || plan.name?.toLowerCase().includes('trial');
 
     if (isTrial && mockMethod === 'upi' && (!upiId || !upiId.includes('@'))) {
       setError("Please enter a valid UPI ID (e.g. 7830119922@ybl or username@okaxis) to authorize AutoPay mandate.");
@@ -269,7 +269,7 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
     }
   };
 
-  const isFreeTrialPlan = plan.isTrial || plan.name?.toLowerCase().includes('silver') || plan.amount === 0;
+  const isFreeTrialPlan = plan.isTrial || plan.amount === 0 || plan.name?.toLowerCase().includes('free') || plan.name?.toLowerCase().includes('trial');
 
   return (
     <div className="modal-overlay show" id="paymentModal" style={{ zIndex: 20000 }} onClick={(e) => {
@@ -455,8 +455,14 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                 <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', border: '2px solid #10b981', animation: 'pulse 1s infinite' }}>
                   <ShieldCheck size={40} />
                 </div>
-                <h3 style={{ fontSize: '1.5rem', color: '#10b981', marginBottom: '8px' }}>1-Month Free Trial Activated</h3>
-                <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>Silver plan features unlocked! Auto-Pay mandate set for ₹199/mo starting in 30 days.</p>
+                <h3 style={{ fontSize: '1.5rem', color: '#10b981', marginBottom: '8px' }}>
+                  {isFreeTrialPlan ? '1-Month Free Trial Activated' : 'Subscription Activated'}
+                </h3>
+                <p style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>
+                  {isFreeTrialPlan 
+                    ? 'Silver plan features unlocked! Auto-Pay mandate set for ₹199/mo starting in 30 days.' 
+                    : `${plan.name || 'Plan'} features successfully unlocked!`}
+                </p>
               </div>
             )}
 
@@ -484,6 +490,17 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
                     <li>✓ Standard QR Emergency Profile</li>
                     <li>✓ Auto-Pay mandate registered (₹199/mo after 30 days)</li>
                     <li>✓ Cancel anytime with 1-click before 30 days</li>
+                  </ul>
+                </div>
+              ) : plan.name?.toLowerCase().includes('silver') ? (
+                <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '15px', borderRadius: '12px', marginTop: '1rem', textAlign: 'left', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                  <h4 style={{ color: '#38bdf8', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldCheck size={18} /> Upgrade to Silver
+                  </h4>
+                  <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>✓ Standard QR Emergency Profile</li>
+                    <li>✓ SMS Alert System</li>
+                    <li>✓ 1 Vehicle Limit</li>
                   </ul>
                 </div>
               ) : plan.name === 'Gold PRO' ? (

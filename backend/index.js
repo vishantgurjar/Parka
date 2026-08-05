@@ -587,9 +587,9 @@ app.post('/api/payment/create-subscription', async (req, res) => {
         quantity: 1
       };
 
-      // Add 30-day trial (start_at UNIX timestamp) for Silver 1-Month Free Plan
+      // Add 30-day trial (start_at UNIX timestamp) if explicitly requested (free/trial in planName)
       const normalizedPlanName = planName.toLowerCase();
-      if (normalizedPlanName.includes('free') || normalizedPlanName.includes('trial') || normalizedPlanName.includes('silver')) {
+      if (normalizedPlanName.includes('free') || normalizedPlanName.includes('trial')) {
         // Set first debit 30 days from now (starts at in seconds)
         subscriptionOptions.start_at = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
       }
