@@ -47,7 +47,9 @@ export default function Footer() {
               <h4 style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Ecosystem</h4>
               <a href="#home" onClick={(e) => handleScroll(e, 'home')} style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Platform</a>
               <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')} style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>SOS Response</a>
-              <Link to="/mechanics" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Mechanics</Link>
+              <Link to="/mechanics" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Find Mechanics</Link>
+              <Link to="/mechanic-register" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Become a Partner Mechanic</Link>
+              <Link to="/m-login" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Mechanic Portal Login</Link>
               <Link to="/sentinel" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Cam Mode</Link>
             </div>
 

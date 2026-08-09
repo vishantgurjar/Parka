@@ -484,6 +484,27 @@ export default function MechanicList() {
             </div>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--fg)' }}>Find a <span className="text-gradient">Nearby Mechanic</span></h1>
             
+            <div style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '12px', 
+              background: 'rgba(255, 255, 255, 0.03)', 
+              border: '1px solid var(--border)', 
+              padding: '10px 24px', 
+              borderRadius: '30px', 
+              margin: '0 auto 2rem',
+              fontSize: '0.9rem',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ color: 'var(--muted)' }}>Are you a professional mechanic?</span>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Link to="/mechanic-register" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none' }}>Register Shop</Link>
+                <span style={{ color: 'var(--border)', opacity: 0.5 }}>|</span>
+                <Link to="/m-login" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none' }}>Portal Login</Link>
+              </div>
+            </div>
+            
             {/* --- LIVE SOS BIDDING --- */}
             <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid #eab308', padding: '1.5rem', borderRadius: '16px', maxWidth: '600px', margin: '0 auto 2rem' }}>
                 <h3 style={{color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px'}}>

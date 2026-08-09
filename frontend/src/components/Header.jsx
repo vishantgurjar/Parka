@@ -135,6 +135,8 @@ export default function Header({ onOpenPayment, installPrompt }) {
         <Link to="/help" onClick={(e) => { setIsMenuOpen(false); }}>Community</Link>
         <a href="#emergency" onClick={(e) => handleScroll(e, 'emergency')}>Emergency SOS</a>
         <Link to="/mechanics" onClick={(e) => { setIsMenuOpen(false); }}>Find Mechanics</Link>
+        <Link to="/mechanic-register" onClick={(e) => { setIsMenuOpen(false); }} style={{ fontSize: '0.85rem', opacity: 0.8, paddingLeft: '1rem', color: 'var(--primary)' }}>🛠️ Join as Partner Mechanic</Link>
+        <Link to="/m-login" onClick={(e) => { setIsMenuOpen(false); }} style={{ fontSize: '0.85rem', opacity: 0.8, paddingLeft: '1rem', color: 'var(--primary)' }}>🔑 Mechanic Portal Login</Link>
 
         <Link to="/host" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#10b981'}}>Host Space</Link>
         <Link to="/ev-hub" onClick={(e) => { setIsMenuOpen(false); }} style={{fontWeight: 'bold', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '6px'}}><Zap size={14} style={{ fill: '#2dd4bf' }} /> EV Hub ⚡</Link>
