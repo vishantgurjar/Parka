@@ -36,7 +36,7 @@ export default function PrivacyPolicy() {
     },
     {
       title: "6. Data Retention & Deletion Rights",
-      content: "We retain account registration records for as long as your profile remains active. You possess complete rights to view, update, or remove your data. To request permanent deletion of your account, vehicle mappings, and historical cloud recordings, submit a support ticket via support@parxeecity.com. Deletion requests are processed completely within 48 hours."
+      content: "We retain account registration records for as long as your profile remains active. You possess complete rights to view, update, or remove your data. To request permanent deletion of your account, vehicle mappings, and historical cloud recordings, submit a support ticket via parxeecity@gmail.com. Deletion requests are processed completely within 48 hours."
     }
   ];
 

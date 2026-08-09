@@ -240,8 +240,8 @@ export default function Contact() {
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: '1.5' }}>
                 For general support, custom business QR queries, and account upgrades.
               </p>
-              <a href="mailto:support@parxeecity.com" style={{ display: 'inline-flex', fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', textDecoration: 'none' }}>
-                support@parxeecity.com
+              <a href="mailto:parxeecity@gmail.com" style={{ display: 'inline-flex', fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', textDecoration: 'none' }}>
+                parxeecity@gmail.com
               </a>
             </div>
 

@@ -16,7 +16,7 @@ export default function RefundPolicy() {
   const sections = [
     {
       title: "1. Smart QR Decal Hardware Orders",
-      content: "All physical smart QR decals are manufactured custom to order. If your QR decal arrives damaged during shipping, shows print defects, or contains coding errors, we will dispatch a replacement sticker free of charge. You must report hardware damages within 48 hours of delivery at support@parxeecity.com with delivery photo proofs. Due to the custom nature of vehicle printing, refunds are not issued for decal orders once they are custom-coded and dispatched."
+      content: "All physical smart QR decals are manufactured custom to order. If your QR decal arrives damaged during shipping, shows print defects, or contains coding errors, we will dispatch a replacement sticker free of charge. You must report hardware damages within 48 hours of delivery at parxeecity@gmail.com with delivery photo proofs. Due to the custom nature of vehicle printing, refunds are not issued for decal orders once they are custom-coded and dispatched."
     },
     {
       title: "2. Subscription Tiers (Silver, Gold, Diamond)",
@@ -32,7 +32,7 @@ export default function RefundPolicy() {
     },
     {
       title: "5. How to File a Dispute or Refund Claim",
-      content: "To initiate a dispute, contact support@parxeecity.com. Please include: 1) Your registered mobile number, 2) Transaction reference ID, 3) Decal serial number (if applicable), and 4) A clear description of the issue. Our support team responds to all refund claims within 24 hours."
+      content: "To initiate a dispute, contact parxeecity@gmail.com. Please include: 1) Your registered mobile number, 2) Transaction reference ID, 3) Decal serial number (if applicable), and 4) A clear description of the issue. Our support team responds to all refund claims within 24 hours."
     }
   ];
 
