@@ -66,7 +66,7 @@ export default function Contact() {
             Get in <span className="text-gradient">Touch</span>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
-            Whether you are stranded on a highway, ordering custom QR decals, or exploring partnership channels, our team is active 24/7.
+            Whether you are stranded on a highway, activating your QR decals, or exploring partnership channels, our team is active 24/7.
           </p>
         </header>
 
@@ -160,7 +160,7 @@ export default function Contact() {
                   >
                     <option value="General Inquiry">General Inquiry</option>
                     <option value="SOS & Emergency Support">SOS & Emergency Support</option>
-                    <option value="QR Decal Ordering">QR Decal Ordering</option>
+                    <option value="QR Decal Activation & Mapping">QR Decal Activation & Mapping</option>
                     <option value="Partnership / Mechanic Sign-up">Partnership / Mechanic Sign-up</option>
                     <option value="Billing / Refund Claim">Billing / Refund Claim</option>
                   </select>
@@ -257,7 +257,7 @@ export default function Contact() {
                 </div>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: '1.5' }}>
-                Quick questions about QR decaling setup, delivery, or registration.
+                Quick questions about QR decaling setup, mapping, or profile registration.
               </p>
               <a href="https://wa.me/919112200000" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#10b981', color: '#030712', padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', fontWeight: '800', textDecoration: 'none' }}>
                 Start WhatsApp Chat

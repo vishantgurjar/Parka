@@ -15,8 +15,8 @@ export default function TermsOfService() {
 
   const sections = [
     {
-      title: "1. Smart QR Decal Hardware & Account Ownership",
-      content: "Upon receiving your physical smart QR decal, you must bind it to a verified vehicle profile. You agree to: \n\n• Maintain up-to-date and accurate vehicle registration markers (license plate, make, model).\n• Prevent misuse of the QR scanner page. Bystanders must scan only to relay genuine vehicle warnings.\n• Be responsible for keeping your profile password and API token key secure. Parxéé City is not responsible for unauthorized logins on your dashboard."
+      title: "1. Smart QR Decal & Account Ownership",
+      content: "Upon generating or downloading your smart QR decal, you must bind it to a verified vehicle profile. You agree to: \n\n• Maintain up-to-date and accurate vehicle registration markers (license plate, make, model).\n• Prevent misuse of the QR scanner page. Bystanders must scan only to relay genuine vehicle warnings.\n• Be responsible for keeping your profile password and API token key secure. Parxéé City is not responsible for unauthorized logins on your dashboard."
     },
     {
       title: "2. Subscription Tiers & Billing Rules",

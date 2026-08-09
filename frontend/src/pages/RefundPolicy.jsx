@@ -15,24 +15,20 @@ export default function RefundPolicy() {
 
   const sections = [
     {
-      title: "1. Smart QR Decal Hardware Orders",
-      content: "All physical smart QR decals are manufactured custom to order. If your QR decal arrives damaged during shipping, shows print defects, or contains coding errors, we will dispatch a replacement sticker free of charge. You must report hardware damages within 48 hours of delivery at parxeecity@gmail.com with delivery photo proofs. Due to the custom nature of vehicle printing, refunds are not issued for decal orders once they are custom-coded and dispatched."
-    },
-    {
-      title: "2. Subscription Tiers (Silver, Gold, Diamond)",
+      title: "1. Subscription Tiers (Silver, Gold, Diamond)",
       content: "Subscription payments unlock pro features such as Sentinel Cam Mode cloud storage, secure phone masking calling bridges, and priority mechanic response dispatching. If you upgrade to a premium subscription plan, you may cancel it at any time. We offer a 7-day money-back guarantee on subscription upgrades if you have not triggered any SOS mechanics dispatch calls during that time. If a refund is requested after 7 days, your service will remain active until the end of the current billing cycle, and no further billing will occur."
     },
     {
-      title: "3. Cancellation of SOS Mechanic Response Requests",
+      title: "2. Cancellation of SOS Mechanic Response Requests",
       content: "Once you launch an Emergency SOS request and a nearby mechanic accepts and departs for your location, a booking fee is reserved. If you resolve the issue independently or decide to cancel, you may cancel the dispatch. However, if the mechanic has already covered more than 2 kilometers towards your location, a minor mobilization fee may be charged to offset fuel costs, and the remainder of the booking fee will be returned to your wallet or original payment source."
     },
     {
-      title: "4. Processing Timelines & Payment Gateways",
+      title: "3. Processing Timelines & Payment Gateways",
       content: "Approved refunds are processed back to the original method of payment (UPI, Credit/Debit Card, or Net Banking) within 5 to 7 business days. You will receive an automated SMS and email confirmation once our finance gateway initiates the refund. Bank processing times may vary based on your financial institution."
     },
     {
-      title: "5. How to File a Dispute or Refund Claim",
-      content: "To initiate a dispute, contact parxeecity@gmail.com. Please include: 1) Your registered mobile number, 2) Transaction reference ID, 3) Decal serial number (if applicable), and 4) A clear description of the issue. Our support team responds to all refund claims within 24 hours."
+      title: "4. How to File a Dispute or Refund Claim",
+      content: "To initiate a dispute, contact parxeecity@gmail.com. Please include: 1) Your registered mobile number, 2) Transaction reference ID, and 3) A clear description of the issue. Our support team responds to all refund claims within 24 hours."
     }
   ];
 
@@ -40,7 +36,7 @@ export default function RefundPolicy() {
     <div className="refund-policy-page" style={{ background: '#030712', minHeight: '100vh', color: '#fff', paddingTop: '100px', paddingBottom: '60px' }}>
       <SEO 
         title="Cancellation & Refunds - Parxéé City"
-        description="Read Parxéé City's cancellation and refund guidelines regarding subscriptions, smart QR decal hardware, and mechanical response services."
+        description="Read Parxéé City's cancellation and refund guidelines regarding subscriptions and mechanical response services."
       />
 
       <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
@@ -54,7 +50,7 @@ export default function RefundPolicy() {
             Cancellation & <span className="text-gradient">Refunds</span>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem', lineHeight: '1.6' }}>
-            Transparent rules and timelines regarding subscriptions, smart QR decals, and emergency roadside dispatch bookings.
+            Transparent rules and timelines regarding subscriptions and emergency roadside dispatch bookings.
           </p>
         </header>
 
