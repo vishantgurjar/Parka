@@ -277,8 +277,7 @@ export default function Contact() {
               </div>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                 Parxéé City Tech Private Limited, <br />
-                Netaji Subhash Place, Pitampura, <br />
-                New Delhi, 110034, India.
+                Roorkee, Uttarakhand, 247664, India.
               </p>
             </div>
 
