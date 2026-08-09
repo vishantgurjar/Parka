@@ -32,6 +32,10 @@ const MechanicSchema = new mongoose.Schema({
 
   // Push Notifications
   pushSubscription: { type: Object },
+
+  // Password Reset Support
+  resetOtp: { type: String },
+  resetOtpExpires: { type: Date },
 }, { timestamps: true });
 
 MechanicSchema.index({ location: '2dsphere' });
