@@ -812,6 +812,74 @@ app.post('/api/alerts/scan', async (req, res) => {
     res.json({ success: true, message: `Alert sent. ${locationMsg}` });
 });
 
+// --- SMART QR CONTACT REQUEST URGENT ALERT ---
+app.post('/api/alerts/contact-request', async (req, res) => {
+    const { vehicleId } = req.body;
+    try {
+        let owner = null;
+        const mongoose = require('mongoose');
+        if (mongoose.Types.ObjectId.isValid(vehicleId)) {
+            owner = await User.findById(vehicleId);
+        }
+        if (!owner && vehicleId) {
+            const stickerId = vehicleId.toUpperCase().trim();
+            owner = await User.findOne({ smartTagId: stickerId });
+        }
+
+        if (owner) {
+            console.log(`[📢 URGENT ALERT CONTACT REQUEST] for vehicle owner: ${owner.name} (${owner.phone})`);
+            
+            // 1. Send Email alert
+            if (owner.email) {
+                const mailHtml = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #eab308;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="color: #eab308; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">PARXÉÉ CITY</h1>
+                            <p style="color: #9ca3af; font-size: 13px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Neighborhood Protection Network</p>
+                        </div>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p>Hello ${owner.name || 'Driver'},</p>
+                        <p>Someone scanned the Smart QR Code of your vehicle (<strong>${owner.plateNumber || 'Your Registered Vehicle'}</strong>) and is trying to contact you urgently regarding parking/blocking issues.</p>
+                        <p>They tried calling you through the platform but got no response. Please check your vehicle immediately!</p>
+                        <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #eab308; margin: 20px 0;">
+                            <p style="margin: 0; font-size: 13px;"><strong>Details:</strong></p>
+                            <p style="margin: 5px 0 0 0; color: #d1d5db;">Time: ${new Date().toLocaleString()}</p>
+                            <p style="margin: 5px 0 0 0; color: #d1d5db;">Reason: Unanswered voice call fallback alert.</p>
+                        </div>
+                        <p style="color: #9ca3af; font-size: 13px;">Stay safe and secure with Parxéé City Protection.</p>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
+                    </div>
+                `;
+                await sendEmail({
+                    to: owner.email,
+                    subject: `⚠️ URGENT: Vehicle Contact Request - Parxéé City`,
+                    html: mailHtml,
+                    fromName: 'Parxéé City Urgent Alerts'
+                });
+            }
+
+            // 2. Send SMS alert if phone is present
+            if (owner.phone) {
+                try {
+                    const { sendSmsOtp } = require('./utils/smsHelper');
+                    // We send a generic text message using the SMS gateway.
+                    await sendSmsOtp(owner.phone, "URGENT CAR ALERT"); 
+                } catch (smsErr) {
+                    console.warn('[SMS Helper] Failed to send SMS fallback:', smsErr.message);
+                }
+            }
+
+            return res.json({ success: true, message: "Urgent notification sent to vehicle owner." });
+        } else {
+            return res.status(404).json({ message: "Vehicle owner not found." });
+        }
+    } catch (err) {
+        console.error("Contact request alert error:", err);
+        return res.status(500).json({ message: "Failed to send alert notification." });
+    }
+});
+
 // --- REVIEWS ---
 app.post('/api/reviews', async (req, res) => {
     try {
