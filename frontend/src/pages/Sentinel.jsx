@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 
 export default function Sentinel() {
-  const { isPro, user } = useContext(AuthContext);
+  const { isPro, user, socket } = useContext(AuthContext);
   const [isActive, setIsActive] = useState(false);
   const [isImpactDetected, setIsImpactDetected] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -17,6 +17,28 @@ export default function Sentinel() {
   const [stream, setStream] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [logs, setLogs] = useState([]);
+
+  // Dual-Camera / Role State
+  const [role, setRole] = useState('front'); // 'front' (phone) or 'rear' (infotainment)
+  const [videoDevices, setVideoDevices] = useState([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState('');
+
+  // Fetch camera devices on mount
+  useEffect(() => {
+    const listDevices = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter(d => d.kind === 'videoinput');
+        setVideoDevices(videoInputs);
+        if (videoInputs.length > 0) {
+          setSelectedDeviceId(videoInputs[0].deviceId);
+        }
+      } catch (err) {
+        console.warn("Failed listing cameras:", err);
+      }
+    };
+    listDevices();
+  }, []);
 
   // Mock logging function
   const addLog = useCallback((msg) => {
@@ -59,6 +81,16 @@ export default function Sentinel() {
         setCurrentSosId(data.sosRequest._id);
         sosIdRef.current = data.sosRequest._id;
         
+        // Sync rear device if socket is active
+        if (socket && user) {
+          socket.emit("sentinel-impact-detected", {
+            userId: user._id,
+            type: "front",
+            sosId: data.sosRequest._id
+          });
+          addLog("EMITTED REAL-TIME SYNC TRIGGER TO CAR SCREEN.");
+        }
+        
         // 2. Stop recording and link evidence (mock only if camera is inactive/simulation, real upload if camera is active)
         if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
           addLog("LINKING MOCK DASHCAM EVIDENCE...");
@@ -73,7 +105,8 @@ export default function Sentinel() {
               body: JSON.stringify({
                 sosId: data.sosRequest._id,
                 userId: user?._id || 'guest',
-                evidenceUrl: mockVideoUrl
+                evidenceUrl: mockVideoUrl,
+                isSecondary: role === 'rear'
               })
             });
             if (linkRes.ok) {
@@ -141,7 +174,8 @@ export default function Sentinel() {
             body: JSON.stringify({
               sosId: sosId || null,
               userId: user?._id || 'guest',
-              evidenceUrl: cloudData.secure_url
+              evidenceUrl: cloudData.secure_url,
+              isSecondary: role === 'rear'
             })
           });
 
@@ -232,15 +266,22 @@ export default function Sentinel() {
     
     try {
       // Request low-res video to keep file size small for cloud upload (< 4MB limit on Vercel)
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+      const constraints = {
         video: { 
-          facingMode: 'environment',
           width: { ideal: 640 },
           height: { ideal: 480 },
           frameRate: { ideal: 15 }
         }, 
         audio: true 
-      });
+      };
+      
+      if (selectedDeviceId) {
+        constraints.video.deviceId = { exact: selectedDeviceId };
+      } else {
+        constraints.video.facingMode = role === 'rear' ? 'environment' : 'user';
+      }
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       
@@ -298,7 +339,7 @@ export default function Sentinel() {
 
   // Sensor Logic
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || role !== 'front') return;
 
     const handleMotion = (event) => {
       const { x, y, z } = event.accelerationIncludingGravity || { x: 0, y: 0, z: 0 };
@@ -319,7 +360,50 @@ export default function Sentinel() {
     window.addEventListener('devicemotion', handleMotion);
     return () => window.removeEventListener('devicemotion', handleMotion);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, isImpactDetected, triggerImpact]);
+  }, [isActive, isImpactDetected, triggerImpact, role]);
+
+  // Rear Camera remote socket impact trigger
+  useEffect(() => {
+    if (!socket || !isActive || role !== 'rear' || !user) return;
+
+    const handleRemoteImpact = (data) => {
+      addLog(`[SYNC] REMOTE IMPACT DETECTED! TARGET SOS ID: ${data.sosId}`);
+      setIsImpactDetected(true);
+      sosIdRef.current = data.sosId;
+
+      // Stop recording to upload rear evidence after a small delay
+      setTimeout(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        } else {
+          // Simulated fallback
+          addLog("LINKING SIMULATED REAR DASHCAM EVIDENCE...");
+          const baseUrl = getBackendUrl();
+          fetch(`${baseUrl}/api/sos/evidence-link`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sosId: data.sosId,
+              userId: user?._id || 'guest',
+              evidenceUrl: "https://www.w3schools.com/html/movie.mp4",
+              isSecondary: true
+            })
+          }).then(res => {
+            if (res.ok) {
+              addLog("SIMULATED REAR EVIDENCE LINKED.");
+              toast.success("Rear Evidence Secured!");
+            }
+          }).catch(err => console.error("Simulated rear link fail:", err));
+        }
+        setIsImpactDetected(false);
+      }, 1500);
+    };
+
+    socket.on("sentinel-trigger-recording", handleRemoteImpact);
+    return () => {
+      socket.off("sentinel-trigger-recording", handleRemoteImpact);
+    };
+  }, [socket, isActive, role, user, addLog]);
 
   // Countdown Logic
   useEffect(() => {
@@ -385,20 +469,85 @@ export default function Sentinel() {
           <div className="main-display glass" style={{ position: 'relative', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
             
             {!isActive ? (
-              <div style={{ textAlign: 'center', padding: '3rem' }}>
-                <div className="sentinel-logo pulse-primary" style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(135deg, #38bdf8, #818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem', boxShadow: '0 0 40px rgba(56, 189, 248, 0.3)' }}>
-                  <Shield size={60} color="#fff" />
+              <div style={{ textAlign: 'center', padding: '2rem 3rem' }}>
+                <div className="sentinel-logo pulse-primary" style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(135deg, #38bdf8, #818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 40px rgba(56, 189, 248, 0.3)' }}>
+                  <Shield size={50} color="#fff" />
                 </div>
-                <h2 style={{ marginBottom: '1rem' }}>Ready to Secure Your Drive?</h2>
-                <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2.5rem', maxWidth: '400px', margin: '0 auto 2.5rem' }}>
-                  Cam Mode converts your phone into a black box. Mount it on your dashboard and enjoy 24/7 protection.
-                </p>
+                <h2 style={{ marginBottom: '0.75rem', fontSize: '1.75rem' }}>Secure Your Drive</h2>
+                
+                {/* Role and Device selection */}
+                <div style={{ maxWidth: '380px', margin: '0 auto 1.5rem', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                  <label style={{ fontSize: '0.75rem', color: '#cbd5e1', fontWeight: 'bold', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Device Camera Role</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                    <button 
+                      type="button"
+                      onClick={() => setRole('front')}
+                      style={{ 
+                        padding: '10px', 
+                        borderRadius: '8px', 
+                        fontSize: '0.8rem', 
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: role === 'front' ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.05)',
+                        color: '#fff'
+                      }}
+                    >
+                      📱 Phone (Front)
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setRole('rear')}
+                      style={{ 
+                        padding: '10px', 
+                        borderRadius: '8px', 
+                        fontSize: '0.8rem', 
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: role === 'rear' ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.05)',
+                        color: '#fff'
+                      }}
+                    >
+                      📺 Screen (Rear)
+                    </button>
+                  </div>
+
+                  {/* Camera Input Selector */}
+                  {videoDevices.length > 0 && (
+                    <div>
+                      <label style={{ fontSize: '0.75rem', color: '#cbd5e1', fontWeight: 'bold', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Select Camera Source</label>
+                      <select 
+                        value={selectedDeviceId}
+                        onChange={(e) => setSelectedDeviceId(e.target.value)}
+                        style={{ 
+                          width: '100%', 
+                          padding: '10px', 
+                          borderRadius: '8px', 
+                          background: '#0d1527', 
+                          border: '1px solid rgba(255,255,255,0.15)', 
+                          color: '#fff', 
+                          fontSize: '0.85rem', 
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {videoDevices.map(device => (
+                          <option key={device.deviceId} value={device.deviceId} style={{ background: '#111827', color: '#fff' }}>
+                            {device.label || `Camera ${videoDevices.indexOf(device) + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
                 <button 
                   onClick={startSentinel}
                   className="btn-gradient pulse-primary" 
-                  style={{ padding: '18px 40px', fontSize: '1.2rem', borderRadius: '50px', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #38bdf8, #818cf8)', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}
+                  style={{ padding: '16px 36px', fontSize: '1.1rem', borderRadius: '50px', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #38bdf8, #818cf8)', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', margin: '0 auto' }}
                 >
-                  <Activity size={24} />
+                  <Activity size={22} />
                   Activate Cam Mode
                 </button>
               </div>
@@ -434,14 +583,16 @@ export default function Sentinel() {
                       {/* Top HUD */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>System Status</div>
-                          <div style={{ color: '#22c55e', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Radio size={14} className="pulse-anim" /> ONLINE
+                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>Sentinel Role</div>
+                          <div style={{ color: '#38bdf8', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {role === 'front' ? '📱 FRONT CAMERA / SENSOR' : '📺 REAR CAMERA STREAM'}
                           </div>
                         </div>
                         <div className="glass" style={{ padding: '12px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right' }}>
-                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>Storage</div>
-                          <div style={{ fontWeight: 'bold' }}>BUFFERING (10s)</div>
+                          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px' }}>System Status</div>
+                          <div style={{ color: '#22c55e', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                            <Radio size={14} className="pulse-anim" /> ONLINE
+                          </div>
                         </div>
                       </div>
 

@@ -103,6 +103,11 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} joined SOS room sos_${userId}`);
   });
 
+  socket.on("sentinel-impact-detected", (data) => {
+    console.log(`[Sentinel Impact Event] received from user ${data.userId} of type ${data.type}`);
+    socket.to(`sos_${data.userId}`).emit("sentinel-trigger-recording", data);
+  });
+
   socket.on("mechanic-subscribe", (mechanicId) => {
     socket.join(`mechanic_sos`);
     if (mechanicId) {

@@ -42,6 +42,7 @@ const SOSRequestSchema = new mongoose.Schema({
         timestamp: { type: Date, default: Date.now }
     }],
     evidenceUrl: { type: String },
+    secondaryEvidenceUrl: { type: String },
     debugLogs: { type: String },
     createdAt: { type: Date, default: Date.now, expires: 7200 } // TTL 2 hours
 });

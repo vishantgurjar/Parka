@@ -262,7 +262,11 @@ module.exports = function(io) {
             }
 
             if (targetSos) {
-                targetSos.evidenceUrl = evidenceUrl;
+                if (req.body.isSecondary || (targetSos.evidenceUrl && targetSos.evidenceUrl !== evidenceUrl)) {
+                    targetSos.secondaryEvidenceUrl = evidenceUrl;
+                } else {
+                    targetSos.evidenceUrl = evidenceUrl;
+                }
                 await targetSos.save();
                 return res.json({ success: true, message: "Evidence linked successfully" });
             }
