@@ -417,6 +417,40 @@ export default function Sentinel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isImpactDetected, countdown, sendSOS]);
 
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
+  };
+
+  if (!isMobileDevice()) {
+    return (
+      <div className="sentinel-page" style={{ background: '#0a0a0b', minHeight: '100vh', color: '#fff', paddingTop: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '40px' }}>
+        <SEO title="Mobile Only - Parxéé Cam Mode" description="Parxéé Cam Mode is a smartphone only feature." />
+        <div className="container" style={{ maxWidth: '500px', textAlign: 'center', padding: '0 20px' }}>
+          <div className="glass" style={{ padding: '3rem 2rem', borderRadius: '32px', border: '1px solid rgba(56, 189, 248, 0.2)', background: 'rgba(15, 15, 18, 0.8)' }}>
+            <div style={{ background: 'rgba(56, 189, 248, 0.1)', width: '72px', height: '72px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+              <Shield size={36} color="#38bdf8" />
+            </div>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '1rem', color: '#fff' }}>Smartphone Feature Only</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+              Parxéé Cam Mode requires smartphone sensors (gyroscope, accelerometer, and GPS) to monitor vehicle motion and detect collisions. It is not supported on desktop or laptop computers.
+            </p>
+            
+            <div style={{ background: '#fff', padding: '16px', borderRadius: '20px', display: 'inline-block', marginBottom: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.href)}`} 
+                alt="Scan to open on Mobile" 
+                style={{ display: 'block', width: '180px', height: '180px' }}
+              />
+            </div>
+            
+            <h4 style={{ margin: '0 0 6px 0', color: 'var(--primary)', fontSize: '1rem', fontWeight: 'bold' }}>Scan QR to Open on Phone</h4>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Open your smartphone camera to scan and activate Cam Mode instantly.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sentinel-page" style={{ background: '#0a0a0b', minHeight: '100vh', color: '#fff', paddingTop: '80px', paddingBottom: '40px' }}>
       <SEO title="Parxéé Cam Mode - AI Accident Detection" description="Transform your phone into a smart black box with Parxéé Cam Mode." />
