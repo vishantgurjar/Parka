@@ -2399,3 +2399,9 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   pointer-events: none !important;
 }
 
+/* Leaflet Premium Dark Mode Tiles */
+.dark-tiles img {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) !important;
+}
+
+

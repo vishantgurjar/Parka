@@ -205,7 +205,10 @@ export default function CommunityHelp() {
           {/* MAP */}
           <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden', height: '600px', border: '1px solid var(--border)' }}>
             <MapContainer center={userLocation} zoom={13} style={{ height: '100%', width: '100%' }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <TileLayer 
+                className="dark-tiles"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+              />
               <ChangeView center={userLocation} />
               
               <Marker position={userLocation} icon={userIcon}>

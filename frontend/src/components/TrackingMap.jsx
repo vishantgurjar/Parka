@@ -40,6 +40,7 @@ export default function TrackingMap({ userLocation, mechanicLocation }) {
         zoomControl={false}
       >
         <TileLayer
+          className="dark-tiles"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
