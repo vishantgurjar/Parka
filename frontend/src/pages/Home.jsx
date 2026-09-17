@@ -27,9 +27,9 @@ export default function Home({ onOpenPayment }) {
     {
       id: 0,
       step: 'STEP 01',
-      title: 'Smart Tag Windshield Par',
-      subtitle: 'Aapki gaadi par secure QR tag laga hota hai',
-      narration: 'Aapki car ke windshield par Parxéé Smart Tag laga rehta hai. Isme aapka personal phone number 100% safe aur hidden rehta hai.',
+      title: 'Smart Tag on Windshield',
+      subtitle: 'Vehicle is protected with an encrypted smart QR tag',
+      narration: 'The Parxéé Smart Tag is affixed to your car windshield. Your personal phone number stays 100% private and protected.',
       badge: '100% Privacy Protection',
       color: '#2dd4bf',
       icon: 'Car'
@@ -37,9 +37,9 @@ export default function Home({ onOpenPayment }) {
     {
       id: 1,
       step: 'STEP 02',
-      title: 'Stranger Phone Camera Se Scan Karta Hai',
-      subtitle: 'Koyi bhi standard phone se scan kar sakta hai, zero app needed',
-      narration: 'Agar gaadi kisi ke raste me park ho, toh samne wala banda seedha phone camera se QR scan karta hai. Koyi app download nahi karni.',
+      title: 'Passerby Scans Tag with Camera',
+      subtitle: 'Anyone can scan using standard phone camera, zero app required',
+      narration: 'If your vehicle needs to be moved, anyone can scan the tag using their default smartphone camera without installing any app.',
       badge: 'Zero App Download Required',
       color: '#38bdf8',
       icon: 'Smartphone'
@@ -48,8 +48,8 @@ export default function Home({ onOpenPayment }) {
       id: 2,
       step: 'STEP 03',
       title: 'Parxéé Privacy Shield Portal',
-      subtitle: 'Masked Calling ya 1-Click WhatsApp Alert ka option aata hai',
-      narration: 'Scan hote hi encrypted security screen aati hai. Yahan se masked call ya instant WhatsApp alert bhej sakte hain.',
+      subtitle: 'Instant options for Masked Voice Calling & 1-Click WhatsApp Alert',
+      narration: 'Scanning opens the encrypted privacy portal to initiate masked voice calling or instant WhatsApp alerts without exposing your number.',
       badge: 'Encrypted Masked Routing',
       color: '#a855f7',
       icon: 'ShieldCheck'
@@ -57,9 +57,9 @@ export default function Home({ onOpenPayment }) {
     {
       id: 3,
       step: 'STEP 04',
-      title: 'Owner Ko Instant WhatsApp Alert Milta Hai',
-      subtitle: 'Aapko WhatsApp par alert aur live map location mil jaati hai',
-      narration: 'Aapke WhatsApp par turant notification aa jata hai vehicle details ke sath. Problem solved bina kisi ladai ke!',
+      title: 'Owner Receives Instant Alert',
+      subtitle: 'Vehicle owner receives immediate notification with live GPS location',
+      narration: 'You receive an instant alert on WhatsApp with vehicle status and location. Problem resolved smoothly in seconds!',
       badge: 'Real-Time Notification Delivery',
       color: '#10b981',
       icon: 'MessageSquare'
@@ -90,7 +90,7 @@ export default function Home({ onOpenPayment }) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
-      utterance.lang = 'hi-IN';
+      utterance.lang = 'en-US';
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -490,13 +490,13 @@ export default function Home({ onOpenPayment }) {
               marginBottom: '1.25rem', 
               border: '1px solid rgba(45, 212, 191, 0.25)' 
             }}>
-              <Video size={16} /> 🎬 LIVE DEMO EXPLAINER VIDEO
+              <Video size={16} /> 🎬 INTERACTIVE DEMO & WORKFLOW
             </div>
             <h2 className="section-title" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', letterSpacing: 'var(--tracking-tight)' }}>
-              Dekhiye Parxéé Tag <span className="text-gradient">Kaise Kaam Karta Hai</span>
+              See How Parxéé <span className="text-gradient">Protects Your Vehicle</span>
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '1.05rem', maxWidth: '650px', margin: '0 auto' }}>
-              Sirf 30 seconds me samjhiye gaadi parking alert, QR scan aur 100% privacy protection ka poora real-life process.
+              Experience the seamless 30-second workflow: QR Tagging, Instant Camera Scan, and 100% Privacy Shielding.
             </p>
           </div>
 
@@ -527,7 +527,7 @@ export default function Home({ onOpenPayment }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '0.5px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', animation: 'pulse 1.5s infinite' }}></span>
-                  LIVE DEMO
+                  LIVE SIMULATION
                 </div>
                 <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#fff' }}>
                   <span style={{ color: DEMO_SCENES[demoScene].color, marginRight: '6px' }}>{DEMO_SCENES[demoScene].step}:</span>
@@ -554,10 +554,10 @@ export default function Home({ onOpenPayment }) {
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
-                  title="Hindi Voiceover Narration"
+                  title="Audio Narration Voiceover"
                 >
                   {isDemoAudioOn ? <Volume2 size={15} /> : <VolumeX size={15} />}
-                  <span>{isDemoAudioOn ? 'Voice On (Hindi)' : 'Voice Off'}</span>
+                  <span>{isDemoAudioOn ? 'Voice On' : 'Voice Off'}</span>
                 </button>
 
                 {/* Play / Pause */}
@@ -659,16 +659,16 @@ export default function Home({ onOpenPayment }) {
                             <ShieldCheck size={18} /> 100% Number Privacy
                           </div>
                           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
-                            Aapka personal mobile number kisi ko show nahi hota. Koyi paper slip lagane ki zaroorat nahi.
+                            Your personal phone number remains strictly private. No more leaving vulnerable paper notes on the dashboard.
                           </div>
                         </div>
 
                         <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '12px 16px', borderRadius: '14px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
-                            <Zap size={18} /> Weatherproof & Anti-Tear
+                            <Zap size={18} /> Weatherproof & UV-Resistant
                           </div>
                           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
-                            UV resistant & Waterproof sticker. Dhoop ya barish me bhi saalon saal kharab nahi hota.
+                            Built with industrial-grade vinyl film. Resistant to rain, heat, and sun damage for years of durability.
                           </div>
                         </div>
                       </div>
@@ -745,17 +745,17 @@ export default function Home({ onOpenPayment }) {
                     <div style={{ flex: 1, minWidth: '260px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>
-                          📸 Koyi App Download Nahi Karni!
+                          📸 No App Download Required!
                         </div>
                         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                          Guard, passerby ya traffic police – koi bhi apne phone ke normal camera se QR scan kar sakta hai. 1 second me vehicle contact page khul jata hai.
+                          Guards, passerby, or neighbors can scan instantly with their default phone camera or Google Lens. Connects in under 0.5 seconds.
                         </p>
                       </div>
 
                       <div style={{ display: 'flex', gap: '10px' }}>
                         <div style={{ flex: 1, background: 'rgba(56, 189, 248, 0.08)', padding: '10px', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                           <div style={{ fontSize: '1rem', fontWeight: '900', color: '#38bdf8' }}>0.5s</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>Scan Speed</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>Scan Latency</div>
                         </div>
                         <div style={{ flex: 1, background: 'rgba(45, 212, 191, 0.08)', padding: '10px', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(45, 212, 191, 0.2)' }}>
                           <div style={{ fontSize: '1rem', fontWeight: '900', color: '#2dd4bf' }}>100%</div>
@@ -791,7 +791,7 @@ export default function Home({ onOpenPayment }) {
                         <ShieldCheck size={12} /> SECURE PORTAL
                       </div>
                       <div style={{ fontSize: '1.05rem', fontWeight: '900', color: '#fff' }}>DL 01 AB 1234</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginBottom: '14px' }}>Owner Details Hidden by Parxéé Shield</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginBottom: '14px' }}>Owner Details Protected by Parxéé Shield</div>
 
                       {/* 3 Action Buttons */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -814,10 +814,10 @@ export default function Home({ onOpenPayment }) {
                     <div style={{ flex: 1, minWidth: '260px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#c084fc', marginBottom: '6px' }}>
-                          🔒 Zero Spam & Zero Phone Number Leak
+                          🔒 Zero Spam & Complete Identity Shield
                         </div>
                         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                          Samne wale bande ko aapka number kabhi nahi dikhta. Masked calling server ke through encrypted call lagti hai ya direct automated WhatsApp alert jata hai.
+                          Callers and strangers never see your actual contact number. Calls are routed anonymously through cloud encryption, and alerts are transmitted automatically.
                         </p>
                       </div>
                     </div>
@@ -868,10 +868,10 @@ export default function Home({ onOpenPayment }) {
                         border: '1px solid rgba(255,255,255,0.1)'
                       }}>
                         <div style={{ fontWeight: '800', color: '#2dd4bf', marginBottom: '4px' }}>🚨 PARXÉÉ PARKING ALERT</div>
-                        Aapki car <b>(DL 01 AB 1234)</b> ke paas ek issue report hua hai: <br/>
-                        <span style={{ color: '#fef08a', fontWeight: '700' }}>"Car is blocking resident gate"</span>
+                        Your vehicle <b>(DL 01 AB 1234)</b> has a parking notice: <br/>
+                        <span style={{ color: '#fef08a', fontWeight: '700' }}>"Vehicle is blocking driveway. Please relocate."</span>
                         <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.15)', fontSize: '0.7rem', color: '#a7f3d0' }}>
-                          📍 Live Location Attached<br/>
+                          📍 Live GPS Location Attached<br/>
                           ⏱️ Sent just now
                         </div>
                       </div>
@@ -881,10 +881,10 @@ export default function Home({ onOpenPayment }) {
                     <div style={{ flex: 1, minWidth: '260px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <div style={{ background: 'rgba(16, 185, 129, 0.08)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: '800', color: '#10b981', marginBottom: '6px' }}>
-                          <CheckCircle2 size={20} /> Problem Solved In 10 Seconds!
+                          <CheckCircle2 size={20} /> Resolved in 10 Seconds!
                         </div>
                         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                          Aap turant gaadi move kar dete hain. Na traffic challan ka darr, na towing ki tension, aur na hi kisi ke sath ladai!
+                          Move your vehicle quickly and calmly. Avoid accidental towing, traffic penalties, and neighborhood parking disputes.
                         </p>
                       </div>
 
@@ -910,7 +910,7 @@ export default function Home({ onOpenPayment }) {
                           boxShadow: '0 8px 25px rgba(45, 212, 191, 0.4)'
                         }}
                       >
-                        <span>Apni Car Ke Liye Parxéé Tag Order Karein (₹299)</span>
+                        <span>Order Parxéé Smart Tag Now (₹299)</span>
                         <ArrowRight size={16} />
                       </button>
                     </div>
@@ -995,9 +995,9 @@ export default function Home({ onOpenPayment }) {
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(45, 212, 191, 0.1)', color: '#2dd4bf', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem', marginBottom: '14px' }}>
                 1
               </div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Windshield Par Lagayein</h4>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Apply on Windshield</h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                Tag aane par vehicle number bind karein aur 30 seconds me car ke front glass par chipka dein.
+                Activate your tag online and easily stick it onto your car's front windshield inside in just 30 seconds.
               </p>
             </div>
 
@@ -1005,9 +1005,9 @@ export default function Home({ onOpenPayment }) {
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem', marginBottom: '14px' }}>
                 2
               </div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Emergency Me Scan Hoga</h4>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Scan in Emergency</h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                Jab gaadi raste me ho ya koi issue ho, koi bhi phone camera se scan karke masked call ya WhatsApp message karega.
+                If your car is blocking a gate or in danger, anyone scans the QR using their standard smartphone camera.
               </p>
             </div>
 
@@ -1015,9 +1015,9 @@ export default function Home({ onOpenPayment }) {
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem', marginBottom: '14px' }}>
                 3
               </div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Instant Alert Paayein</h4>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#fff', marginBottom: '6px' }}>Receive Instant Alerts</h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                Aapke phone par WhatsApp alert aur call turant aayegi, bina aapka number public kiye 100% privacy ke sath.
+                Get instant WhatsApp messages or encrypted voice calls immediately while keeping your phone number completely private.
               </p>
             </div>
           </div>

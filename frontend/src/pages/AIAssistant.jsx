@@ -189,7 +189,7 @@ export default function AIAssistant() {
           if (speechDetectedText.trim()) {
             setStatus('idle');
             setSymptom(speechDetectedText.trim());
-            setError("Bhaiya, ye toh kisi ki baat karne ki awaz (human voice) lag rahi hai. Humne aapki baat ko text box me likh diya hai, ek baar check karke Analyze button dabayein! Agar gaadi ke engine ki awaz record karni hai, toh please bina bole engine ke paas jaakar record karein!");
+            setError("Human voice detected. We have populated your spoken symptoms in the text box below. Please review and click 'Run AI Diagnostics' to analyze!");
             return;
           }
 
@@ -214,7 +214,7 @@ export default function AIAssistant() {
 
           if (isErratic && !symptom && !selectedImage) {
             setStatus('idle');
-            setError("Bhaiya, recorded sound gaadi ke engine ki awaz nahi lag rahi hai (voice ya background noise lag raha hai). Apni gaadi ke engine ke paas jaakar clear sound record karo ya fir text box me detail me apni dikkaat likho!");
+            setError("The recorded audio appears to be background conversation or ambient noise rather than steady engine sound. Please record closer to the engine or type your symptoms directly.");
             return;
           }
           

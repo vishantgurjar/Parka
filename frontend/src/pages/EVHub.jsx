@@ -717,8 +717,8 @@ export default function EVHub() {
       return {
         issue: "ICE Vehicle Query Detected",
         dangerLevel: "LOW",
-        details: "Bhaiya, ye EV Diagnostics console hai aur aapki query ICE (Petrol/Diesel/CNG) gaadi se related lag rahi hai. Please 'AI Engine Sound Doctor' page par jaakar ise check karein. EV Hub me sirf EV ki battery, electric motor, regenerative braking aur EV console alerts diagnose hote hain.",
-        action: "AI Engine Sound Doctor page open karein aur wahan input karein.",
+        details: "This console is tailored for Electric Vehicle (EV) diagnostics, but your query appears to relate to an internal combustion (Petrol/Diesel/CNG) vehicle. Please visit our AI Engine Sound Doctor page for specialized ICE acoustic diagnostics.",
+        action: "Navigate to AI Engine Sound Doctor for combustion engine diagnostics.",
         estimatedCost: "₹0",
         suggestedMechanic: "N/A",
         confidence: 100
@@ -729,30 +729,30 @@ export default function EVHub() {
       return {
         issue: "EV Battery Core Thermal Spike",
         dangerLevel: "CRITICAL",
-        details: "Bhaiya, aapki car ki battery cell temp 55°C hit kar chuki hai. Cooling fluid line check karo aur immediate parking me lagake cabin switch off karo.",
-        action: "Gaadi shade area me rokein aur AC shut down karein. 15 minutes rest ke baad cooling system restart karein.",
-        estimatedCost: "₹4,000 - ₹12,000 (Fluid Flush / Sensor repair)",
-        suggestedMechanic: "EV Electrical Specialist",
+        details: "Battery module core temperature indicates elevated thermal stress (>55°C). Active coolant line circulation may be impaired.",
+        action: "Park in shaded area, turn off cabin climate control, and allow system cooling before resuming drive.",
+        estimatedCost: "₹4,000 - ₹12,000 (Coolant Flush / Thermal Sensor)",
+        suggestedMechanic: "EV Certified High-Voltage Technician",
         confidence: 94
       };
     } else if (sym.includes('regen') || sym.includes('brake') || sym.includes('jam')) {
       return {
         issue: "Regenerative Braking Limiter Fault",
         dangerLevel: "MEDIUM",
-        details: "Regen braking recovery system fail lag raha hai. Battery high voltage bypass block switch fail hone ki wajah se energy recharge block ho rahi hai.",
-        action: "Normal hydraulic brakes normal kaam karenge par speed restrict rakhein. High speed se bachein.",
+        details: "Energy recuperation limit reached or regenerative controller switch has tripped. Kinetic energy conversion is currently throttled.",
+        action: "Standard hydraulic friction brakes remain operational. Maintain moderate speeds and schedule workshop calibration.",
         estimatedCost: "₹2,500 - ₹6,500",
-        suggestedMechanic: "EV Specialist / Brand Workshop",
+        suggestedMechanic: "Authorized EV Service Center",
         confidence: 89
       };
     } else {
       return {
         issue: "EV Sub-System Ground Isolation Leak",
         dangerLevel: "MEDIUM",
-        details: "Instrument screen par orange warning light aayi hai, iska matlab system ground safety wire me insulation fault detect hua hai. Isse power drop ho sakti hai.",
-        action: "Wet terrain ya water logging me gaadi dhyan se chalayein. Scan check mandatory hai.",
+        details: "High-voltage ground isolation sensor reports potential resistance drop across the auxiliary wiring harness.",
+        action: "Avoid deep standing water or high-pressure underbody washes until an OBD isolation scan is performed.",
         estimatedCost: "₹3,500 - ₹7,000",
-        suggestedMechanic: "EV Wiring Specialist",
+        suggestedMechanic: "Certified EV Electrical Specialist",
         confidence: 85
       };
     }
