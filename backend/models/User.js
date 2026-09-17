@@ -61,8 +61,23 @@ const UserSchema = new mongoose.Schema({
   rcExpiryDate: { type: String },
   licenseNumber: { type: String },
   licenseExpiryDate: { type: String },
-  // Gamification
+  // Gamification & Safety Score
   parxeePoints: { type: Number, default: 0 },
+  safetyScore: { type: Number, default: 88 },
+  safetyTier: { type: String, default: 'Gold Guard' },
+  badges: [{
+    name: String,
+    icon: String,
+    description: String,
+    unlockedAt: { type: Date, default: Date.now }
+  }],
+  redeemedPerks: [{
+    code: String,
+    title: String,
+    discount: String,
+    category: String,
+    redeemedAt: { type: Date, default: Date.now }
+  }],
   
   // Push Notifications
   pushSubscription: { type: Object },

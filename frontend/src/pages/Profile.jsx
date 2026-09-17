@@ -2,7 +2,7 @@ import { useContext, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
-import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle, Copy, Check, Gift, Sparkles, Wrench } from 'lucide-react';
 import SEO from '../components/SEO';
 import EmergencySticker from '../components/EmergencySticker';
 import { toPng } from 'html-to-image';
@@ -223,41 +223,66 @@ export default function Profile() {
     }
   };
 
+
+  const [copiedCoupon, setCopiedCoupon] = useState('');
+  const [redeemedVoucher, setRedeemedVoucher] = useState(null);
+
+  const perks = [
+    { id: 1, name: 'Highway Mechanic SOS Discount', category: 'Mechanic', discount: '₹150 OFF', description: 'Instant ₹150 discount on breakdown & puncture assistance.', cost: 100, icon: <Wrench size={20} color="#eab308" /> },
+    { id: 2, name: 'P2P EV Charger Slot Voucher', category: 'EV Charging', discount: '1 Free Hour', description: '1 Free 5kWh session at any verified host EV charger.', cost: 120, icon: <Zap size={20} color="#2dd4bf" /> },
+    { id: 3, name: 'Reserved Parking Spot Pass', category: 'Parking', discount: '25% OFF', description: 'Save 25% on your next reserved driveway booking.', cost: 80, icon: <MapPin size={20} color="#818cf8" /> },
+    { id: 4, name: 'Priority Smart QR Replacement', category: 'Smart Tag', discount: 'Free Dispatch', description: 'Free replacement sticker delivered with priority dispatch.', cost: 150, icon: <ShieldCheck size={20} color="#10b981" /> }
+  ];
+
   const redeemPerk = async (perk) => {
     if ((user.parxeePoints || 0) < perk.cost) {
-      return toast.error(`Insufficient points! You need ${perk.cost} points.`);
+      toast.error(`You need ${perk.cost} Parxéé Points to unlock this perk.`);
+      return;
     }
-
     setIsLoading(true);
     try {
       const baseUrl = getBackendUrl();
       const res = await fetch(`${baseUrl}/api/user/redeem-points`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user._id || user.id, pointsToDeduct: perk.cost, perkName: perk.name })
+        body: JSON.stringify({
+          userId: user._id || user.id,
+          pointsToDeduct: perk.cost,
+          perkName: perk.name,
+          category: perk.category || 'Voucher',
+          discount: perk.discount || 'Special'
+        })
       });
       const data = await res.json();
       if (res.ok) {
+        toast.success(data.message);
+        setRedeemedVoucher({ code: data.couponCode, title: perk.name });
         login(data.user, localStorage.getItem('parkeToken'));
-        toast.success(`Successfully redeemed ${perk.name}!`);
-        setIsRedeemModalOpen(false);
       } else {
-        toast.error(data.message || 'Redemption failed.');
+        toast.error(data.message || 'Failed to redeem reward.');
       }
     } catch (err) {
       console.error(err);
-      toast.error('Network error during redemption.');
+      toast.error('Network error during reward redemption.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const perks = [
-    { id: 1, name: 'Free Highway Towing', description: 'One-time free towing service up to 20km.', cost: 500, icon: <Car size={20} /> },
-    { id: 2, name: 'Gold Membership (1 Mo)', description: 'Upgrade to Gold for 30 days for free.', cost: 1000, icon: <Award size={20} /> },
-    { id: 3, name: 'Priority SOS Response', description: 'Get top priority for your next 3 SOS requests.', cost: 300, icon: <Zap size={20} /> },
-    { id: 4, name: 'Premium Dashboard Theme', description: 'Unlock exclusive profile animations and colors.', cost: 200, icon: <Zap size={20} /> }
-  ];
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCoupon(code);
+    toast.success("Coupon code copied to clipboard! 📋");
+    setTimeout(() => setCopiedCoupon(''), 3000);
+  };
+
+  // Dynamic Safety Score calculation
+  let computedScore = 78;
+  if (user.smartTagId) computedScore += 8;
+  if (user.phone) computedScore += 4;
+  if (user.rcNumber) computedScore += 5;
+  if (user.emergencyContact) computedScore += 5;
+  const safetyScore = user.safetyScore || computedScore;
 
   const tierColor = user.subscriptionTier === 'diamond' ? '#818cf8' : (user.subscriptionTier === 'gold' ? '#eab308' : '#38bdf8');
   const isVerified = user.rcNumber && user.licenseNumber;
@@ -274,6 +299,136 @@ export default function Profile() {
               <User size={14} /> ACCOUNT OVERVIEW
             </div>
             <h2 className="section-title">Your Premium <span className="text-gradient">Profile</span></h2>
+          </div>
+
+          {/* ======================================================== */}
+          {/* CITY SAFETY SCORE & GAMIFIED REWARDS HUB */}
+          {/* ======================================================== */}
+          <div className="glass-card bento-item light-sweep" style={{
+            padding: '2rem',
+            marginBottom: '35px',
+            borderRadius: '24px',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(3, 7, 18, 0.7) 100%)',
+            boxShadow: '0 15px 35px rgba(0,0,0,0.4), 0 0 25px rgba(16, 185, 129, 0.1)'
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1fr 1.6fr', gap: '2rem', alignItems: 'center' }}>
+              
+              {/* Circular Animated Score Gauge */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#10b981', letterSpacing: '1.5px', marginBottom: '10px' }}>
+                  City Safety Score
+                </span>
+
+                <div style={{ position: 'relative', width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="100%" height="100%" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+                    <circle 
+                      cx="50" cy="50" r="40" 
+                      fill="transparent" 
+                      stroke="url(#safetyScoreGrad)" 
+                      strokeWidth="8" 
+                      strokeDasharray={2 * Math.PI * 40}
+                      strokeDashoffset={2 * Math.PI * 40 * (1 - (safetyScore / 100))}
+                      strokeLinecap="round"
+                      transform="rotate(-90 50 50)"
+                      style={{
+                        transition: 'stroke-dashoffset 1s ease-in-out',
+                        filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))'
+                      }}
+                    />
+                    <defs>
+                      <linearGradient id="safetyScoreGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#2dd4bf" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  
+                  <div style={{ position: 'absolute', textAlign: 'center' }}>
+                    <strong style={{ fontSize: '2.4rem', color: '#fff', display: 'block', lineHeight: 1, letterSpacing: '-1px' }}>
+                      {safetyScore}
+                    </strong>
+                    <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 'bold' }}>/ 100</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '6px 14px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold', marginTop: '10px' }}>
+                  <ShieldCheck size={14} /> Elite Urban Guardian
+                </div>
+              </div>
+
+              {/* Badges, Points & Rewards Callout */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', margin: 0 }}>Urban Safety Badges</h3>
+                    <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '4px 0 0 0' }}>Earned by safe parking, verified QR tag, and community protection</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '6px 14px', borderRadius: '12px' }}>
+                    <Award size={18} color="#38bdf8" />
+                    <span style={{ fontSize: '0.9rem', fontWeight: '800', color: '#38bdf8' }}>{user.parxeePoints || 0} pts</span>
+                  </div>
+                </div>
+
+                {/* 4 Badges */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '1.5rem' }}>
+                  {[
+                    { title: 'Verified Citizen', icon: '🛡️', color: '#10b981', desc: 'ID verified' },
+                    { title: 'Smart Parker', icon: '🚗', color: '#38bdf8', desc: 'Zero violations' },
+                    { title: 'EV Pioneer', icon: '⚡', color: '#2dd4bf', desc: 'Clean transit' },
+                    { title: 'SOS Guardian', icon: '🤝', color: '#f59e0b', desc: 'Community hero' }
+                  ].map((badge, idx) => (
+                    <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{badge.icon}</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#fff' }}>{badge.title}</div>
+                      <div style={{ fontSize: '0.65rem', color: badge.color, fontWeight: 'bold' }}>{badge.desc}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Actions & Redeem Button */}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => { setRedeemedVoucher(null); setIsRedeemModalOpen(true); }}
+                    className="btn-gradient light-sweep"
+                    style={{
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      fontSize: '0.85rem',
+                      border: 'none',
+                      color: '#000',
+                      background: 'linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Gift size={16} /> Redeem Discount Perks
+                  </button>
+                  {user.redeemedPerks && user.redeemedPerks.length > 0 && (
+                    <button
+                      onClick={() => { setRedeemedVoucher(null); setIsRedeemModalOpen(true); }}
+                      style={{
+                        padding: '12px 18px',
+                        borderRadius: '12px',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🎫 My Vouchers ({user.redeemedPerks.length})
+                    </button>
+                  )}
+                </div>
+              </div>
+
+            </div>
           </div>
 
           <div className="form-grid form-grid-2" style={{ gap: '30px', alignItems: 'start' }}>
@@ -520,41 +675,119 @@ export default function Profile() {
 
       {/* --- MODALS --- */}
 
-      {/* REDEEM STORE MODAL */}
+      {/* REDEEM STORE & VOUCHERS MODAL */}
       {isRedeemModalOpen && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="glass-card" style={{ width: '90%', maxWidth: '500px', padding: '0', overflow: 'hidden', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                <div style={{ background: 'var(--gradient-primary)', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <ShoppingBag size={20} /> Redeem Rewards
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+            <div className="glass-card" style={{ width: '100%', maxWidth: '520px', padding: '0', overflow: 'hidden', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '20px', boxShadow: '0 25px 50px rgba(0,0,0,0.6)' }}>
+                <div style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                        <Gift size={22} color="#10b981" /> Safety Rewards Store
                     </h3>
-                    <button onClick={() => setIsRedeemModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X /></button>
+                    <button onClick={() => setIsRedeemModalOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18} /></button>
                 </div>
-                <div style={{ padding: '20px' }}>
-                    <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '12px', borderRadius: '12px', marginBottom: '20px', textAlign: 'center' }}>
-                        <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Available Points:</span>
-                        <h4 style={{ fontSize: '1.5rem', color: '#38bdf8', fontWeight: '900' }}>{user.parxeePoints || 0}</h4>
+                
+                <div style={{ padding: '24px', maxHeight: '80vh', overflowY: 'auto' }}>
+                    
+                    {/* Points Balance Banner */}
+                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '14px', borderRadius: '14px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Available Parxéé Points</span>
+                          <h4 style={{ fontSize: '1.8rem', color: '#10b981', fontWeight: '900', margin: 0 }}>{user.parxeePoints || 0}</h4>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: '#10b981', background: 'rgba(16, 185, 129, 0.15)', padding: '6px 12px', borderRadius: '50px', fontWeight: 'bold' }}>
+                          Score: {safetyScore}/100 🛡️
+                        </span>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '350px', overflowY: 'auto' }}>
-                        {perks.map(perk => (
-                            <div key={perk.id} className="glass" style={{ padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+
+                    {/* Recently Claimed Voucher Celebration */}
+                    {redeemedVoucher && (
+                      <div className="fadeIn" style={{ background: 'rgba(16, 185, 129, 0.15)', border: '2px dashed #10b981', borderRadius: '16px', padding: '16px', textAlign: 'center', marginBottom: '20px' }}>
+                        <Sparkles size={24} color="#10b981" style={{ margin: '0 auto 6px' }} />
+                        <h4 style={{ fontSize: '1rem', color: '#fff', margin: '0 0 4px 0', fontWeight: 'bold' }}>🎉 Coupon Unlocked: {redeemedVoucher.title}</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
+                          <code style={{ background: '#000', padding: '6px 14px', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981', letterSpacing: '1px' }}>
+                            {redeemedVoucher.code}
+                          </code>
+                          <button
+                            onClick={() => handleCopyCode(redeemedVoucher.code)}
+                            style={{ padding: '8px 12px', borderRadius: '8px', background: '#10b981', border: 'none', color: '#000', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', fontSize: '0.8rem' }}
+                          >
+                            {copiedCoupon === redeemedVoucher.code ? <Check size={14} /> : <Copy size={14} />}
+                            {copiedCoupon === redeemedVoucher.code ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Perks List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '1px' }}>
+                          Available Perks To Unlock
+                        </span>
+                        {perks.map(perk => {
+                          const canAfford = (user.parxeePoints || 0) >= perk.cost;
+                          return (
+                            <div key={perk.id} className="glass" style={{ padding: '16px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.06)', gap: '12px' }}>
                                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <div style={{ color: '#38bdf8' }}>{perk.icon}</div>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                      {perk.icon}
+                                    </div>
                                     <div>
-                                        <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{perk.name}</p>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{perk.description}</p>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          <p style={{ fontWeight: 'bold', fontSize: '0.9rem', margin: 0, color: '#fff' }}>{perk.name}</p>
+                                          <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '800' }}>{perk.discount}</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--muted)', margin: '4px 0 0 0' }}>{perk.description}</p>
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => redeemPerk(perk)}
-                                    disabled={isLoading || (user.parxeePoints || 0) < perk.cost}
-                                    style={{ padding: '6px 14px', borderRadius: '50px', border: 'none', background: (user.parxeePoints || 0) >= perk.cost ? '#38bdf8' : 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                    disabled={isLoading || !canAfford}
+                                    style={{ 
+                                      padding: '8px 16px', 
+                                      borderRadius: '50px', 
+                                      border: 'none', 
+                                      background: canAfford ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255,255,255,0.06)', 
+                                      color: canAfford ? '#fff' : 'rgba(255,255,255,0.4)', 
+                                      fontSize: '0.8rem', 
+                                      fontWeight: '800', 
+                                      cursor: canAfford ? 'pointer' : 'not-allowed',
+                                      flexShrink: 0 
+                                    }}
                                 >
                                     {perk.cost} P
                                 </button>
                             </div>
-                        ))}
+                          );
+                        })}
                     </div>
+
+                    {/* Active Vouchers List */}
+                    {user.redeemedPerks && user.redeemedPerks.length > 0 && (
+                      <div style={{ marginTop: '25px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '15px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#38bdf8', letterSpacing: '1px', display: 'block', marginBottom: '10px' }}>
+                          Your Active Vouchers ({user.redeemedPerks.length})
+                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {user.redeemedPerks.map((voucher, vIdx) => (
+                            <div key={vIdx} style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#fff' }}>{voucher.title}</div>
+                                <code style={{ fontSize: '0.75rem', color: '#38bdf8', fontFamily: 'monospace' }}>{voucher.code}</code>
+                              </div>
+                              <button
+                                onClick={() => handleCopyCode(voucher.code)}
+                                style={{ background: 'transparent', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', borderRadius: '6px', padding: '4px 10px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                {copiedCoupon === voucher.code ? <Check size={12} /> : <Copy size={12} />}
+                                {copiedCoupon === voucher.code ? 'Copied' : 'Copy'}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                 </div>
             </div>
         </div>

@@ -620,12 +620,42 @@ export default function EVHub() {
 
 
   // --- CALCULATOR STATE & LOGIC ---
+  const [calcSubTab, setCalcSubTab] = useState('savings'); // 'savings' | 'range'
   const [calcModel, setCalcModel] = useState(EV_MODELS[0]);
   const [calcSoc, setCalcSoc] = useState(80);
   const [calcSpeed, setCalcSpeed] = useState(80);
   const [calcAc, setCalcAc] = useState(true);
   const [calcTemp, setCalcTemp] = useState('Normal'); // 'Cold', 'Normal', 'Hot'
   const [calcEco, setCalcEco] = useState(false);
+
+  // --- FUEL SAVINGS CALCULATOR STATE ---
+  const [savingsVehicleType, setSavingsVehicleType] = useState('hatchback');
+  const [savingsDailyKm, setSavingsDailyKm] = useState(45);
+  const [savingsFuelPrice, setSavingsFuelPrice] = useState(96.7);
+  const [savingsFuelMileage, setSavingsFuelMileage] = useState(15);
+  const [savingsElectricityRate, setSavingsElectricityRate] = useState(7.5);
+
+  const VEHICLE_PRESETS = {
+    scooter: { name: '2-Wheeler / Scooter', icon: '🛵', defaultMileage: 45, evWhPerKm: 32 },
+    hatchback: { name: 'Compact Hatchback', icon: '🚗', defaultMileage: 16, evWhPerKm: 115 },
+    sedan: { name: 'Executive Sedan', icon: '🚘', defaultMileage: 13.5, evWhPerKm: 130 },
+    suv: { name: 'Compact / Mid SUV', icon: '🚙', defaultMileage: 11, evWhPerKm: 155 }
+  };
+
+  const handleVehiclePresetSelect = (type) => {
+    setSavingsVehicleType(type);
+    setSavingsFuelMileage(VEHICLE_PRESETS[type].defaultMileage);
+  };
+
+  const currentSavingsPreset = VEHICLE_PRESETS[savingsVehicleType] || VEHICLE_PRESETS.hatchback;
+  const dailyFuelCost = Math.round((savingsDailyKm / (Number(savingsFuelMileage) || 1)) * Number(savingsFuelPrice));
+  const dailyEvCost = Math.round((savingsDailyKm * (currentSavingsPreset.evWhPerKm / 1000)) * Number(savingsElectricityRate));
+  const dailySavings = Math.max(0, dailyFuelCost - dailyEvCost);
+  const monthlySavings = dailySavings * 30;
+  const annualSavings = dailySavings * 365;
+  const fiveYearSavings = annualSavings * 5;
+  const annualCo2Kg = Math.round(savingsDailyKm * 365 * 0.142);
+  const treesEquivalent = Math.max(1, Math.round(annualCo2Kg / 21.7));
 
   // Dynamic range math logic
   const calculateOutput = () => {
@@ -1012,8 +1042,15 @@ export default function EVHub() {
               🚨 Emergency SOS
             </button>
             <button 
-              onClick={() => setActiveTab('calculator')} 
-              className={`switcher-btn ${activeTab === 'calculator' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('calculator'); setCalcSubTab('savings'); }} 
+              className={`switcher-btn ${activeTab === 'calculator' && calcSubTab === 'savings' ? 'active' : ''}`}
+              style={{ flexShrink: 0, padding: '12px 20px', borderRadius: '14px', fontSize: '0.85rem', fontWeight: 'bold' }}
+            >
+              ⚡ Fuel Savings Calculator
+            </button>
+            <button 
+              onClick={() => { setActiveTab('calculator'); setCalcSubTab('range'); }} 
+              className={`switcher-btn ${activeTab === 'calculator' && calcSubTab === 'range' ? 'active' : ''}`}
               style={{ flexShrink: 0, padding: '12px 20px', borderRadius: '14px', fontSize: '0.85rem', fontWeight: 'bold' }}
             >
               📊 Range Estimator
@@ -2027,195 +2064,472 @@ export default function EVHub() {
           )}
 
           {/* ======================================================== */}
-          {/* TAB 5: EV RANGE & CHARGE SPEED CALCULATOR */}
+          {/* TAB 5: EV FUEL SAVINGS & RANGE CALCULATOR */}
           {/* ======================================================== */}
           {activeTab === 'calculator' && (
-            <div className="fadeIn" style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1.2fr 1fr', gap: '2rem' }}>
+            <div className="fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               
-              {/* Sliders Input */}
-              <div className="glass bento-item" style={{ padding: '2.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Car size={20} color="#2dd4bf" /> Range Estimator Parameters
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  
-                  {/* Model dropdown */}
-                  <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>Select EV Vehicle Model</label>
-                    <select 
-                      value={calcModel.name} 
-                      onChange={(e) => setCalcModel(EV_MODELS.find(m => m.name === e.target.value))}
-                      style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '0.9rem' }}
-                    >
-                      {EV_MODELS.map(m => (
-                        <option key={m.name} value={m.name} style={{ background: '#030712' }}>{m.name} ({m.batteryKwh} kWh)</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* SoC Slider */}
-                  <div>
-                    <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Current Battery SoC (%)</label>
-                      <strong style={{ color: '#2dd4bf' }}>{calcSoc}%</strong>
-                    </div>
-                    <input 
-                      type="range" min="5" max="100" 
-                      value={calcSoc} 
-                      onChange={(e) => setCalcSoc(parseInt(e.target.value))}
-                      style={{ width: '100%', accentColor: '#2dd4bf', cursor: 'pointer' }}
-                    />
-                  </div>
-
-                  {/* Speed Slider */}
-                  <div>
-                    <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Cruising Speed (km/h)</label>
-                      <strong style={{ color: '#2dd4bf' }}>{calcSpeed} km/h</strong>
-                    </div>
-                    <input 
-                      type="range" min="40" max="130" 
-                      value={calcSpeed} 
-                      onChange={(e) => setCalcSpeed(parseInt(e.target.value))}
-                      style={{ width: '100%', accentColor: '#2dd4bf', cursor: 'pointer' }}
-                    />
-                  </div>
-
-                  {/* Temperature Buttons */}
-                  <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Ambient Weather Temperature</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                      {['Cold (5°C)', 'Normal (25°C)', 'Hot (42°C)'].map(t => {
-                        const val = t.split(' ')[0];
-                        return (
-                          <button 
-                            key={val}
-                            type="button"
-                            onClick={() => setCalcTemp(val)}
-                            style={{ 
-                              padding: '10px', 
-                              borderRadius: '8px', 
-                              fontSize: '0.8rem', 
-                              fontWeight: 'bold',
-                              background: calcTemp === val ? '#2dd4bf' : 'rgba(255,255,255,0.03)',
-                              color: calcTemp === val ? '#000' : '#fff',
-                              border: '1px solid rgba(255,255,255,0.05)'
-                            }}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Toggles (AC & ECO) */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.25rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Cabin A/C ON</span>
-                      <input 
-                        type="checkbox" checked={calcAc} 
-                        onChange={(e) => setCalcAc(e.target.checked)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#2dd4bf' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#10b981' }}>Eco Mode ECO</span>
-                      <input 
-                        type="checkbox" checked={calcEco} 
-                        onChange={(e) => setCalcEco(e.target.checked)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#10b981' }}
-                      />
-                    </div>
-                  </div>
-                </div>
+              {/* Sub-tab Navigation */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                <button
+                  onClick={() => setCalcSubTab('savings')}
+                  className="switcher-btn"
+                  style={{
+                    padding: '12px 28px',
+                    borderRadius: '50px',
+                    fontWeight: '800',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    background: calcSubTab === 'savings' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    border: calcSubTab === 'savings' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: calcSubTab === 'savings' ? '0 10px 25px rgba(16, 185, 129, 0.3)' : 'none',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  ⚡ EV vs Petrol Savings Calculator
+                </button>
+                <button
+                  onClick={() => setCalcSubTab('range')}
+                  className="switcher-btn"
+                  style={{
+                    padding: '12px 28px',
+                    borderRadius: '50px',
+                    fontWeight: '800',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    background: calcSubTab === 'range' ? 'linear-gradient(135deg, #2dd4bf 0%, #0ea5e9 100%)' : 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    border: calcSubTab === 'range' ? '1px solid #2dd4bf' : '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: calcSubTab === 'range' ? '0 10px 25px rgba(45, 212, 191, 0.3)' : 'none',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  📊 Range & Charging Time Estimator
+                </button>
               </div>
-              {/* Output displays */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                
-                {/* Range Card with Circular SVG Dial Gauge */}
-                <div className="bento-item glass light-sweep" style={{ 
-                  padding: '2.5rem', 
-                  background: 'rgba(45, 212, 191, 0.02)', 
-                  borderColor: 'rgba(45, 212, 191, 0.2)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative'
-                }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#2dd4bf', marginBottom: '1.5rem', alignSelf: 'flex-start' }}>Estimated Range Output</span>
+
+              {calcSubTab === 'savings' ? (
+                /* --- FUEL SAVINGS CALCULATOR VIEW --- */
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1.15fr 1fr', gap: '2rem' }}>
                   
-                  <div style={{ position: 'relative', width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="100%" height="100%" viewBox="0 0 100 100">
-                      <circle 
-                        cx="50" cy="50" r="40" 
-                        fill="transparent" 
-                        stroke="rgba(255, 255, 255, 0.05)" 
-                        strokeWidth="7" 
-                      />
-                      <circle 
-                        cx="50" cy="50" r="40" 
-                        fill="transparent" 
-                        stroke={estimatedRange > 250 ? '#10b981' : estimatedRange > 120 ? '#eab308' : '#ef4444'} 
-                        strokeWidth="7" 
-                        strokeDasharray={2 * Math.PI * 40}
-                        strokeDashoffset={2 * Math.PI * 40 * (1 - Math.min(1, estimatedRange / 600))}
-                        strokeLinecap="round"
-                        transform="rotate(-90 50 50)"
-                        style={{
-                          transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.8s ease',
-                          filter: `drop-shadow(0 0 6px ${estimatedRange > 250 ? 'rgba(16, 185, 129, 0.5)' : estimatedRange > 120 ? 'rgba(234, 179, 8, 0.5)' : 'rgba(239, 68, 68, 0.5)'})`
-                        }}
-                      />
-                    </svg>
+                  {/* Controls Card */}
+                  <div className="glass bento-item" style={{ padding: '2.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                        <Zap size={22} />
+                      </div>
+                      <div>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', margin: 0 }}>Commute Parameters</h3>
+                        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: 0 }}>Calculate how much money and carbon you save</p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      
+                      {/* Vehicle Preset Selector */}
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#10b981', letterSpacing: '1px', display: 'block', marginBottom: '8px' }}>
+                          Select Vehicle Category
+                        </label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' }}>
+                          {Object.entries(VEHICLE_PRESETS).map(([key, item]) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => handleVehiclePresetSelect(key)}
+                              style={{
+                                padding: '12px 8px',
+                                borderRadius: '12px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                border: savingsVehicleType === key ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.08)',
+                                background: savingsVehicleType === key ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.02)',
+                                color: savingsVehicleType === key ? '#10b981' : '#fff',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>{item.icon}</div>
+                              <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{item.name.split(' ')[0]}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Daily Commute Slider */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                            Daily Commute Distance
+                          </label>
+                          <strong style={{ color: '#10b981', fontSize: '1.05rem' }}>{savingsDailyKm} km / day</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="180"
+                          step="5"
+                          value={savingsDailyKm}
+                          onChange={(e) => setSavingsDailyKm(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#10b981', cursor: 'pointer' }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                          {[20, 45, 75, 120].map(presetKm => (
+                            <button
+                              key={presetKm}
+                              type="button"
+                              onClick={() => setSavingsDailyKm(presetKm)}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '0.7rem',
+                                background: savingsDailyKm === presetKm ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                color: savingsDailyKm === presetKm ? '#10b981' : 'var(--muted)',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {presetKm} km
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Petrol Price */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                            Petrol / Diesel Price (₹/L)
+                          </label>
+                          <strong style={{ color: '#fff' }}>₹{savingsFuelPrice} / L</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min="85"
+                          max="125"
+                          step="0.5"
+                          value={savingsFuelPrice}
+                          onChange={(e) => setSavingsFuelPrice(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#10b981', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                      {/* Petrol Mileage */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                            Petrol Car Mileage (km/L)
+                          </label>
+                          <strong style={{ color: '#fff' }}>{savingsFuelMileage} km/L</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min="8"
+                          max="50"
+                          step="1"
+                          value={savingsFuelMileage}
+                          onChange={(e) => setSavingsFuelMileage(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#10b981', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                      {/* Electricity Tariff */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                            Electricity Tariff (₹/unit)
+                          </label>
+                          <strong style={{ color: '#fff' }}>₹{savingsElectricityRate} / kWh</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min="4"
+                          max="16"
+                          step="0.5"
+                          value={savingsElectricityRate}
+                          onChange={(e) => setSavingsElectricityRate(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#10b981', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Output & Savings Results */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     
-                    <div style={{ position: 'absolute', textAlign: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', letterSpacing: '1px' }}>Range</span>
-                      <strong style={{ fontSize: '3.2rem', color: '#fff', display: 'block', lineHeight: 1.1, letterSpacing: '-1.5px' }}>{estimatedRange}</strong>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--muted)', fontWeight: 'bold' }}>KM</span>
+                    {/* Hero Monthly Savings Card */}
+                    <div className="bento-item glass light-sweep" style={{
+                      padding: '2.5rem 2rem',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.03) 100%)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                      borderRadius: '24px',
+                      textAlign: 'center',
+                      position: 'relative'
+                    }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#10b981', letterSpacing: '1.5px', display: 'block', marginBottom: '8px' }}>
+                        Estimated Monthly Savings
+                      </span>
+                      <div style={{ fontSize: 'clamp(2.5rem, 5vw, 3.8rem)', fontWeight: '900', color: '#10b981', letterSpacing: '-1.5px', textShadow: '0 0 25px rgba(16, 185, 129, 0.4)' }}>
+                        ₹{monthlySavings.toLocaleString('en-IN')}
+                      </div>
+                      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '6px' }}>
+                        Cash kept in your pocket every 30 days by driving electric!
+                      </p>
+
+                      {/* Daily Cost Comparison Bar */}
+                      <div style={{ marginTop: '2rem', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '10px' }}>
+                          <span style={{ color: '#ef4444' }}>⛽ Petrol: ₹{dailyFuelCost}/day</span>
+                          <span style={{ color: '#10b981' }}>⚡ EV: ₹{dailyEvCost}/day</span>
+                        </div>
+                        <div style={{ width: '100%', height: '10px', background: 'rgba(239, 68, 68, 0.4)', borderRadius: '10px', overflow: 'hidden', display: 'flex' }}>
+                          <div style={{ width: `${Math.min(100, Math.round((dailyEvCost / (dailyFuelCost || 1)) * 100))}%`, background: '#10b981', height: '100%' }}></div>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '8px', fontWeight: 'bold' }}>
+                          💰 Net Daily Savings: ₹{dailySavings} / day
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Long term savings & Ecological Impact grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      
+                      <div className="bento-item glass" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                          1-Year Savings
+                        </span>
+                        <strong style={{ fontSize: '1.6rem', color: '#fff', display: 'block', margin: '6px 0' }}>
+                          ₹{annualSavings.toLocaleString('en-IN')}
+                        </strong>
+                        <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 'bold' }}>
+                          5-Yr: ₹{fiveYearSavings.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <div className="bento-item glass" style={{ padding: '1.5rem', textAlign: 'center', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#22c55e' }}>
+                          🌿 CO₂ Prevented
+                        </span>
+                        <strong style={{ fontSize: '1.6rem', color: '#22c55e', display: 'block', margin: '6px 0' }}>
+                          {annualCo2Kg.toLocaleString('en-IN')} kg
+                        </strong>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                          🌳 = {treesEquivalent} trees planted/yr
+                        </span>
+                      </div>
+
+                    </div>
+
+                    {/* CTA Card */}
+                    <div style={{ display: 'flex', gap: '10px', background: 'rgba(45, 212, 191, 0.05)', border: '1px solid rgba(45, 212, 191, 0.2)', padding: '1.25rem', borderRadius: '16px', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ textAlign: 'left' }}>
+                        <strong style={{ fontSize: '0.9rem', color: '#2dd4bf', display: 'block' }}>Ready to Charge Smarter?</strong>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Find verified private home EV chargers nearby on our P2P grid.</span>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('grid-share')}
+                        className="btn-gradient light-sweep"
+                        style={{ padding: '10px 18px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer', flexShrink: 0 }}
+                      >
+                        Explore Grid
+                      </button>
+                    </div>
+
                   </div>
 
-                  <div style={{ marginTop: '1.5rem', width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--muted)' }}>
-                      <span>Efficiency: <strong style={{ color: '#fff' }}>{calcModel.efficiency} Wh/km</strong></span>
-                      <span>Battery: <strong style={{ color: '#fff' }}>{calcModel.batteryKwh} kWh</strong></span>
-                    </div>
-                  </div>
                 </div>
-
-                {/* Charge Time Comparison card */}
-                <div className="glass bento-item" style={{ padding: '2rem' }}>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '1.25rem' }}>Estimated Charging Time (to 80%)</h4>
+              ) : (
+                /* --- RANGE ESTIMATOR VIEW --- */
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1.2fr 1fr', gap: '2rem' }}>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Slow AC Wallbox (7.2 kW)</span>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Ideal for overnight charging</span>
-                      </div>
-                      <strong style={{ fontSize: '1.2rem', color: '#fff' }}>{timeSlow}</strong>
-                    </div>
+                  {/* Sliders Input */}
+                  <div className="glass bento-item" style={{ padding: '2.5rem' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '900', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Car size={20} color="#2dd4bf" /> Range Estimator Parameters
+                    </h3>
 
-                    <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', background: 'rgba(45, 212, 191, 0.05)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(45, 212, 191, 0.2)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      
+                      {/* Model dropdown */}
                       <div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#2dd4bf' }}>DC Fast Charger (50 kW)</span>
-                        <span style={{ fontSize: '0.7rem', color: '#2dd4bf', opacity: 0.8 }}>Highway pitstop charge speed</span>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>Select EV Vehicle Model</label>
+                        <select 
+                          value={calcModel.name} 
+                          onChange={(e) => setCalcModel(EV_MODELS.find(m => m.name === e.target.value))}
+                          style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', fontSize: '0.9rem' }}
+                        >
+                          {EV_MODELS.map(m => (
+                            <option key={m.name} value={m.name} style={{ background: '#030712' }}>{m.name} ({m.batteryKwh} kWh)</option>
+                          ))}
+                        </select>
                       </div>
-                      <strong style={{ fontSize: '1.2rem', color: '#2dd4bf' }}>{timeFast}</strong>
+
+                      {/* SoC Slider */}
+                      <div>
+                        <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Current Battery SoC (%)</label>
+                          <strong style={{ color: '#2dd4bf' }}>{calcSoc}%</strong>
+                        </div>
+                        <input 
+                          type="range" min="5" max="100" 
+                          value={calcSoc} 
+                          onChange={(e) => setCalcSoc(parseInt(e.target.value))}
+                          style={{ width: '100%', accentColor: '#2dd4bf', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                      {/* Speed Slider */}
+                      <div>
+                        <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Cruising Speed (km/h)</label>
+                          <strong style={{ color: '#2dd4bf' }}>{calcSpeed} km/h</strong>
+                        </div>
+                        <input 
+                          type="range" min="40" max="130" 
+                          value={calcSpeed} 
+                          onChange={(e) => setCalcSpeed(parseInt(e.target.value))}
+                          style={{ width: '100%', accentColor: '#2dd4bf', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                      {/* Temperature Buttons */}
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Ambient Weather Temperature</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                          {['Cold (5°C)', 'Normal (25°C)', 'Hot (42°C)'].map(t => {
+                            const val = t.split(' ')[0];
+                            return (
+                              <button 
+                                key={val}
+                                type="button"
+                                onClick={() => setCalcTemp(val)}
+                                style={{ 
+                                  padding: '10px', 
+                                  borderRadius: '8px', 
+                                  fontSize: '0.8rem', 
+                                  fontWeight: 'bold',
+                                  background: calcTemp === val ? '#2dd4bf' : 'rgba(255,255,255,0.03)',
+                                  color: calcTemp === val ? '#000' : '#fff',
+                                  border: '1px solid rgba(255,255,255,0.05)'
+                                }}
+                              >
+                                {t}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Toggles (AC & ECO) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Cabin A/C ON</span>
+                          <input 
+                            type="checkbox" checked={calcAc} 
+                            onChange={(e) => setCalcAc(e.target.checked)}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#2dd4bf' }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#10b981' }}>Eco Mode ECO</span>
+                          <input 
+                            type="checkbox" checked={calcEco} 
+                            onChange={(e) => setCalcEco(e.target.checked)}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#10b981' }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  {/* Output displays */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    
+                    {/* Range Card with Circular SVG Dial Gauge */}
+                    <div className="bento-item glass light-sweep" style={{ 
+                      padding: '2.5rem', 
+                      background: 'rgba(45, 212, 191, 0.02)', 
+                      borderColor: 'rgba(45, 212, 191, 0.2)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#2dd4bf', marginBottom: '1.5rem', alignSelf: 'flex-start' }}>Estimated Range Output</span>
+                      
+                      <div style={{ position: 'relative', width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="100%" height="100%" viewBox="0 0 100 100">
+                          <circle 
+                            cx="50" cy="50" r="40" 
+                            fill="transparent" 
+                            stroke="rgba(255, 255, 255, 0.05)" 
+                            strokeWidth="7" 
+                          />
+                          <circle 
+                            cx="50" cy="50" r="40" 
+                            fill="transparent" 
+                            stroke={estimatedRange > 250 ? '#10b981' : estimatedRange > 120 ? '#eab308' : '#ef4444'} 
+                            strokeWidth="7" 
+                            strokeDasharray={2 * Math.PI * 40}
+                            strokeDashoffset={2 * Math.PI * 40 * (1 - Math.min(1, estimatedRange / 600))}
+                            strokeLinecap="round"
+                            transform="rotate(-90 50 50)"
+                            style={{
+                              transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.8s ease',
+                              filter: `drop-shadow(0 0 6px ${estimatedRange > 250 ? 'rgba(16, 185, 129, 0.5)' : estimatedRange > 120 ? 'rgba(234, 179, 8, 0.5)' : 'rgba(239, 68, 68, 0.5)'})`
+                            }}
+                          />
+                        </svg>
+                        
+                        <div style={{ position: 'absolute', textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', letterSpacing: '1px' }}>Range</span>
+                          <strong style={{ fontSize: '3.2rem', color: '#fff', display: 'block', lineHeight: 1.1, letterSpacing: '-1.5px' }}>{estimatedRange}</strong>
+                          <span style={{ fontSize: '0.9rem', color: 'var(--muted)', fontWeight: 'bold' }}>KM</span>
+                        </div>
+                      </div>
 
-                {/* AI Advice tip */}
-                <div style={{ display: 'flex', gap: '8px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1rem', borderRadius: '12px', fontSize: '0.8rem', color: '#10b981' }}>
-                  <Sparkles size={16} style={{ flexShrink: 0 }} />
-                  <span><strong>AI Tip:</strong> {calcSpeed > 100 ? "Bhai, cruising speed 90 km/h rakhne se battery load 18% kam ho jayegi aur range badh jayegi!" : "Excellent speed control! Driving in ECO mode helps regenerate energy during deceleration."}</span>
-                </div>
+                      <div style={{ marginTop: '1.5rem', width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--muted)' }}>
+                          <span>Efficiency: <strong style={{ color: '#fff' }}>{calcModel.efficiency} Wh/km</strong></span>
+                          <span>Battery: <strong style={{ color: '#fff' }}>{calcModel.batteryKwh} kWh</strong></span>
+                        </div>
+                      </div>
+                    </div>
 
-              </div>
+                    {/* Charge Time Comparison card */}
+                    <div className="glass bento-item" style={{ padding: '2rem' }}>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '1.25rem' }}>Estimated Charging Time (to 80%)</h4>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Slow AC Wallbox (7.2 kW)</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Ideal for overnight charging</span>
+                          </div>
+                          <strong style={{ fontSize: '1.2rem', color: '#fff' }}>{timeSlow}</strong>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', background: 'rgba(45, 212, 191, 0.05)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(45, 212, 191, 0.2)' }}>
+                          <div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#2dd4bf' }}>DC Fast Charger (50 kW)</span>
+                            <span style={{ fontSize: '0.7rem', color: '#2dd4bf', opacity: 0.8 }}>Highway pitstop charge speed</span>
+                          </div>
+                          <strong style={{ fontSize: '1.2rem', color: '#2dd4bf' }}>{timeFast}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Advice tip */}
+                    <div style={{ display: 'flex', gap: '8px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1rem', borderRadius: '12px', fontSize: '0.8rem', color: '#10b981' }}>
+                      <Sparkles size={16} style={{ flexShrink: 0 }} />
+                      <span><strong>AI Tip:</strong> {calcSpeed > 100 ? "Bhai, cruising speed 90 km/h rakhne se battery load 18% kam ho jayegi aur range badh jayegi!" : "Excellent speed control! Driving in ECO mode helps regenerate energy during deceleration."}</span>
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
 
             </div>
           )}

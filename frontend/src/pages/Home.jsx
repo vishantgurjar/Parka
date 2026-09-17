@@ -1,4 +1,4 @@
-import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu, Send, Download, Printer } from 'lucide-react';
+import { Wrench, PhoneCall, CheckCircle, ShieldCheck, MapPin, AlertTriangle, Smartphone, Zap, Sparkles, Cpu, Send, Download, Printer, Car, Eye, Play, MessageSquare, QrCode as QrIcon } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../App';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,6 +16,33 @@ export default function Home({ onOpenPayment }) {
   const [locationLabel, setLocationLabel] = useState('Detecting location...');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [iosModalImage, setIosModalImage] = useState(null);
+
+  // --- INTERACTIVE CAR STICKER STUDIO STATE ---
+  const [studioPlate, setStudioPlate] = useState(user?.plateNumber || 'DL 01 AB 1234');
+  const [studioCarType, setStudioCarType] = useState('sedan');
+  const [studioColor, setStudioColor] = useState('#0f172a');
+  const [studioPosition, setStudioPosition] = useState('left');
+  const [studioScanDemo, setStudioScanDemo] = useState(false);
+  const [studioIsScanning, setStudioIsScanning] = useState(false);
+  const [studioQrUrl, setStudioQrUrl] = useState('');
+
+  useEffect(() => {
+    const cleanPlate = (studioPlate || 'PARXEE').trim().toUpperCase();
+    const demoUrl = `${window.location.origin}/v/DEMO-${cleanPlate.replace(/\s+/g, '')}`;
+    QRCode.toDataURL(demoUrl, {
+      margin: 1,
+      width: 160,
+      color: { dark: '#000000', light: '#FFFFFF' }
+    }).then(setStudioQrUrl).catch(console.error);
+  }, [studioPlate]);
+
+  const handleSimulateScan = () => {
+    setStudioIsScanning(true);
+    setTimeout(() => {
+      setStudioIsScanning(false);
+      setStudioScanDemo(true);
+    }, 1100);
+  };
 
 
 
@@ -364,6 +391,420 @@ export default function Home({ onOpenPayment }) {
             </div>
           </div>
           
+        </div>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 🚘 INTERACTIVE VIRTUAL CAR STICKER STUDIO */}
+      {/* ======================================================== */}
+      <section id="sticker-studio" className="reveal active" style={{ padding: '60px 0', position: 'relative' }}>
+        <div className="container">
+          
+          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(45, 212, 191, 0.1)', color: '#2dd4bf', padding: '8px 20px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '1px', marginBottom: '1.25rem', border: '1px solid rgba(45, 212, 191, 0.2)' }}>
+              <Car size={16} /> 3D LIVE STICKER STUDIO
+            </div>
+            <h2 className="section-title" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: 'var(--tracking-tight)' }}>
+              Personalize Your <span className="text-gradient">Windshield Smart Tag</span>
+            </h2>
+            <p style={{ color: 'var(--muted)', fontSize: '1.05rem', maxWidth: '620px', margin: '0 auto' }}>
+              Type your vehicle plate, pick your car color, and see how your Parxéé Smart Tag protects your car with instant privacy alerts.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1.1fr 1.3fr', gap: '2.5rem', alignItems: 'center' }}>
+            
+            {/* Left Controls Card */}
+            <div className="glass-card bento-item light-sweep" style={{ padding: '2.5rem', borderRadius: '24px', border: '1px solid var(--border)' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                
+                {/* Plate Input */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                    Vehicle Plate Number
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={studioPlate}
+                      maxLength={14}
+                      onChange={(e) => setStudioPlate(e.target.value.toUpperCase())}
+                      placeholder="e.g. DL 01 AB 1234"
+                      style={{
+                        width: '100%',
+                        padding: '14px 18px',
+                        background: 'rgba(0,0,0,0.5)',
+                        border: '2px solid rgba(45, 212, 191, 0.4)',
+                        borderRadius: '14px',
+                        color: '#fff',
+                        fontSize: '1.2rem',
+                        fontWeight: '900',
+                        letterSpacing: '2px',
+                        outline: 'none',
+                        textAlign: 'center',
+                        textTransform: 'uppercase'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Car Model Selector */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                    Vehicle Body Segment
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                    {[
+                      { id: 'sedan', label: 'Cyber Sedan', icon: '🏎️' },
+                      { id: 'suv', label: 'Urban SUV', icon: '🚙' },
+                      { id: 'hatch', label: 'Electric Hatch', icon: '⚡' }
+                    ].map(type => (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setStudioCarType(type.id)}
+                        style={{
+                          padding: '12px 6px',
+                          borderRadius: '12px',
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                          border: studioCarType === type.id ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.08)',
+                          background: studioCarType === type.id ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255,255,255,0.02)',
+                          color: studioCarType === type.id ? 'var(--primary)' : '#fff',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <div style={{ fontSize: '1.3rem', marginBottom: '2px' }}>{type.icon}</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{type.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Car Paint Color */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                    Car Paint Color
+                  </label>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {[
+                      { name: 'Obsidian Black', hex: '#0f172a' },
+                      { name: 'Liquid Silver', hex: '#94a3b8' },
+                      { name: 'Cyber Azure', hex: '#0284c7' },
+                      { name: 'Crimson Flame', hex: '#b91c1c' },
+                      { name: 'Emerald Green', hex: '#059669' }
+                    ].map(c => (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        onClick={() => setStudioColor(c.hex)}
+                        title={c.name}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: c.hex,
+                          border: studioColor === c.hex ? '3px solid #2dd4bf' : '2px solid rgba(255,255,255,0.2)',
+                          cursor: 'pointer',
+                          transform: studioColor === c.hex ? 'scale(1.2)' : 'scale(1)',
+                          transition: 'all 0.2s',
+                          boxShadow: studioColor === c.hex ? '0 0 12px rgba(45, 212, 191, 0.6)' : 'none'
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sticker Position */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                    Windshield Mount Location
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                    {[
+                      { id: 'left', label: 'Bottom Left' },
+                      { id: 'center', label: 'Top Mirror' },
+                      { id: 'right', label: 'Bottom Right' }
+                    ].map(pos => (
+                      <button
+                        key={pos.id}
+                        type="button"
+                        onClick={() => setStudioPosition(pos.id)}
+                        style={{
+                          padding: '8px',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          border: studioPosition === pos.id ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.06)',
+                          background: studioPosition === pos.id ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255,255,255,0.02)',
+                          color: studioPosition === pos.id ? '#38bdf8' : 'var(--muted)'
+                        }}
+                      >
+                        {pos.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Simulation Action Buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                  <button
+                    onClick={handleSimulateScan}
+                    disabled={studioIsScanning}
+                    className="btn-gradient light-sweep"
+                    style={{
+                      padding: '14px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      fontSize: '0.95rem',
+                      border: 'none',
+                      color: '#000',
+                      cursor: studioIsScanning ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Play size={18} />
+                    {studioIsScanning ? 'Simulating Scanner Camera...' : '📲 Simulate Passerby QR Scan'}
+                  </button>
+                  <Link
+                    to="/activate"
+                    style={{
+                      textAlign: 'center',
+                      padding: '12px',
+                      borderRadius: '14px',
+                      textDecoration: 'none',
+                      color: '#fff',
+                      fontSize: '0.85rem',
+                      fontWeight: 'bold',
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.1)'
+                    }}
+                  >
+                    Get Physical Smart Sticker (₹199)
+                  </Link>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Right Windshield Virtual Canvas */}
+            <div style={{ position: 'relative' }}>
+              
+              {/* Car Body Outer Shell */}
+              <div style={{
+                background: `linear-gradient(180deg, ${studioColor} 0%, #030712 100%)`,
+                padding: '24px 24px 30px',
+                borderRadius: '36px',
+                border: '2px solid rgba(255,255,255,0.12)',
+                boxShadow: '0 25px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.5)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                
+                {/* Car Roof Pillar Details */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', opacity: 0.5 }}>
+                  <div style={{ width: '30px', height: '6px', background: '#fff', borderRadius: '4px' }}></div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '800', letterSpacing: '2px', color: '#fff', textTransform: 'uppercase' }}>
+                    {studioCarType === 'sedan' ? 'SEDAN WINDSHIELD' : studioCarType === 'suv' ? 'SUV WINDSHIELD' : 'HATCHBACK WINDSHIELD'}
+                  </div>
+                  <div style={{ width: '30px', height: '6px', background: '#fff', borderRadius: '4px' }}></div>
+                </div>
+
+                {/* Windshield Glass Area */}
+                <div style={{
+                  height: '420px',
+                  borderRadius: '24px',
+                  background: 'linear-gradient(180deg, rgba(8, 14, 28, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%)',
+                  border: '2px solid rgba(255,255,255,0.08)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  
+                  {/* Glass Glare Reflection Line */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-50%',
+                    left: '-20%',
+                    width: '140%',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%)',
+                    pointerEvents: 'none'
+                  }}></div>
+
+                  {/* Rear-view Mirror Silhouette */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '90px',
+                    height: '24px',
+                    background: '#030712',
+                    borderBottomLeftRadius: '12px',
+                    borderBottomRightRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
+                  }}>
+                    <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px' }}></div>
+                  </div>
+
+                  {/* Wipers Silhouette at bottom */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    left: '10%',
+                    right: '10%',
+                    height: '4px',
+                    background: 'rgba(255,255,255,0.08)',
+                    borderRadius: '4px'
+                  }}></div>
+
+                  {/* Scanner Laser Beam Animation */}
+                  {studioIsScanning && (
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      height: '3px',
+                      background: 'linear-gradient(90deg, transparent, #2dd4bf, #0ea5e9, #2dd4bf, transparent)',
+                      boxShadow: '0 0 15px #2dd4bf, 0 0 30px #0ea5e9',
+                      animation: 'scanLaser 1.1s ease-in-out infinite',
+                      zIndex: 10
+                    }}></div>
+                  )}
+
+                  {/* The Mounted Parxéé Smart Tag */}
+                  <div style={{
+                    position: 'absolute',
+                    ...(studioPosition === 'left' ? { bottom: '30px', left: '25px' } : 
+                        studioPosition === 'right' ? { bottom: '30px', right: '25px' } : 
+                        { top: '38px', left: '50%', transform: 'translateX(-50%)' }),
+                    width: '170px',
+                    background: '#030712',
+                    borderRadius: '16px',
+                    border: '1.5px solid rgba(45, 212, 191, 0.5)',
+                    padding: '12px',
+                    boxShadow: '0 15px 30px rgba(0,0,0,0.8), 0 0 20px rgba(45, 212, 191, 0.25)',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                  }}
+                  onClick={handleSimulateScan}
+                  title="Click to simulate scan"
+                  >
+                    {/* Top Branding */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '900', color: '#2dd4bf', letterSpacing: '0.5px' }}>PARXÉÉ CITY</span>
+                      <ShieldCheck size={14} color="#2dd4bf" />
+                    </div>
+
+                    {/* QR Code Container */}
+                    <div style={{ background: '#fff', padding: '6px', borderRadius: '10px', display: 'inline-block', marginBottom: '8px' }}>
+                      {studioQrUrl ? (
+                        <img src={studioQrUrl} alt="Smart QR" style={{ width: '100px', height: '100px', display: 'block' }} />
+                      ) : (
+                        <div style={{ width: '100px', height: '100px', background: '#ccc' }}></div>
+                      )}
+                    </div>
+
+                    {/* Plate Display */}
+                    <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '6px', padding: '4px 6px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#fff', letterSpacing: '1px' }}>
+                        {studioPlate || 'PARXEE'}
+                      </span>
+                    </div>
+
+                    {/* Pulse Notice */}
+                    <div style={{ fontSize: '0.55rem', color: '#2dd4bf', fontWeight: '800', letterSpacing: '0.5px' }}>
+                      ⚡ TAP NFC / SCAN QR
+                    </div>
+                  </div>
+
+                  {/* Passerby Interactive Scan Demo Popup Drawer */}
+                  {studioScanDemo && (
+                    <div className="fadeIn" style={{
+                      position: 'absolute',
+                      inset: '12px',
+                      background: 'rgba(3, 7, 18, 0.95)',
+                      backdropFilter: 'blur(16px)',
+                      borderRadius: '20px',
+                      border: '1px solid rgba(45, 212, 191, 0.4)',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      zIndex: 20
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Smartphone size={18} color="#2dd4bf" />
+                          <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#fff' }}>Stranger's Phone Screen (Demo)</span>
+                        </div>
+                        <button
+                          onClick={() => setStudioScanDemo(false)}
+                          style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1rem' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div style={{ textAlign: 'center', margin: '10px 0' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 'bold', marginBottom: '2px' }}>🔒 PROTECTED VEHICLE PROFILE</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>{studioPlate}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '2px' }}>Owner details hidden by Parxéé Security</div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ background: 'var(--gradient-primary)', padding: '10px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={16} /> Masked Secure Voice Call</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.2)', padding: '2px 6px', borderRadius: '4px' }}>ENCRYPTED</span>
+                        </div>
+                        <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', padding: '10px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MessageSquare size={16} /> Instant WhatsApp Notice</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '4px' }}>1-CLICK</span>
+                        </div>
+                        <div style={{ background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', padding: '10px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><AlertTriangle size={16} /> 24/7 Roadside SOS Help</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '4px' }}>VERIFIED</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setStudioScanDemo(false)}
+                        className="btn-secondary"
+                        style={{ padding: '8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--muted)', cursor: 'pointer', marginTop: '6px' }}
+                      >
+                        Close Simulation
+                      </button>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Bottom Car Hood Light Reflection */}
+                <div style={{ marginTop: '14px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '1px' }}>
+                    TAP STICKER ABOVE TO PREVIEW INTERACTION
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       </section>
 

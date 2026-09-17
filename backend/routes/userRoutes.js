@@ -42,23 +42,43 @@ router.post('/update-documents', async (req, res) => {
 });
 
 // @route   POST /api/user/redeem-points
-// @desc    Redeem Parxee Points
+// @desc    Redeem Parxee Points for perks & generate coupon
 router.post('/redeem-points', async (req, res) => {
   try {
-    const { userId, pointsToDeduct, perkName } = req.body;
+    const { userId, pointsToDeduct, perkName, category = 'General', discount = '15%' } = req.body;
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    if ((user.parxeePoints || 0) < pointsToDeduct) {
-        return res.status(400).json({ message: 'Insufficient points to redeem this perk.' });
+    const currentPoints = user.parxeePoints || 0;
+    if (currentPoints < pointsToDeduct) {
+        return res.status(400).json({ message: `Insufficient points. You need ${pointsToDeduct} pts (Current: ${currentPoints} pts).` });
     }
     
-    user.parxeePoints = (user.parxeePoints || 0) - pointsToDeduct;
+    // Generate unique coupon code (e.g. PRX-MECH-4921)
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const categoryPrefix = (category.slice(0, 4) || 'PERK').toUpperCase();
+    const couponCode = `PRX-${categoryPrefix}-${randomSuffix}`;
+
+    user.parxeePoints = currentPoints - pointsToDeduct;
+    if (!user.redeemedPerks) user.redeemedPerks = [];
+    user.redeemedPerks.unshift({
+      code: couponCode,
+      title: perkName,
+      discount: discount,
+      category: category,
+      redeemedAt: new Date()
+    });
+
     await user.save();
     
     const userResponse = user.toObject();
     delete userResponse.password;
-    res.json({ success: true, user: userResponse, message: `Successfully redeemed ${perkName}!` });
+    res.json({ 
+      success: true, 
+      user: userResponse, 
+      couponCode,
+      message: `🎉 Successfully unlocked "${perkName}"! Your voucher code is ${couponCode}` 
+    });
   } catch (error) {
     console.error('Redeem Points Error:', error);
     res.status(500).json({ message: 'Server error' });

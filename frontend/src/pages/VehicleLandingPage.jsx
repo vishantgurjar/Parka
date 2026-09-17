@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock, Bell, Lightbulb, Info, Camera } from 'lucide-react';
+import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock, Bell, Lightbulb, Info, Camera, MessageSquare, Send, CheckCircle2, Share2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 import SecureCallModal from '../components/SecureCallModal';
@@ -84,6 +83,14 @@ export default function VehicleLandingPage() {
   const [isSmsSent, setIsSmsSent] = useState(false);
   const [isSendingSms, setIsSendingSms] = useState(false);
 
+  // WhatsApp Alert states
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [waIssue, setWaIssue] = useState('🚗 Wrongly Parked / Blocking Gate');
+  const [waCustomNote, setWaCustomNote] = useState('');
+  const [isSendingWa, setIsSendingWa] = useState(false);
+  const [waSuccessResult, setWaSuccessResult] = useState(null);
+  const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
+
   useEffect(() => {
     if (vehicle) {
       const attempts = getCallAttempts(id);
@@ -155,6 +162,37 @@ export default function VehicleLandingPage() {
     }
   };
 
+  const handleSendWhatsAppAlert = async () => {
+    if (isSendingWa) return;
+    setIsSendingWa(true);
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/alerts/whatsapp-alert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vehicleId: id,
+          issueType: waIssue,
+          customNote: waCustomNote,
+          lat: userLocation.lat,
+          lng: userLocation.lng
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "WhatsApp Alert dispatched successfully!");
+        setWaSuccessResult(data);
+      } else {
+        toast.error(data.message || "Failed to dispatch WhatsApp alert.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error sending WhatsApp alert.");
+    } finally {
+      setIsSendingWa(false);
+    }
+  };
+
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -172,6 +210,7 @@ export default function VehicleLandingPage() {
             navigator.geolocation.getCurrentPosition(
               (position) => {
                 const { latitude, longitude } = position.coords;
+                setUserLocation({ lat: latitude, lng: longitude });
                 sendScanAlert(latitude, longitude, data.phone);
                 fetchNearestMechanic(latitude, longitude);
               },
@@ -181,6 +220,7 @@ export default function VehicleLandingPage() {
                 navigator.geolocation.getCurrentPosition(
                   (pos2) => {
                     const { latitude, longitude } = pos2.coords;
+                    setUserLocation({ lat: latitude, lng: longitude });
                     sendScanAlert(latitude, longitude, data.phone);
                     fetchNearestMechanic(latitude, longitude);
                   },
@@ -485,6 +525,39 @@ export default function VehicleLandingPage() {
             </button>
           )}
 
+          {/* 2. WhatsApp Instant Alert (NEW) */}
+          <button 
+            onClick={() => { setWaSuccessResult(null); setShowWhatsAppModal(true); }} 
+            className="btn-gradient light-sweep" 
+            style={{ 
+              border: 'none',
+              cursor: 'pointer',
+              padding: '18px', 
+              borderRadius: '20px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              fontSize: '1.2rem',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '14px' }}>
+                <MessageSquare size={24} />
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '1.15rem' }}>Send WhatsApp Alert</div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.85, fontWeight: '500' }}>INSTANT • 100% NUMBER MASKED • 24/7</div>
+              </div>
+            </div>
+            <ChevronRight size={24} />
+          </button>
+
 
           
           {/* 3. Highway Emergency Help (Critical) */}
@@ -782,6 +855,186 @@ export default function VehicleLandingPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* WHATSAPP ALERT MODAL */}
+      {showWhatsAppModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(3, 7, 18, 0.85)', backdropFilter: 'blur(10px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}
+        onClick={() => setShowWhatsAppModal(false)}
+        >
+          <div className="bento-item glass" style={{
+            width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '28px',
+            position: 'relative', border: '1px solid rgba(16, 185, 129, 0.4)',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.6), 0 0 35px rgba(16, 185, 129, 0.2)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setShowWhatsAppModal(false)}
+              style={{ position: 'absolute', top: '16px', right: '20px', background: 'transparent', border: 'none', color: '#fff', fontSize: '1.25rem', opacity: 0.6, cursor: 'pointer' }}
+            >
+              ✕
+            </button>
+
+            {!waSuccessResult ? (
+              <div>
+                <div style={{ width: '56px', height: '56px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                  <MessageSquare size={28} />
+                </div>
+
+                <h3 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#fff', textAlign: 'center', marginBottom: '6px' }}>
+                  Instant WhatsApp Alert
+                </h3>
+                <p style={{ color: 'var(--muted)', fontSize: '0.85rem', textAlign: 'center', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+                  Notify the driver on WhatsApp instantly without exposing their private phone number.
+                </p>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#10b981', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                    Select Situation:
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { id: 'wrong_park', label: '🚗 Wrongly Parked / Blocking Gate' },
+                      { id: 'towing_warning', label: '🚨 Towing Crane Warning (5-Min Alert!)' },
+                      { id: 'window_open', label: '🪟 Car Window is Left Open' },
+                      { id: 'lights_on', label: '💡 Headlights are Left ON' },
+                      { id: 'emergency_move', label: '⚠️ Urgent: Please Move Vehicle Now' }
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setWaIssue(item.label)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '10px 14px',
+                          borderRadius: '12px',
+                          fontSize: '0.85rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          border: waIssue === item.label ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.08)',
+                          background: waIssue === item.label ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.03)',
+                          color: waIssue === item.label ? '#10b981' : '#e5e7eb',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+                    Additional Note (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Near Building 4 entrance..."
+                    value={waCustomNote}
+                    onChange={(e) => setWaCustomNote(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      background: 'rgba(0,0,0,0.4)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#fff',
+                      fontSize: '0.85rem',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button
+                    disabled={isSendingWa}
+                    onClick={handleSendWhatsAppAlert}
+                    className="btn-gradient light-sweep"
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      border: 'none',
+                      color: '#fff',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      cursor: isSendingWa ? 'not-allowed' : 'pointer',
+                      fontSize: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Send size={18} />
+                    {isSendingWa ? 'Dispatching WhatsApp Alert...' : '⚡ Send Instant WhatsApp Alert'}
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                    <ShieldCheck size={14} color="#10b981" />
+                    Protected by Parxéé Privacy Mask Relay
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                <div style={{ width: '64px', height: '64px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                  <CheckCircle2 size={36} />
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: '#fff', marginBottom: '8px' }}>
+                  WhatsApp Alert Sent!
+                </h3>
+                <p style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: '600', marginBottom: '1.25rem' }}>
+                  Dispatched to {waSuccessResult.maskedPhone}
+                </p>
+
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '14px', textAlign: 'left', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '4px' }}>NOTICE SENT:</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>{waIssue}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Timestamp: {waSuccessResult.timestamp}</div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Option to also share on WhatsApp with security guards */}
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`[Parxéé City Vehicle Alert] Notice: ${waIssue} for Vehicle ${waSuccessResult.vehiclePlate || 'Protected Vehicle'}. Time: ${waSuccessResult.timestamp}. Please assist if nearby.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                      color: '#10b981',
+                      fontWeight: '700',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      border: '1px solid rgba(16, 185, 129, 0.4)',
+                      background: 'rgba(16, 185, 129, 0.05)'
+                    }}
+                  >
+                    <Share2 size={16} /> Share Notice to WhatsApp Group / Guard
+                  </a>
+                  <button
+                    onClick={() => setShowWhatsAppModal(false)}
+                    className="btn-gradient"
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 'bold', border: 'none', color: '#000', cursor: 'pointer' }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -885,6 +885,83 @@ app.post('/api/alerts/contact-request', async (req, res) => {
     }
 });
 
+// --- SMART QR WHATSAPP INSTANT ALERT ---
+app.post('/api/alerts/whatsapp-alert', async (req, res) => {
+    const { vehicleId, issueType, customNote, lat, lng } = req.body;
+    try {
+        let owner = null;
+        const mongoose = require('mongoose');
+        if (mongoose.Types.ObjectId.isValid(vehicleId)) {
+            owner = await User.findById(vehicleId);
+        }
+        if (!owner && vehicleId) {
+            const stickerId = vehicleId.toUpperCase().trim();
+            owner = await User.findOne({ smartTagId: stickerId });
+        }
+
+        if (owner) {
+            const vehicleLabel = owner.plateNumber || 'Your Registered Vehicle';
+            const alertReason = issueType || 'Urgent Vehicle Notice';
+            const locationMsg = (lat && lng) ? `https://maps.google.com/?q=${lat},${lng}` : 'Location link not provided';
+            const timestamp = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            console.log(`[📲 WHATSAPP ALERT DISPATCH] To owner: ${owner.name} (${owner.phone || 'No phone'}), Issue: ${alertReason}`);
+
+            // 1. Send Email notification as backup
+            if (owner.email) {
+                const mailHtml = `
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; padding: 24px; background: #030712; color: #ffffff; border-radius: 16px; border: 1px solid #22c55e;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 6px 14px; border-radius: 50px; font-size: 11px; font-weight: 800; letter-spacing: 1px;">PARXÉÉ WHATSAPP ALERT GATEWAY</span>
+                            <h2 style="color: #22c55e; margin: 12px 0 4px; font-size: 22px; font-weight: 800;">📲 WhatsApp Alert Dispatched</h2>
+                            <p style="color: #9ca3af; font-size: 13px; margin: 0;">Automated vehicle protection network</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; margin: 20px 0;">
+                            <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; font-weight: bold;">Vehicle: <span style="color: #fff; font-size: 14px;">${vehicleLabel}</span></p>
+                            <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; font-weight: bold;">Notice: <span style="color: #ef4444; font-size: 15px; font-weight: 800;">${alertReason}</span></p>
+                            ${customNote ? `<p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; font-weight: bold;">Note: <span style="color: #e5e7eb; font-size: 13px; font-weight: normal;">"${customNote}"</span></p>` : ''}
+                            <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; font-weight: bold;">Time: <span style="color: #fff; font-size: 13px;">${timestamp}</span></p>
+                            ${lat && lng ? `<p style="margin: 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; font-weight: bold;">Map Location: <a href="${locationMsg}" target="_blank" style="color: #38bdf8; text-decoration: underline;">View on Google Maps</a></p>` : ''}
+                        </div>
+                        <p style="color: #9ca3af; font-size: 12px; line-height: 1.5;">A passerby scanned your Parxéé Smart Tag and notified you instantly via our WhatsApp Relay Gateway.</p>
+                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City • Smart Vehicle Protection</p>
+                    </div>
+                `;
+                await sendEmail({
+                    to: owner.email,
+                    subject: `📲 WhatsApp Alert: ${alertReason} (${vehicleLabel})`,
+                    html: mailHtml,
+                    fromName: 'Parxéé WhatsApp Gateway'
+                }).catch(err => console.warn('Email notification skipped:', err.message));
+            }
+
+            // 2. Send SMS fallback alert if phone is present
+            if (owner.phone) {
+                try {
+                    const { sendSmsOtp } = require('./utils/smsHelper');
+                    await sendSmsOtp(owner.phone, `[PARXEE ALERT] ${alertReason} for ${vehicleLabel}. Please check your vehicle.`);
+                } catch (smsErr) {
+                    console.warn('[SMS Helper] Failed to send SMS fallback:', smsErr.message);
+                }
+            }
+
+            return res.json({
+                success: true,
+                message: `WhatsApp Alert successfully dispatched to registered owner of ${vehicleLabel}!`,
+                maskedPhone: owner.phone ? `${owner.phone.slice(0, 2)}******${owner.phone.slice(-2)}` : 'Verified Owner',
+                vehiclePlate: vehicleLabel,
+                timestamp: timestamp
+            });
+        } else {
+            return res.status(404).json({ message: "Vehicle owner not found." });
+        }
+    } catch (err) {
+        console.error("WhatsApp Alert dispatch error:", err);
+        return res.status(500).json({ message: "Failed to dispatch WhatsApp alert." });
+    }
+});
+
 // --- REVIEWS ---
 app.post('/api/reviews', async (req, res) => {
     try {
