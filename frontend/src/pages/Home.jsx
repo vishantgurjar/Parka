@@ -9,6 +9,7 @@ import EmergencySticker from '../components/EmergencySticker';
 import { toPng } from 'html-to-image';
 import { toast } from 'react-hot-toast';
 import QRCode from 'qrcode';
+import LiveCommandGrid from '../components/LiveCommandGrid';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
@@ -417,25 +418,28 @@ export default function Home({ onOpenPayment }) {
           </div>
           
           <div className="reveal active" style={{ transitionDelay: '0.4s' }}>
-            <div className="hero-cta-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '6rem' }}>
-              <Link to="/mechanics" className="btn-gradient light-sweep" style={{ padding: '20px 40px', borderRadius: '18px', fontSize: '1.1rem' }}>
+            <div className="hero-cta-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              <Link to="/mechanics" className="btn-gradient light-sweep" style={{ padding: '16px 36px', borderRadius: '18px', fontSize: '1.05rem' }}>
                 <MapPin size={22} />
                 Find Assistance
               </Link>
-              <Link to="/help" className="glass" style={{ padding: '20px 40px', borderRadius: '18px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to="/help" className="glass" style={{ padding: '16px 36px', borderRadius: '18px', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 Join Community
               </Link>
             </div>
           </div>
 
           {(user?.subscriptionTier?.toLowerCase() === 'diamond' || user?.subscriptionTier?.toLowerCase() === 'pro') && (
-            <div className="reveal active" style={{ transitionDelay: '0.5s', marginBottom: '3rem' }}>
+            <div className="reveal active" style={{ transitionDelay: '0.5s', marginBottom: '2rem' }}>
               <div style={{ padding: '12px 24px', borderRadius: '50px', background: 'rgba(94, 234, 212, 0.1)', border: '1px solid var(--primary)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', fontWeight: 'bold' }}>
                 <Sparkles size={18} />
                 Welcome Back, DIAMOND MEMBER
               </div>
             </div>
           )}
+
+          {/* ========== LIVE VEHICLE COMMAND GRID (6 NEON TILES + TELEMETRY) ========== */}
+          <LiveCommandGrid />
 
           <div className="bento-grid reveal active" style={{ transitionDelay: '0.6s' }}>
             <div className="bento-item bento-large light-sweep" style={{ textAlign: 'left', justifyContent: 'flex-end' }}>
