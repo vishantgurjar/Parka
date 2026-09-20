@@ -106,7 +106,7 @@ export default function PricingComparisonTable({ onOpenPayment }) {
             Choose the Protection <span className="text-gradient">Your Vehicle Deserves</span>
           </h2>
           <p style={{ color: 'var(--muted)', fontSize: '1.05rem', maxWidth: '650px', margin: '0 auto', lineHeight: '1.6' }}>
-            Zero hidden fees. 100% money-back guarantee within 7 days if not satisfied.
+            Protect your vehicle with encrypted privacy calling, instant smart alerts, and 24/7 highway roadside assistance.
           </p>
         </div>
 
