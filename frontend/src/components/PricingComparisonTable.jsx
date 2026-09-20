@@ -7,8 +7,8 @@ export default function PricingComparisonTable({ onOpenPayment }) {
       id: 'silver',
       name: 'Silver Security',
       badge: 'STARTER PROTECTION',
-      price: '299',
-      period: 'per year',
+      price: '199',
+      period: 'month',
       highlight: false,
       color: '#38bdf8',
       buttonBg: 'var(--gradient-primary)',
@@ -20,7 +20,7 @@ export default function PricingComparisonTable({ onOpenPayment }) {
         { label: 'HIGHWAY EMERGENCY ROADSIDE SOS', value: 'Standard SOS Dispatch (Pay per callout)' },
         { label: 'AI ENGINE SOUND DIAGNOSTICS', value: '5 Diagnostics / Month' },
         { label: 'TOWING & RECOVERY DISCOUNT', value: '10% Towing Discount' },
-        { label: 'PHYSICAL METALLIC STICKER DELIVERY', value: '₹99 Shipping' },
+        { label: 'SMART DIGITAL PASS', value: 'Instant QR Activation & HQ Download' },
         { label: 'SUPPORT & ASSISTANCE LEVEL', value: 'Standard Email & Ticket' }
       ]
     },
@@ -28,20 +28,20 @@ export default function PricingComparisonTable({ onOpenPayment }) {
       id: 'gold',
       name: 'Gold Highway Guard',
       badge: '🔥 MOST POPULAR',
-      price: '599',
-      period: 'per year',
+      price: '399',
+      period: '6 months',
       highlight: true,
       color: '#f59e0b',
       buttonBg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
       buttonColor: '#000',
       features: [
-        { label: 'ENCRYPTED SMART TAG', value: '1 Premium Metallic Smart Tag' },
+        { label: 'ENCRYPTED SMART TAG', value: 'Premium Encrypted Smart Tag' },
         { label: 'MASKED VOIP PRIVACY CALLING', value: 'Unlimited Masked Calls' },
         { label: 'WHATSAPP & SMS INSTANT ALERTS', value: 'Instant WhatsApp & SMS + Map' },
-        { label: 'HIGHWAY EMERGENCY ROADSIDE SOS', value: '1 Free Emergency Callout / Year' },
+        { label: 'HIGHWAY EMERGENCY ROADSIDE SOS', value: '1 Free Emergency Callout / Period' },
         { label: 'AI ENGINE SOUND DIAGNOSTICS', value: 'Unlimited AI Diagnostics' },
         { label: 'TOWING & RECOVERY DISCOUNT', value: '30% Towing Discount' },
-        { label: 'PHYSICAL METALLIC STICKER DELIVERY', value: 'FREE Home Delivery Included' },
+        { label: 'SMART DIGITAL PASS', value: 'Instant QR Activation & HQ Download' },
         { label: 'SUPPORT & ASSISTANCE LEVEL', value: '24/7 Priority WhatsApp Support' }
       ]
     },
@@ -49,8 +49,8 @@ export default function PricingComparisonTable({ onOpenPayment }) {
       id: 'diamond',
       name: 'Diamond Ultimate VIP',
       badge: '⭐ COMPLETE PEACE OF MIND',
-      price: '999',
-      period: 'per year',
+      price: '599',
+      period: 'year',
       highlight: false,
       color: '#38bdf8',
       buttonBg: 'var(--gradient-primary)',
@@ -62,7 +62,7 @@ export default function PricingComparisonTable({ onOpenPayment }) {
         { label: 'HIGHWAY EMERGENCY ROADSIDE SOS', value: 'Unlimited Priority Highway SOS' },
         { label: 'AI ENGINE SOUND DIAGNOSTICS', value: 'Unlimited AI Diagnostics + Live Tech' },
         { label: 'TOWING & RECOVERY DISCOUNT', value: 'FREE First Towing (upto 25 km)' },
-        { label: 'PHYSICAL METALLIC STICKER DELIVERY', value: 'FREE Express Home Delivery' },
+        { label: 'SMART DIGITAL PASS', value: 'Instant QR Activation & VIP Download' },
         { label: 'SUPPORT & ASSISTANCE LEVEL', value: 'Dedicated Relationship Manager (24/7)' }
       ]
     }
