@@ -10,6 +10,7 @@ import { toPng } from 'html-to-image';
 import { toast } from 'react-hot-toast';
 import QRCode from 'qrcode';
 import LiveCommandGrid from '../components/LiveCommandGrid';
+import PricingComparisonTable from '../components/PricingComparisonTable';
 
 export default function Home({ onOpenPayment }) {
   const { user } = useContext(AuthContext);
@@ -1082,76 +1083,8 @@ export default function Home({ onOpenPayment }) {
         </div>
       </section>
 
-      {(!user?.subscriptionTier || !['silver', 'gold', 'diamond', 'pro'].includes(user.subscriptionTier?.toLowerCase())) && (
-        <section id="pricing" className="pricing reveal">
-        <div className="mesh-bg" style={{ opacity: 0.05 }}>
-          <div className="mesh-blob mesh-blob-3" style={{ top: 'auto', bottom: '0', left: '0' }}></div>
-        </div>
-        <div className="container pricing-content">
-          <div className="section-header reveal">
-            <div className="pricing-badge" style={{ padding: '8px 20px', borderRadius: '50px', background: 'rgba(255,255,255,0.05)', fontSize: '0.7rem', fontWeight: '800', border: '1px solid rgba(255,255,255,0.1)' }}>
-              💎 PREMIUM PLANS
-            </div>
-            <h2 className="section-title" style={{ fontSize: '3rem', letterSpacing: 'var(--tracking-tight)', marginTop: '1.5rem' }}>Simple, Powerful <span className="text-gradient">Access.</span></h2>
-          </div>
-          <div className="pricing-grid">
-            <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: '#38bdf8', background: 'rgba(56, 189, 248, 0.05)' }}>
-              <div className="plan-header">
-                <div className="plan-icon" style={{ borderRadius: '12px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}><CheckCircle size={20} /></div>
-                <div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Silver</h3>
-                  <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 'bold' }}>Auto-Pay Subscription</span>
-                </div>
-              </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}>
-                <span className="currency" style={{ fontSize: '1.5rem', color: '#38bdf8' }}>₹</span>
-                <span className="amount" style={{ color: '#38bdf8' }}>199</span>
-              </div>
-              <span className="period" style={{ opacity: 0.6 }}>/month</span>
-              <ul className="plan-features" style={{ marginTop: '1.5rem' }}>
-                <li style={{ color: '#38bdf8', fontWeight: 'bold' }}>✓ Standard QR Profile</li>
-                <li>SMS Alert System</li>
-                <li>1 Vehicle Limit</li>
-              </ul>
-              <button className="plan-btn glass light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px', background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', color: '#fff', fontWeight: 'bold', border: 'none' }} onClick={() => onOpenPayment('Silver', '199')}>Get Silver Sub (Auto-Pay)</button>
-            </div>
-            
-            <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: 'var(--primary)', background: 'rgba(94, 234, 212, 0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
-                <span style={{ background: 'var(--primary)', color: 'var(--primary-fg)', fontSize: '0.65rem', fontWeight: '900', borderRadius: '50px', padding: '4px 12px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>BEST VALUE</span>
-              </div>
-              <div className="plan-header">
-                <div className="plan-icon featured-icon" style={{ borderRadius: '12px' }}><ShieldCheck size={20} /></div>
-                <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Gold PRO</h3></div>
-              </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">299</span></div>
-              <span className="period" style={{ opacity: 0.6 }}>/6 months</span>
-              <ul className="plan-features" style={{ marginTop: '2rem' }}>
-                <li style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Privacy Mode Calling</li>
-                <li>EV Smart Hub Access</li>
-                <li>Up to 3 Vehicles</li>
-              </ul>
-              <button className="plan-btn-featured light-sweep" style={{ marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Gold PRO', '299')}>Upgrade to PRO</button>
-            </div>
-
-            <div className="pricing-card bento-item reveal light-sweep" style={{ borderColor: '#a855f7', background: 'rgba(168, 85, 247, 0.05)' }}>
-              <div className="plan-header">
-                <div className="plan-icon" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', borderRadius: '12px' }}><ShieldCheck size={20} /></div>
-                <div><h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Diamond</h3></div>
-              </div>
-              <div className="plan-price" style={{ fontSize: '3.5rem', letterSpacing: 'var(--tracking-tighter)', color: '#a855f7' }}><span className="currency" style={{ fontSize: '1.5rem' }}>₹</span><span className="amount">399</span></div>
-              <span className="period" style={{ opacity: 0.6 }}>/year</span>
-              <ul className="plan-features" style={{ marginTop: '2rem' }}>
-                <li style={{ color: '#a855f7', fontWeight: 'bold' }}>Elite Concierge Line</li>
-                <li>Zero Booking Fees</li>
-                <li>Up to 5 Vehicles</li>
-              </ul>
-              <button className="plan-btn light-sweep" style={{ background: '#a855f7', color: '#fff', marginTop: '2rem', borderRadius: '50px', padding: '14px' }} onClick={() => onOpenPayment('Diamond PRO', '399')}>Go Diamond</button>
-            </div>
-          </div>
-        </div>
-      </section>
-      )}
+      {/* ========== TRANSPARENT PRICING & PLAN COMPARISON TABLE ========== */}
+      <PricingComparisonTable onOpenPayment={onOpenPayment} />
 
       {/* ========== QR PROFILE SECTION ========== */}
       <section id="qr" className="qr-section reveal" style={{ padding: '8rem 0' }}>
