@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { PhoneCall, AlertTriangle, User, Car, MapPin, ShieldCheck, Wrench, ChevronRight, Lock, Bell, Lightbulb, Info, Camera, MessageSquare, Send, CheckCircle2, Share2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
