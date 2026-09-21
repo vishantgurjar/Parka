@@ -91,38 +91,12 @@ export default function Sentinel() {
           addLog("EMITTED REAL-TIME SYNC TRIGGER TO CAR SCREEN.");
         }
         
-        // 2. Stop recording and link evidence (mock only if camera is inactive/simulation, real upload if camera is active)
-        if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
-          addLog("LINKING MOCK DASHCAM EVIDENCE...");
-          const mockVideoUrl = "https://www.w3schools.com/html/movie.mp4";
-          
-          setIsUploading(true);
-          
-          try {
-            const linkRes = await fetch(`${baseUrl}/api/sos/evidence-link`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                sosId: data.sosRequest._id,
-                userId: user?._id || 'guest',
-                evidenceUrl: mockVideoUrl,
-                isSecondary: role === 'rear'
-              })
-            });
-            if (linkRes.ok) {
-              addLog("MOCK EVIDENCE SECURED & LINKED.");
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              toast.success("SOS & Demo Evidence Secured!");
-            }
-          } catch (linkErr) {
-            console.error("Failed to link mock evidence:", linkErr);
-          } finally {
-            setIsUploading(false);
-          }
+        // 2. Stop recording to trigger real camera evidence upload
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          addLog("SECURING REAL DASHCAM FOOTAGE...");
+          mediaRecorderRef.current.stop();
         } else {
-          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            mediaRecorderRef.current.stop();
-          }
+          addLog("NO CAMERA FEED ACTIVE - SOS DISPATCHED.");
         }
         isFakeCrashRef.current = false; // Reset anyway
       }
@@ -258,10 +232,7 @@ export default function Sentinel() {
 
   const startSentinel = async () => {
     if (!user) {
-      toast("Preview Mode: Activated for Guest testing.", { icon: '🛡️' });
-    } else if (!isPro()) {
-      alert("Cam Mode is a PRO feature. Join Diamond PRO for life-saving protection.");
-      return;
+      toast("Cam Mode Active (Guest Testing)", { icon: '🛡️' });
     }
     
     try {
@@ -374,26 +345,10 @@ export default function Sentinel() {
       // Stop recording to upload rear evidence after a small delay
       setTimeout(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          addLog("SECURING REAR CAMERA EVIDENCE...");
           mediaRecorderRef.current.stop();
         } else {
-          // Simulated fallback
-          addLog("LINKING SIMULATED REAR DASHCAM EVIDENCE...");
-          const baseUrl = getBackendUrl();
-          fetch(`${baseUrl}/api/sos/evidence-link`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sosId: data.sosId,
-              userId: user?._id || 'guest',
-              evidenceUrl: "https://www.w3schools.com/html/movie.mp4",
-              isSecondary: true
-            })
-          }).then(res => {
-            if (res.ok) {
-              addLog("SIMULATED REAR EVIDENCE LINKED.");
-              toast.success("Rear Evidence Secured!");
-            }
-          }).catch(err => console.error("Simulated rear link fail:", err));
+          addLog("REAR IMPACT LOGGED (No Rear Video Active).");
         }
         setIsImpactDetected(false);
       }, 1500);
