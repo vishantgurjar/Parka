@@ -187,6 +187,31 @@ router.post('/google', async (req, res) => {
     }
 });
 
+// @route   GET /api/auth/me
+// @desc    Get current user profile and sync latest sticker & subscription data
+router.get('/me', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const userResponse = user.toObject();
+        const adminEmail = (process.env.ADMIN_EMAIL || 'panwarvishant9@gmail.com').toLowerCase().trim();
+        const founderEmail = (process.env.FOUNDER_EMAIL || 'panwarvishant9@gmail.com').toLowerCase().trim();
+        const userEmail = (user.email || '').toLowerCase().trim();
+        if (userEmail && (userEmail === adminEmail || userEmail === founderEmail)) {
+            userResponse.subscriptionTier = 'diamond';
+            userResponse.role = 'admin';
+        }
+
+        res.json({ user: userResponse });
+    } catch (error) {
+        console.error('Get Current User Error:', error);
+        res.status(500).json({ message: 'Server error fetching user profile' });
+    }
+});
+
 // @route   GET /api/auth/vehicle/:id
 // @desc    Get public vehicle info for QR scan landing page
 router.get('/vehicle/:id', async (req, res) => {

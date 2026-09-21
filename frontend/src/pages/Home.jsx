@@ -130,7 +130,7 @@ export default function Home({ onOpenPayment }) {
   useEffect(() => {
     const dataToEncode = user 
       ? (user.smartTagId 
-          ? `${window.location.origin}/activate/${user.smartTagId}` 
+          ? `${window.location.origin}/v/${user.smartTagId}` 
           : `${window.location.origin}/v/${user._id}`) 
       : `${window.location.origin}/v/GUEST_PREVIEW`;
     
@@ -216,7 +216,7 @@ export default function Home({ onOpenPayment }) {
   }, []);
 
   // Point: QR URL Generation (Stable Restored)
-  const qrUrl = qrCodeDataUrl || (user ? (user.smartTagId ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/activate/${user.smartTagId}` : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}`) : "");
+  const qrUrl = qrCodeDataUrl || (user ? (user.smartTagId ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user.smartTagId}` : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${window.location.origin}/v/${user._id}`) : "");
 
   useEffect(() => {
     if ('WebkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1127,8 +1127,8 @@ export default function Home({ onOpenPayment }) {
                      )}
                        {activeCard === 'profile' ? (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '24px 20px', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden', minWidth: '320px', maxWidth: '385px', width: '100%', margin: '0 auto' }}>
-                          <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
-                            STICKER ID: {user?.smartTagId || 'PC000001'}
+                          <span style={{ fontSize: '0.85rem', color: user?.smartTagId ? '#38bdf8' : '#9ca3af', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '12px' }}>
+                            STICKER ID: {user ? (user.smartTagId || 'NOT ASSIGNED') : 'PC000001 (DEMO)'}
                           </span>
                           <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px 0', overflow: 'visible' }}>
                             <div ref={qrRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>

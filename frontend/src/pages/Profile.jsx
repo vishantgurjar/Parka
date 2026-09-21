@@ -510,11 +510,19 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="hybrid-info-group">
-                  <span className="hybrid-label" style={{ color: '#818cf8' }}>VEHICLE COLOR</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: user.color || '#ccc', border: '1px solid rgba(255,255,255,0.2)' }}></div>
-                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.color || 'STREAK'}</span>
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                  <div className="hybrid-info-group">
+                    <span className="hybrid-label" style={{ color: '#818cf8' }}>VEHICLE COLOR</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: user.color || '#ccc', border: '1px solid rgba(255,255,255,0.2)' }}></div>
+                      <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.color || 'STREAK'}</span>
+                    </div>
+                  </div>
+                  <div className="hybrid-info-group">
+                    <span className="hybrid-label" style={{ color: '#818cf8' }}>SMART STICKER ID</span>
+                    <span className="hybrid-value" style={{ fontSize: '1.2rem', fontFamily: 'monospace', fontWeight: 'bold', color: '#38bdf8' }}>
+                      {user.smartTagId || 'NOT LINKED'}
+                    </span>
                   </div>
                 </div>
               </div>
