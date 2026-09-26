@@ -2805,5 +2805,36 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   }
 }
 
+/* Modern Profile & Vehicle Account Panels */
+.account-details-panel {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
 
+.account-details-panel:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
 
+.account-field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.account-field-val {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #f8fafc;
+  word-break: break-word;
+}

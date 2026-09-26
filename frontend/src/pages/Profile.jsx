@@ -2,7 +2,7 @@ import { useContext, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { toast } from 'react-hot-toast';
-import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle, Copy, Check, Gift, Sparkles, Wrench } from 'lucide-react';
+import { User, Mail, Phone, Car, ShieldCheck, MapPin, Award, FileText, Calendar, Zap, X, ShoppingBag, CheckCircle, AlertCircle, Copy, Check, Gift, Sparkles, Wrench, Edit3, Save } from 'lucide-react';
 import SEO from '../components/SEO';
 import EmergencySticker from '../components/EmergencySticker';
 import { toPng } from 'html-to-image';
@@ -15,10 +15,66 @@ export default function Profile() {
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [isSecondaryCardModalOpen, setIsSecondaryCardModalOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [editTab, setEditTab] = useState('personal'); // 'personal' | 'vehicle'
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    phone: '',
+    emergencyContact: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    plateNumber: '',
+    make: '',
+    customMake: '',
+    model: '',
+    customModel: '',
+    year: '',
+    color: '',
+    customColor: ''
+  });
   const [selectedVehicleForCard, setSelectedVehicleForCard] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newVehicle, setNewVehicle] = useState({ make: '', customMake: '', model: '', customModel: '', year: '', color: '', customColor: '', plateNumber: '' });
   const secondaryQrRef = useRef(null);
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const finalMake = editFormData.make === 'Other Brand' ? (editFormData.customMake || 'Other') : editFormData.make;
+      const finalModel = editFormData.model === 'Other' ? (editFormData.customModel || 'Other') : editFormData.model;
+      const finalColor = editFormData.color === 'Other Color' ? (editFormData.customColor || 'Other') : editFormData.color;
+
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/user/update-documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user._id || user.id, 
+          ...editFormData,
+          make: finalMake || editFormData.make,
+          model: finalModel || editFormData.model,
+          color: finalColor || editFormData.color,
+          plateNumber: editFormData.plateNumber ? editFormData.plateNumber.toUpperCase() : ''
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login(data.user, localStorage.getItem('parkeToken'));
+        setIsEditProfileModalOpen(false);
+        toast.success('Profile details updated successfully! 🎉');
+      } else {
+        toast.error(data.message || 'Failed to update profile.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error updating profile.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const downloadSecondaryQR = async () => {
     if (!secondaryQrRef.current) return;
@@ -431,101 +487,258 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="form-grid form-grid-2" style={{ gap: '30px', alignItems: 'start' }}>
+          {/* ======================================================== */}
+          {/* PERSONAL & VEHICLE IDENTITY - CLEAN & EDITABLE PANELS */}
+          {/* ======================================================== */}
+          <div className="profile-identity-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '28px', alignItems: 'stretch' }}>
             
-            {/* CARD 1: PERSONAL IDENTITY (Carbon Fiber Style) */}
-            <div className="hybrid-card" style={{ width: '100%', height: 'auto', minHeight: '320px', display: 'flex', flexDirection: 'column' }}>
-              <div className="carbon-section" style={{ height: '80px' }}>
-                <div className="hybrid-brand">
-                  <div className="logo-icon" style={{ background: tierColor, width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', color: '#fff' }}>
-                    <User size={24} />
+            {/* PANEL 1: PERSONAL INFORMATION */}
+            <div className="account-details-panel glass" style={{
+              borderRadius: '24px',
+              padding: '28px',
+              background: 'rgba(15, 23, 42, 0.75)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', paddingBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(56, 189, 248, 0.05) 100%)',
+                      border: '1px solid rgba(56, 189, 248, 0.4)',
+                      color: '#38bdf8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.2rem',
+                      fontWeight: '900'
+                    }}>
+                      {user.name ? user.name.slice(0, 2).toUpperCase() : <User size={22} />}
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#fff', margin: '0 0 2px 0' }}>Personal Details</h3>
+                      <span style={{ fontSize: '0.76rem', color: 'var(--muted)' }}>Account holder & contact information</span>
+                    </div>
                   </div>
-                  <span>PERSONAL IDENTITY</span>
-                </div>
-                <div className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ padding: '6px 16px', borderRadius: '50px', fontWeight: '900', fontSize: '0.8rem', background: tierColor, color: '#fff' }}>
-                  {user.subscriptionTier?.toUpperCase() || 'FREE'}
-                </div>
-              </div>
 
-              <div className="glass-section" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '24px' }}>
-                <div className="hybrid-info">
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label">FULL NAME</span>
-                    <span className="hybrid-value" style={{ fontSize: '1.8rem' }}>{user.name}</span>
+                  <div className={`tier-badge tier-badge-${user.subscriptionTier?.toLowerCase()}`} style={{ padding: '6px 14px', borderRadius: '50px', fontWeight: '800', fontSize: '0.72rem', background: tierColor, color: '#fff' }}>
+                    {user.subscriptionTier?.toUpperCase() || 'FREE'}
                   </div>
                 </div>
 
-                <div className="form-grid form-grid-2" style={{ width: '100%', gap: '20px' }}>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label"><Mail size={10} style={{ marginRight: '4px' }} /> EMAIL ADDRESS</span>
-                    <span className="hybrid-value" style={{ fontSize: '1rem', textTransform: 'none' }}>{user.email}</span>
+                {/* Structured Fields */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '18px', marginBottom: '20px' }}>
+                  <div className="account-field-item">
+                    <span className="account-field-label"><User size={13} /> FULL NAME</span>
+                    <span className="account-field-val" style={{ fontWeight: '800', fontSize: '1.15rem', color: '#fff' }}>{user.name || 'Not Provided'}</span>
                   </div>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label"><Phone size={10} style={{ marginRight: '4px' }} /> CONTACT NUMBER</span>
-                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.phone || 'Not Provided'}</span>
+
+                  <div className="account-field-item">
+                    <span className="account-field-label"><Mail size={13} /> EMAIL ADDRESS</span>
+                    <span className="account-field-val" style={{ color: '#93c5fd' }}>{user.email || 'Not Provided'}</span>
                   </div>
-                </div>
-                
-                <div className="hybrid-info-group" style={{ width: '100%' }}>
-                  <span className="hybrid-label"><MapPin size={10} style={{ marginRight: '4px' }} /> REGISTERED ADDRESS</span>
-                  <span className="hybrid-value" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-                    {user.address ? `${user.address}, ${user.city}, ${user.state} ${user.zipCode}` : 'Address not yet updated in system'}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            {/* CARD 2: VEHICLE IDENTITY (Sapphire Glass Style) */}
-            <div className="hybrid-card" style={{ width: '100%', height: 'auto', minHeight: '320px', display: 'flex', flexDirection: 'column' }}>
-              <div className="carbon-section" style={{ height: '80px', borderBottomColor: '#818cf8', boxShadow: '0 4px 15px rgba(129, 140, 248, 0.2)' }}>
-                <div className="hybrid-brand">
-                  <Car size={24} color="#818cf8" />
-                  <span style={{ textShadow: '0 0 10px rgba(129, 140, 248, 0.3)' }}>VEHICLE IDENTITY</span>
-                </div>
-                <div className="hybrid-chip" style={{ background: 'linear-gradient(135deg, #818cf8 0%, #3730a3 100%)' }}></div>
-              </div>
+                  <div className="account-field-item">
+                    <span className="account-field-label"><Phone size={13} /> CONTACT NUMBER</span>
+                    <span className="account-field-val" style={{ color: '#fff' }}>{user.phone || 'Not Provided'}</span>
+                  </div>
 
-              <div className="glass-section" style={{ background: 'rgba(129, 140, 248, 0.05)', flexDirection: 'column', alignItems: 'flex-start', gap: '24px' }}>
-                <div className="hybrid-info">
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label" style={{ color: '#818cf8' }}>REGISTRATION PLATE</span>
-                    <span className="hybrid-helpline" style={{ color: '#fff', fontSize: '2.2rem', textShadow: '0 0 15px rgba(129, 140, 248, 0.5)' }}>
-                      {user.plateNumber || 'PENDING'}
+                  <div className="account-field-item">
+                    <span className="account-field-label"><AlertCircle size={13} /> EMERGENCY PHONE</span>
+                    <span className="account-field-val" style={{ color: user.emergencyContact ? '#10b981' : '#f59e0b' }}>
+                      {user.emergencyContact || 'Not Set (Recommended)'}
                     </span>
                   </div>
                 </div>
 
-                <div className="form-grid form-grid-3" style={{ width: '100%', gap: '20px' }}>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label" style={{ color: '#818cf8' }}>MAKE</span>
-                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.make || 'N/A'}</span>
+                <div className="account-field-item" style={{ marginBottom: '24px' }}>
+                  <span className="account-field-label"><MapPin size={13} /> REGISTERED HOME ADDRESS</span>
+                  <span className="account-field-val" style={{ color: '#cbd5e1', lineHeight: '1.45', fontSize: '0.9rem' }}>
+                    {user.address ? `${user.address}${user.city ? ', ' + user.city : ''}${user.state ? ', ' + user.state : ''} ${user.zipCode || ''}` : 'Address not yet updated in system'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Edit Personal Details Button */}
+              <button
+                onClick={() => {
+                  setEditFormData({
+                    name: user.name || '',
+                    phone: user.phone || '',
+                    emergencyContact: user.emergencyContact || '',
+                    address: user.address || '',
+                    city: user.city || '',
+                    state: user.state || '',
+                    zipCode: user.zipCode || '',
+                    plateNumber: user.plateNumber || '',
+                    make: user.make || '',
+                    model: user.model || '',
+                    year: user.year || '',
+                    color: user.color || ''
+                  });
+                  setEditTab('personal');
+                  setIsEditProfileModalOpen(true);
+                }}
+                className="btn-gradient light-sweep"
+                style={{
+                  width: '100%',
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  background: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)',
+                  color: '#000'
+                }}
+              >
+                <Edit3 size={16} /> Edit Personal Details
+              </button>
+            </div>
+
+            {/* PANEL 2: VEHICLE INFORMATION */}
+            <div className="account-details-panel glass" style={{
+              borderRadius: '24px',
+              padding: '28px',
+              background: 'rgba(15, 23, 42, 0.75)',
+              border: '1px solid rgba(129, 140, 248, 0.25)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', paddingBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(129, 140, 248, 0.05) 100%)',
+                      border: '1px solid rgba(129, 140, 248, 0.4)',
+                      color: '#818cf8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Car size={24} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#fff', margin: '0 0 2px 0' }}>Vehicle Details</h3>
+                      <span style={{ fontSize: '0.76rem', color: 'var(--muted)' }}>Registered primary vehicle</span>
+                    </div>
                   </div>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label" style={{ color: '#818cf8' }}>MODEL</span>
-                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.model || 'N/A'}</span>
-                  </div>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label" style={{ color: '#818cf8' }}>YEAR</span>
-                    <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.year || 'N/A'}</span>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: user.smartTagId ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: user.smartTagId ? '#10b981' : '#ef4444', padding: '5px 12px', borderRadius: '50px', fontSize: '0.72rem', fontWeight: '800' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: user.smartTagId ? '#10b981' : '#ef4444' }}></span>
+                    {user.smartTagId ? 'TAG LINKED' : 'UNLINKED'}
                   </div>
                 </div>
 
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label" style={{ color: '#818cf8' }}>VEHICLE COLOR</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: user.color || '#ccc', border: '1px solid rgba(255,255,255,0.2)' }}></div>
-                      <span className="hybrid-value" style={{ fontSize: '1rem' }}>{user.color || 'STREAK'}</span>
-                    </div>
+                {/* Plate & Smart Sticker Box */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(129, 140, 248, 0.2)',
+                  borderRadius: '16px',
+                  padding: '16px 20px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '12px'
+                }}>
+                  <div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: '800', color: '#818cf8', letterSpacing: '1px', textTransform: 'uppercase' }}>REGISTRATION NUMBER</span>
+                    <h4 style={{ fontSize: '1.75rem', fontWeight: '900', color: '#fff', margin: '2px 0 0 0', letterSpacing: '1px' }}>
+                      {user.plateNumber || 'PENDING'}
+                    </h4>
                   </div>
-                  <div className="hybrid-info-group">
-                    <span className="hybrid-label" style={{ color: '#818cf8' }}>SMART STICKER ID</span>
-                    <span className="hybrid-value" style={{ fontSize: '1.2rem', fontFamily: 'monospace', fontWeight: 'bold', color: '#38bdf8' }}>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: '800', color: 'var(--muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>SMART STICKER ID</span>
+                    <span style={{ display: 'block', fontSize: '1.1rem', fontWeight: 'bold', fontFamily: 'monospace', color: '#38bdf8' }}>
                       {user.smartTagId || 'NOT LINKED'}
                     </span>
                   </div>
                 </div>
+
+                {/* Structured Fields */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '18px', marginBottom: '24px' }}>
+                  <div className="account-field-item">
+                    <span className="account-field-label">BRAND / MAKE</span>
+                    <span className="account-field-val" style={{ fontWeight: '700', color: '#fff' }}>{user.make || 'N/A'}</span>
+                  </div>
+
+                  <div className="account-field-item">
+                    <span className="account-field-label">MODEL</span>
+                    <span className="account-field-val" style={{ fontWeight: '700', color: '#fff' }}>{user.model || 'N/A'}</span>
+                  </div>
+
+                  <div className="account-field-item">
+                    <span className="account-field-label">YEAR</span>
+                    <span className="account-field-val" style={{ fontWeight: '700', color: '#fff' }}>{user.year || 'N/A'}</span>
+                  </div>
+
+                  <div className="account-field-item">
+                    <span className="account-field-label">COLOR</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                      <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: user.color || '#ccc', border: '1px solid rgba(255,255,255,0.2)' }}></div>
+                      <span className="account-field-val" style={{ fontWeight: '700', color: '#fff' }}>{user.color || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Edit Vehicle Details Button */}
+              <button
+                onClick={() => {
+                  setEditFormData({
+                    name: user.name || '',
+                    phone: user.phone || '',
+                    emergencyContact: user.emergencyContact || '',
+                    address: user.address || '',
+                    city: user.city || '',
+                    state: user.state || '',
+                    zipCode: user.zipCode || '',
+                    plateNumber: user.plateNumber || '',
+                    make: user.make || '',
+                    model: user.model || '',
+                    year: user.year || '',
+                    color: user.color || ''
+                  });
+                  setEditTab('vehicle');
+                  setIsEditProfileModalOpen(true);
+                }}
+                className="btn-gradient light-sweep"
+                style={{
+                  width: '100%',
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)',
+                  color: '#fff'
+                }}
+              >
+                <Edit3 size={16} /> Edit Vehicle Details
+              </button>
             </div>
 
           </div>
@@ -1105,6 +1318,289 @@ export default function Profile() {
                     </div>
                 </div>
             </div>
+        </div>
+      )}
+      {/* EDIT PROFILE & VEHICLE MODAL */}
+      {isEditProfileModalOpen && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '580px', padding: '0', overflow: 'hidden', border: '1px solid rgba(56, 189, 248, 0.35)', borderRadius: '20px', boxShadow: '0 25px 50px rgba(0,0,0,0.6)' }}>
+            
+            {/* Modal Header */}
+            <div style={{ background: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56, 189, 248, 0.3)' }}>
+              <div>
+                <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                  <Edit3 size={20} color="#38bdf8" /> Edit Profile & Vehicle
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: '#bae6fd' }}>Update your account and vehicle information</span>
+              </div>
+              <button 
+                onClick={() => setIsEditProfileModalOpen(false)} 
+                style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Tabs */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(15, 23, 42, 0.5)' }}>
+              <button
+                type="button"
+                onClick={() => setEditTab('personal')}
+                style={{
+                  padding: '14px',
+                  background: editTab === 'personal' ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                  border: 'none',
+                  borderBottom: editTab === 'personal' ? '2px solid #38bdf8' : '2px solid transparent',
+                  color: editTab === 'personal' ? '#38bdf8' : 'var(--muted)',
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <User size={16} /> Personal Details
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditTab('vehicle')}
+                style={{
+                  padding: '14px',
+                  background: editTab === 'vehicle' ? 'rgba(129, 140, 248, 0.12)' : 'transparent',
+                  border: 'none',
+                  borderBottom: editTab === 'vehicle' ? '2px solid #818cf8' : '2px solid transparent',
+                  color: editTab === 'vehicle' ? '#818cf8' : 'var(--muted)',
+                  fontWeight: '800',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Car size={16} /> Vehicle Details
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveProfile} style={{ padding: '24px', maxHeight: '75vh', overflowY: 'auto' }}>
+              
+              {editTab === 'personal' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#38bdf8' }}>FULL NAME</label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. Vishant Panwar"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '12px 14px', width: '100%', outline: 'none', fontSize: '0.95rem' }}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-grid form-grid-2" style={{ gap: '14px' }}>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#9ca3af' }}>CONTACT PHONE</label>
+                      <input 
+                        type="tel"
+                        placeholder="e.g. 7895039922"
+                        value={editFormData.phone}
+                        onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '12px 14px', width: '100%', outline: 'none', fontSize: '0.95rem' }}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#10b981' }}>EMERGENCY PHONE</label>
+                      <input 
+                        type="tel"
+                        placeholder="e.g. 9876543210"
+                        value={editFormData.emergencyContact}
+                        onChange={(e) => setEditFormData({ ...editFormData, emergencyContact: e.target.value })}
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '12px 14px', width: '100%', outline: 'none', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#9ca3af' }}>STREET ADDRESS</label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. 17 Green Park Colony, Delhi Road"
+                      value={editFormData.address}
+                      onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                      style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '12px 14px', width: '100%', outline: 'none', fontSize: '0.95rem' }}
+                    />
+                  </div>
+
+                  <div className="form-grid form-grid-3" style={{ gap: '12px' }}>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.72rem', color: '#9ca3af' }}>CITY</label>
+                      <input 
+                        type="text"
+                        placeholder="Roorkee"
+                        value={editFormData.city}
+                        onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.72rem', color: '#9ca3af' }}>STATE</label>
+                      <input 
+                        type="text"
+                        placeholder="Uttarakhand"
+                        value={editFormData.state}
+                        onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.72rem', color: '#9ca3af' }}>PIN CODE</label>
+                      <input 
+                        type="text"
+                        placeholder="247667"
+                        value={editFormData.zipCode}
+                        onChange={(e) => setEditFormData({ ...editFormData, zipCode: e.target.value })}
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#818cf8' }}>VEHICLE REGISTRATION NUMBER</label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. UP11VP4141"
+                      value={editFormData.plateNumber}
+                      onChange={(e) => setEditFormData({ ...editFormData, plateNumber: e.target.value.toUpperCase() })}
+                      style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: '10px', padding: '12px 14px', width: '100%', outline: 'none', fontSize: '1rem', fontWeight: '800', letterSpacing: '1px' }}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-grid form-grid-2" style={{ gap: '14px' }}>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#9ca3af' }}>BRAND / MAKE</label>
+                      <select 
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: editFormData.make ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
+                        value={editFormData.make}
+                        onChange={(e) => setEditFormData({ ...editFormData, make: e.target.value, model: '', customMake: '', customModel: '' })}
+                      >
+                        <option value="">-- Select Brand --</option>
+                        {Object.keys(INDIAN_CAR_BRANDS).map(brand => (
+                          <option key={brand} value={brand} style={{ background: '#111827', color: '#fff' }}>
+                            {brand}
+                          </option>
+                        ))}
+                      </select>
+                      {editFormData.make === 'Other Brand' && (
+                        <input 
+                          type="text"
+                          placeholder="Type Brand Name..."
+                          style={{ background: '#0d1527', border: '1px solid #818cf8', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                          value={editFormData.customMake}
+                          onChange={(e) => setEditFormData({ ...editFormData, customMake: e.target.value })}
+                        />
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#9ca3af' }}>MODEL</label>
+                      <select 
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: editFormData.model ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
+                        value={editFormData.model}
+                        onChange={(e) => setEditFormData({ ...editFormData, model: e.target.value, customModel: '' })}
+                      >
+                        <option value="">{editFormData.make ? `-- Select ${editFormData.make} Model --` : '-- Select Brand First --'}</option>
+                        {editFormData.make && (INDIAN_CAR_BRANDS[editFormData.make] || ["Other"]).map(model => (
+                          <option key={model} value={model} style={{ background: '#111827', color: '#fff' }}>
+                            {model}
+                          </option>
+                        ))}
+                      </select>
+                      {editFormData.model === 'Other' && (
+                        <input 
+                          type="text"
+                          placeholder="Type Model Name..."
+                          style={{ background: '#0d1527', border: '1px solid #818cf8', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                          value={editFormData.customModel}
+                          onChange={(e) => setEditFormData({ ...editFormData, customModel: e.target.value })}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-grid form-grid-2" style={{ gap: '14px' }}>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#9ca3af' }}>YEAR</label>
+                      <select 
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: editFormData.year ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
+                        value={editFormData.year}
+                        onChange={(e) => setEditFormData({ ...editFormData, year: e.target.value })}
+                      >
+                        <option value="">-- Select Year --</option>
+                        {VEHICLE_YEARS.map(year => (
+                          <option key={year} value={year} style={{ background: '#111827', color: '#fff' }}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: '800', color: '#9ca3af' }}>VEHICLE COLOR</label>
+                      <select 
+                        style={{ background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', color: editFormData.color ? '#fff' : '#9ca3af', borderRadius: '10px', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
+                        value={editFormData.color}
+                        onChange={(e) => setEditFormData({ ...editFormData, color: e.target.value, customColor: '' })}
+                      >
+                        <option value="">-- Select Color --</option>
+                        {VEHICLE_COLORS.map(color => (
+                          <option key={color} value={color} style={{ background: '#111827', color: '#fff' }}>
+                            {color}
+                          </option>
+                        ))}
+                      </select>
+                      {editFormData.color === 'Other Color' && (
+                        <input 
+                          type="text"
+                          placeholder="Type Custom Color..."
+                          style={{ background: '#0d1527', border: '1px solid #818cf8', color: '#fff', borderRadius: '8px', padding: '10px', width: '100%', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                          value={editFormData.customColor}
+                          onChange={(e) => setEditFormData({ ...editFormData, customColor: e.target.value })}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button 
+                  type="button"
+                  onClick={() => setIsEditProfileModalOpen(false)}
+                  style={{ flex: 1, padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-gradient light-sweep"
+                  style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', color: '#000', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', background: editTab === 'personal' ? 'linear-gradient(135deg, #38bdf8 0%, #2dd4bf 100%)' : 'linear-gradient(135deg, #818cf8 0%, #c084fc 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  <Save size={18} /> {isLoading ? 'Saving Changes...' : 'Save & Update Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </>
