@@ -2414,71 +2414,80 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   z-index: 10;
 }
 
-/* Telemetry Deck Bar */
-.telemetry-deck {
-  display: flex;
+/* Platform Ecosystem Value Banner (Instant 3-Second Clarity) */
+.ecosystem-value-banner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
   align-items: center;
-  justify-content: space-around;
-  padding: 16px 24px;
+  gap: 1.25rem;
+  padding: 1.25rem 1.75rem;
   border-radius: 20px;
-  background: rgba(15, 23, 42, 0.65) !important;
-  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(56, 189, 248, 0.05);
-  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.02);
+  margin-bottom: 2.25rem;
 }
 
-.telemetry-gauge {
+.eco-value-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.gauge-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.eco-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.gauge-info {
+.eco-text-content {
   display: flex;
   flex-direction: column;
 }
 
-.gauge-val {
-  font-size: 1.15rem;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  line-height: 1.1;
+.eco-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 
-.gauge-val small {
-  font-size: 0.65rem;
-  font-weight: 700;
-  opacity: 0.8;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.gauge-label {
-  font-size: 0.65rem;
+.eco-title {
+  font-size: 0.95rem;
   font-weight: 800;
-  letter-spacing: 1px;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-top: 2px;
+  color: #f8fafc;
+  letter-spacing: -0.2px;
 }
 
-.telemetry-divider {
+.eco-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.eco-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.eco-divider {
   width: 1px;
-  height: 28px;
+  height: 44px;
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -2729,23 +2738,15 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     margin: 1rem auto 3rem auto;
   }
 
-  .telemetry-deck {
-    padding: 12px 14px;
-    gap: 8px;
+  .ecosystem-value-banner {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
   }
 
-  .gauge-val {
-    font-size: 0.95rem;
-  }
-
-  .gauge-label {
-    font-size: 0.55rem;
-  }
-
-  .gauge-icon {
-    width: 28px;
-    height: 28px;
+  .eco-divider {
+    display: none;
   }
 
   .command-tiles-grid {

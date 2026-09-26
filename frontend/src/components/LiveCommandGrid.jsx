@@ -1,26 +1,8 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Cpu, Shield, ParkingSquare, Wrench, QrCode, Activity, BatteryCharging, Gauge, ArrowRight, Sparkles } from 'lucide-react';
+import { Zap, Cpu, Shield, ParkingSquare, Wrench, QrCode, ArrowRight } from 'lucide-react';
 
 export default function LiveCommandGrid() {
   const navigate = useNavigate();
-  const [telemetry, setTelemetry] = useState({
-    speed: 120,
-    battery: 88,
-    range: 340
-  });
-
-  // Subtle live telemetry pulse animation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTelemetry({
-        speed: Math.floor(115 + Math.random() * 10),
-        battery: 88,
-        range: Math.floor(335 + Math.random() * 8)
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
   const tiles = [
     {
@@ -113,33 +95,48 @@ export default function LiveCommandGrid() {
   return (
     <div className="live-command-grid-section reveal active" style={{ width: '100%', maxWidth: '1120px', margin: '0 auto 4rem' }}>
       
-      {/* Telemetry Header Widget */}
-      <div className="telemetry-deck glass">
-        <div className="telemetry-gauge">
-          <div className="gauge-icon"><Gauge size={18} color="#2dd4bf" /></div>
-          <div className="gauge-info">
-            <span className="gauge-val text-gradient">{telemetry.speed} <small>km/h</small></span>
-            <span className="gauge-label">SPEED RADAR</span>
+      {/* Platform Value Proposition Banner (Explains What Parka Does) */}
+      <div className="ecosystem-value-banner glass">
+        <div className="eco-value-item">
+          <div className="eco-icon-box" style={{ background: 'rgba(192, 132, 252, 0.12)', borderColor: 'rgba(192, 132, 252, 0.35)' }}>
+            <QrCode size={20} color="#c084fc" />
+          </div>
+          <div className="eco-text-content">
+            <div className="eco-item-header">
+              <span className="eco-title">Smart QR Windshield Tag</span>
+              <span className="eco-badge" style={{ color: '#c084fc' }}>100% PRIVATE</span>
+            </div>
+            <p className="eco-desc">Contact vehicle owners for wrong parking or emergency without sharing phone numbers.</p>
           </div>
         </div>
 
-        <div className="telemetry-divider"></div>
+        <div className="eco-divider"></div>
 
-        <div className="telemetry-gauge">
-          <div className="gauge-icon"><BatteryCharging size={18} color="#10b981" /></div>
-          <div className="gauge-info">
-            <span className="gauge-val" style={{ color: '#10b981' }}>{telemetry.battery}% <small>OPTIMAL</small></span>
-            <span className="gauge-label">POWER GRID</span>
+        <div className="eco-value-item">
+          <div className="eco-icon-box" style={{ background: 'rgba(45, 212, 191, 0.12)', borderColor: 'rgba(45, 212, 191, 0.35)' }}>
+            <Zap size={20} color="#2dd4bf" />
+          </div>
+          <div className="eco-text-content">
+            <div className="eco-item-header">
+              <span className="eco-title">EV Charging & Parking</span>
+              <span className="eco-badge" style={{ color: '#2dd4bf' }}>LIVE AVAILABILITY</span>
+            </div>
+            <p className="eco-desc">Find live EV slots, book parking spaces, or host your own empty spot to earn ₹ daily.</p>
           </div>
         </div>
 
-        <div className="telemetry-divider"></div>
+        <div className="eco-divider"></div>
 
-        <div className="telemetry-gauge">
-          <div className="gauge-icon"><Activity size={18} color="#38bdf8" /></div>
-          <div className="gauge-info">
-            <span className="gauge-val" style={{ color: '#38bdf8' }}>{telemetry.range} <small>km</small></span>
-            <span className="gauge-label">EST. RANGE</span>
+        <div className="eco-value-item">
+          <div className="eco-icon-box" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)' }}>
+            <Wrench size={20} color="#f59e0b" />
+          </div>
+          <div className="eco-text-content">
+            <div className="eco-item-header">
+              <span className="eco-title">24/7 SOS & AI Diagnostics</span>
+              <span className="eco-badge" style={{ color: '#f59e0b' }}>15-MIN DISPATCH</span>
+            </div>
+            <p className="eco-desc">Instant roadside breakdown rescue + Gemini AI photo & audio engine diagnosis.</p>
           </div>
         </div>
       </div>
@@ -148,11 +145,11 @@ export default function LiveCommandGrid() {
       <div className="command-grid-header">
         <div className="live-indicator">
           <span className="pulse-dot"></span>
-          <span className="live-text">LIVE & FULLY OPERATIONAL TOOLS</span>
+          <span className="live-text">INTERACTIVE LIVE MODULES</span>
         </div>
-        <h3 className="command-grid-title">LIVE VEHICLE COMMAND GRID</h3>
+        <h3 className="command-grid-title">DIRECT ACCESS COMMAND GRID</h3>
         <p className="command-grid-subtitle">
-          Click any active tool below to launch and use it instantly
+          Click any active tool below to launch and use it immediately
         </p>
       </div>
 
