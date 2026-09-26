@@ -2545,75 +2545,114 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   position: relative;
   border-radius: 20px;
   padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.55) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 180px;
+  min-height: 220px;
   cursor: pointer;
   overflow: hidden;
+  user-select: none;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
-.command-tile-card:hover, .command-tile-card:active {
-  transform: translateY(-5px) scale(1.02);
+.command-tile-card:focus-visible {
+  outline: 2px solid var(--tile-color);
+  outline-offset: 3px;
+}
+
+.command-tile-card:hover {
+  transform: translateY(-6px) scale(1.015);
   border-color: var(--tile-border-glow) !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 25px var(--tile-glow);
+  background: rgba(20, 30, 55, 0.85) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px var(--tile-glow);
+}
+
+.command-tile-card:active {
+  transform: translateY(-2px) scale(0.99);
 }
 
 .tile-glow-backdrop {
   position: absolute;
   top: -40px;
   right: -40px;
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: var(--tile-glow);
   filter: blur(40px);
   pointer-events: none;
-  opacity: 0.4;
-  transition: opacity 0.3s ease;
+  opacity: 0.35;
+  transition: opacity 0.35s ease;
 }
 
 .command-tile-card:hover .tile-glow-backdrop {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .tile-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.2rem;
+  gap: 8px;
+  margin-bottom: 1.1rem;
 }
 
 .tile-badge {
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.8px;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 4px 9px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--tile-color);
+  white-space: nowrap;
+}
+
+.tile-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #94a3b8;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tile-status-pill .status-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulseGlow 2s infinite;
 }
 
 .tile-icon-wrapper {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .command-tile-card:hover .tile-icon-wrapper {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.12) rotate(4deg);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tile-content {
@@ -2621,45 +2660,69 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
 }
 
 .tile-title {
-  font-size: 1.1rem;
+  font-size: 1.12rem;
   font-weight: 800;
   letter-spacing: -0.3px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   line-height: 1.25;
 }
 
 .tile-subtitle {
-  font-size: 0.8rem;
-  color: var(--muted);
-  line-height: 1.35;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.45;
 }
 
-.tile-action-arrow {
+/* High Visibility Action Button Inside Tile */
+.tile-cta-container {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.tile-cta-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 1px;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--tile-border-glow);
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 0 12px var(--tile-glow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tile-btn-arrow {
+  transition: transform 0.25s ease;
   color: var(--tile-color);
-  margin-top: 1.2rem;
-  opacity: 0.7;
-  transition: all 0.3s ease;
 }
 
-.tile-action-arrow .arrow {
-  transition: transform 0.3s ease;
+.command-tile-card:hover .tile-cta-btn {
+  background: var(--tile-color);
+  color: #030712;
+  font-weight: 800;
+  border-color: var(--tile-color);
+  box-shadow: 0 8px 25px var(--tile-glow);
+  transform: translateY(-2px);
 }
 
-.command-tile-card:hover .tile-action-arrow {
-  opacity: 1;
-}
-
-.command-tile-card:hover .tile-action-arrow .arrow {
+.command-tile-card:hover .tile-btn-arrow {
+  color: #030712;
   transform: translateX(4px);
 }
 
 /* Mobile Responsive */
+@media (max-width: 900px) {
+  .command-tiles-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .live-command-grid-section {
     padding: 0 0.5rem;
@@ -2691,13 +2754,14 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
   }
 
   .command-tile-card {
-    padding: 1rem;
-    min-height: 155px;
+    padding: 1.1rem;
+    min-height: 195px;
     border-radius: 16px;
   }
 
   .tile-top-row {
     margin-bottom: 0.8rem;
+    gap: 4px;
   }
 
   .tile-badge {
@@ -2705,22 +2769,39 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-heading); }
     padding: 2px 6px;
   }
 
+  .tile-status-pill {
+    display: none;
+  }
+
   .tile-icon-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
 
   .tile-title {
-    font-size: 0.92rem;
+    font-size: 0.95rem;
   }
 
   .tile-subtitle {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
   }
 
-  .tile-action-arrow {
-    margin-top: 0.8rem;
-    font-size: 0.62rem;
+  .tile-cta-container {
+    margin-top: 0.9rem;
+  }
+
+  .tile-cta-btn {
+    padding: 8px 12px;
+    font-size: 0.76rem;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .command-tiles-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
   }
 }
 
