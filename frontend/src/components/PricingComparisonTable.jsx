@@ -33,6 +33,7 @@ export default function PricingComparisonTable({ onOpenPayment }) {
       id: 'silver',
       name: 'Silver Security',
       badge: 'STARTER PROTECTION',
+      trialBadge: '✨ 7-DAY FREE TRIAL',
       price: '199',
       period: 'month',
       highlight: false,
@@ -54,6 +55,7 @@ export default function PricingComparisonTable({ onOpenPayment }) {
       id: 'gold',
       name: 'Gold Highway Guard',
       badge: '🔥 MOST POPULAR',
+      trialBadge: '🔥 7-DAY FREE TRIAL',
       price: '399',
       period: '6 months',
       highlight: true,
@@ -75,6 +77,7 @@ export default function PricingComparisonTable({ onOpenPayment }) {
       id: 'diamond',
       name: 'Diamond Ultimate VIP',
       badge: '⭐ COMPLETE PEACE OF MIND',
+      trialBadge: '⭐ 7-DAY FREE TRIAL',
       price: '599',
       period: 'year',
       highlight: false,
@@ -96,7 +99,16 @@ export default function PricingComparisonTable({ onOpenPayment }) {
 
   const handleSelectPlan = (plan) => {
     if (onOpenPayment) {
-      onOpenPayment(plan.name, plan.price, { tier: plan.id });
+      onOpenPayment({
+        name: plan.name,
+        price: plan.price,
+        amount: plan.price,
+        tier: plan.id,
+        isTrial: true,
+        trialDays: 7,
+        recurringAmount: plan.price,
+        period: plan.period
+      });
     }
   };
 
@@ -114,11 +126,11 @@ export default function PricingComparisonTable({ onOpenPayment }) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'rgba(245, 158, 11, 0.12)',
-            border: '1px solid rgba(245, 158, 11, 0.3)',
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
             padding: '6px 18px',
             borderRadius: '100px',
-            color: '#f59e0b',
+            color: '#10b981',
             fontSize: '0.8rem',
             fontWeight: '800',
             marginBottom: '1rem',
@@ -126,13 +138,13 @@ export default function PricingComparisonTable({ onOpenPayment }) {
             letterSpacing: '1px'
           }}>
             <Award size={16} />
-            TRANSPARENT VALUE PLANS
+            7-DAY FREE TRIAL · ₹0 TODAY · AUTOPAY ENABLED
           </div>
           <h2 className="section-title" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', letterSpacing: 'var(--tracking-tight)', marginBottom: '0.75rem' }}>
             Choose the Protection <span className="text-gradient">Your Vehicle Deserves</span>
           </h2>
           <p style={{ color: 'var(--muted)', fontSize: '1.05rem', maxWidth: '650px', margin: '0 auto', lineHeight: '1.6' }}>
-            Protect your vehicle with encrypted privacy calling, instant smart alerts, and 24/7 highway roadside assistance.
+            Start with <strong style={{ color: '#10b981' }}>7 Days Free Access</strong>. AutoPay only charges after your trial completes. Cancel anytime with 1 click before day 7 without paying a single rupee!
           </p>
         </div>
 
@@ -190,25 +202,47 @@ export default function PricingComparisonTable({ onOpenPayment }) {
               <div>
                 {/* Header Tag */}
                 <div style={{
-                  fontSize: '0.75rem',
-                  fontWeight: '800',
-                  color: p.highlight ? '#f59e0b' : 'var(--primary)',
-                  letterSpacing: '1.2px',
-                  textTransform: 'uppercase',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   marginBottom: '10px'
                 }}>
-                  {p.badge}
+                  <span style={{
+                    fontSize: '0.72rem',
+                    fontWeight: '800',
+                    color: p.highlight ? '#f59e0b' : 'var(--primary)',
+                    letterSpacing: '1.2px',
+                    textTransform: 'uppercase'
+                  }}>
+                    {p.badge}
+                  </span>
+                  <span style={{
+                    fontSize: '0.7rem',
+                    fontWeight: '800',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#10b981',
+                    padding: '3px 8px',
+                    borderRadius: '6px'
+                  }}>
+                    7-DAY TRIAL
+                  </span>
                 </div>
 
                 <h3 style={{ fontSize: '1.65rem', fontWeight: '900', color: '#fff', marginBottom: '0.5rem', letterSpacing: '-0.5px' }}>
                   {p.name}
                 </h3>
 
-                {/* Price Display */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '1.25rem 0' }}>
-                  <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#fff' }}>₹</span>
-                  <span style={{ fontSize: '3.2rem', fontWeight: '900', color: '#fff', lineHeight: '1', letterSpacing: '-1px' }}>{p.price}</span>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: '600' }}>/{p.period}</span>
+                {/* Price Display with Free Trial Callout */}
+                <div style={{ margin: '1.25rem 0 0.5rem 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                    <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#fff' }}>₹</span>
+                    <span style={{ fontSize: '3.2rem', fontWeight: '900', color: '#fff', lineHeight: '1', letterSpacing: '-1px' }}>{p.price}</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: '600' }}>/{p.period}</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>✓ ₹0 Today (7-Day Trial)</span>
+                    <span style={{ color: 'var(--muted)', fontWeight: 'normal' }}>· AutoPay starts on Day 8</span>
+                  </div>
                 </div>
 
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '1.5rem 0' }}></div>
@@ -244,32 +278,65 @@ export default function PricingComparisonTable({ onOpenPayment }) {
               </div>
 
               {/* Action Button */}
-              <button
-                onClick={() => handleSelectPlan(p)}
-                className="btn-gradient light-sweep"
-                style={{
-                  width: '100%',
-                  marginTop: '2rem',
-                  padding: '16px',
-                  borderRadius: '16px',
-                  fontWeight: '900',
-                  fontSize: '1rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: p.buttonBg,
-                  color: p.buttonColor,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: p.highlight ? '0 10px 25px rgba(245, 158, 11, 0.35)' : '0 10px 25px rgba(20, 184, 166, 0.35)'
-                }}
-              >
-                <span>Activate {p.name.split(' ')[0]}</span>
-                <ArrowRight size={18} />
-              </button>
+              <div>
+                <button
+                  onClick={() => handleSelectPlan(p)}
+                  className="btn-gradient light-sweep"
+                  style={{
+                    width: '100%',
+                    marginTop: '2rem',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    fontWeight: '900',
+                    fontSize: '0.95rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: p.buttonBg,
+                    color: p.buttonColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: p.highlight ? '0 10px 25px rgba(245, 158, 11, 0.35)' : '0 10px 25px rgba(20, 184, 166, 0.35)'
+                  }}
+                >
+                  <span>Start 7-Day Free Trial</span>
+                  <ArrowRight size={18} />
+                </button>
+                <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--muted)', marginTop: '8px', margin: '8px 0 0 0' }}>
+                  ₹0 charged today · Cancel anytime in 1 click
+                </p>
+              </div>
             </div>
           ))}
+        </div>
+
+        {/* Reassurance guarantee footer */}
+        <div style={{
+          marginTop: '3.5rem',
+          padding: '1.5rem 2rem',
+          borderRadius: '20px',
+          background: 'rgba(16, 185, 129, 0.04)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1.5rem',
+          textAlign: 'center'
+        }}>
+          <div>
+            <strong style={{ display: 'block', color: '#fff', fontSize: '0.9rem' }}>🛡️ 100% Risk-Free 7-Day Trial</strong>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Zero commitment, cancel anytime</span>
+          </div>
+          <div>
+            <strong style={{ display: 'block', color: '#fff', fontSize: '0.9rem' }}>💳 Seamless UPI & Card AutoPay</strong>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>RBI e-mandate compliant recurring setup</span>
+          </div>
+          <div>
+            <strong style={{ display: 'block', color: '#fff', fontSize: '0.9rem' }}>⚡ Instant Account Activation</strong>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Unlock all VIP features in seconds</span>
+          </div>
         </div>
 
       </div>

@@ -39,6 +39,37 @@ export default function Profile() {
   const [newVehicle, setNewVehicle] = useState({ make: '', customMake: '', model: '', customModel: '', year: '', color: '', customColor: '', plateNumber: '' });
   const secondaryQrRef = useRef(null);
 
+  const handleCancelSubscription = async () => {
+    const isTrial = user.isTrialActive || user.subscriptionStatus === 'trialing';
+    const confirmMessage = isTrial 
+      ? "Are you sure you want to cancel your 7-Day Free Trial? Your AutoPay mandate will be cancelled immediately and you will NEVER be charged."
+      : "Are you sure you want to cancel your AutoPay subscription? Your premium features will revert to free plan.";
+    
+    if (!window.confirm(confirmMessage)) return;
+    
+    setIsLoading(true);
+    try {
+      const baseUrl = getBackendUrl();
+      const res = await fetch(`${baseUrl}/api/payment/cancel-subscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id || user.id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login(data.user, localStorage.getItem('parkeToken'));
+        toast.success(data.message || 'AutoPay mandate cancelled successfully! ✓');
+      } else {
+        toast.error(data.message || 'Failed to cancel subscription.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error cancelling subscription.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -486,6 +517,179 @@ export default function Profile() {
 
             </div>
           </div>
+
+          {/* ======================================================== */}
+          {/* SUBSCRIPTION & 7-DAY FREE TRIAL AUTOPAY STATUS BANNER */}
+          {/* ======================================================== */}
+          {(() => {
+            const isTrialActive = user.isTrialActive || user.subscriptionStatus === 'trialing';
+            const hasPaidPlan = ['silver', 'gold', 'diamond', 'pro', 'gold pro'].includes(user.subscriptionTier?.toLowerCase());
+            const trialDaysLeft = (() => {
+              if (!user.trialEndsAt) return user.trialDays || 7;
+              const diff = Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              return diff > 0 ? diff : 0;
+            })();
+            const formattedNextBilling = user.nextBillingDate ? new Date(user.nextBillingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+            const formattedTrialEnd = user.trialEndsAt ? new Date(user.trialEndsAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+
+            if (isTrialActive) {
+              return (
+                <div className="glass-card fadeIn" style={{
+                  padding: '1.75rem 2rem',
+                  marginBottom: '30px',
+                  borderRadius: '24px',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(3, 7, 18, 0.85) 100%)',
+                  boxShadow: '0 15px 35px rgba(0,0,0,0.4), 0 0 25px rgba(16, 185, 129, 0.15)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '1.25rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', flexShrink: 0 }}>
+                      <ShieldCheck size={28} />
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '900', background: '#10b981', color: '#000', padding: '3px 10px', borderRadius: '50px', letterSpacing: '0.5px' }}>
+                          7-DAY FREE TRIAL ACTIVE
+                        </span>
+                        <span style={{ fontSize: '0.8rem', color: '#38bdf8', fontWeight: 'bold' }}>
+                          ⏳ {trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left
+                        </span>
+                      </div>
+                      <h4 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', margin: '2px 0 4px 0' }}>
+                        {user.subscriptionTier?.toUpperCase()} Plan (Trial Mode)
+                      </h4>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>
+                        AutoPay mandate set for <strong>₹{user.billingAmount || 199}/{user.billingInterval || 'month'}</strong> starting on <strong>{formattedTrialEnd || 'Day 8'}</strong>. Cancel anytime with ₹0 charge.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={isLoading}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '12px',
+                        fontSize: '0.82rem',
+                        fontWeight: '700',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        color: '#ef4444',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isLoading ? 'Processing...' : 'Cancel Free Trial & AutoPay'}
+                    </button>
+                  </div>
+                </div>
+              );
+            } else if (hasPaidPlan && user.subscriptionStatus === 'active') {
+              return (
+                <div className="glass-card fadeIn" style={{
+                  padding: '1.75rem 2rem',
+                  marginBottom: '30px',
+                  borderRadius: '24px',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.06) 0%, rgba(3, 7, 18, 0.85) 100%)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '1.25rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8', flexShrink: 0 }}>
+                      <Award size={28} />
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '900', background: '#38bdf8', color: '#000', padding: '3px 10px', borderRadius: '50px' }}>
+                          VIP MEMBERSHIP ACTIVE
+                        </span>
+                        <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold' }}>
+                          ✓ AutoPay Enabled
+                        </span>
+                      </div>
+                      <h4 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', margin: '2px 0 4px 0' }}>
+                        {user.subscriptionTier?.toUpperCase()} PRO Plan
+                      </h4>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>
+                        Recurring billing: <strong>₹{user.billingAmount || 199}/{user.billingInterval || 'month'}</strong> {formattedNextBilling ? `· Next renewal on ${formattedNextBilling}` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={isLoading}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '12px',
+                        fontSize: '0.82rem',
+                        fontWeight: '700',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        color: '#ef4444',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isLoading ? 'Processing...' : 'Cancel AutoPay'}
+                    </button>
+                  </div>
+                </div>
+              );
+            } else if (user.subscriptionStatus === 'cancelled' || !hasPaidPlan) {
+              return (
+                <div className="glass-card fadeIn" style={{
+                  padding: '1.5rem 2rem',
+                  marginBottom: '30px',
+                  borderRadius: '24px',
+                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(3, 7, 18, 0.85) 100%)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '1.25rem'
+                }}>
+                  <div>
+                    <h4 style={{ fontSize: '1.15rem', fontWeight: '800', color: '#fff', margin: '0 0 4px 0' }}>
+                      🌟 Start your 7-Day FREE Trial
+                    </h4>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>
+                      Unlock full VoIP Privacy Calling, Emergency Roadside SOS, and Multi-Vehicle QR Cards with ₹0 charge today.
+                    </p>
+                  </div>
+                  <Link
+                    to="/#pricing"
+                    className="btn-gradient light-sweep"
+                    style={{
+                      padding: '10px 22px',
+                      borderRadius: '12px',
+                      fontSize: '0.85rem',
+                      fontWeight: '800',
+                      textDecoration: 'none',
+                      color: '#000',
+                      background: 'linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    Start 7-Day Free Trial →
+                  </Link>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* ======================================================== */}
           {/* PERSONAL & VEHICLE IDENTITY - CLEAN & EDITABLE PANELS */}

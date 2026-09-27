@@ -39,8 +39,15 @@ const UserSchema = new mongoose.Schema({
   // PRO Features
   subscriptionTier: { type: String, enum: ['free', 'silver', 'gold', 'diamond'], default: 'free' },
   razorpaySubscriptionId: { type: String },
-  subscriptionStatus: { type: String, enum: ['inactive', 'active', 'cancelled', 'halted'], default: 'inactive' },
+  subscriptionStatus: { type: String, enum: ['inactive', 'active', 'trialing', 'cancelled', 'halted'], default: 'inactive' },
   subscriptionExpiresAt: { type: Date },
+  isTrialActive: { type: Boolean, default: false },
+  trialEndsAt: { type: Date },
+  trialDays: { type: Number, default: 7 },
+  autopayStatus: { type: String, enum: ['none', 'active', 'paused', 'cancelled'], default: 'none' },
+  nextBillingDate: { type: Date },
+  billingAmount: { type: Number, default: 0 },
+  billingInterval: { type: String, default: 'month' },
   smartTagId: { type: String, unique: true, sparse: true },
   emergencyContact: { type: String },
   secondaryVehicles: [{

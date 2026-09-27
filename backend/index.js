@@ -515,21 +515,25 @@ app.post('/api/payment/verify-signature', async (req, res) => {
   }
 });
 
-// --- PAYMENT SUBSCRIPTION ROUTES (Razorpay Autopay) ---
+// --- PAYMENT SUBSCRIPTION ROUTES (Razorpay Autopay & Free Trial) ---
 app.post('/api/payment/create-subscription', async (req, res) => {
   try {
-    const { planName, amount, entityId } = req.body;
+    const { planName, amount, entityId, isTrial = true, trialDays = 7 } = req.body;
     const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
     const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     const keysConfigured = keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret';
 
+    const numTrialDays = Number(trialDays) || 7;
+
     // Mock subscription fallback if keys are missing
     if (!keysConfigured) {
-      console.log("⚡ Razorpay keys not configured. Falling back to Mock Subscription...");
+      console.log(`⚡ Razorpay keys not configured. Falling back to Mock Subscription (${numTrialDays}-day trial mode)...`);
       return res.json({
         isMock: true,
         id: `sub_mock_${Date.now()}`,
-        status: 'authenticated'
+        status: 'authenticated',
+        isTrial: isTrial,
+        trialDays: numTrialDays
       });
     }
 
@@ -542,7 +546,7 @@ app.post('/api/payment/create-subscription', async (req, res) => {
       // Determine billing period and interval based on planName
       let period = 'monthly';
       let interval = 1;
-      const normalizedPlan = planName.toLowerCase();
+      const normalizedPlan = (planName || '').toLowerCase();
       
       if (normalizedPlan.includes('gold') || normalizedPlan.includes('6 months') || normalizedPlan.includes('half')) {
         period = 'monthly';
@@ -575,10 +579,10 @@ app.post('/api/payment/create-subscription', async (req, res) => {
           period: period,
           interval: interval,
           item: {
-            name: `${planName} Autopay`,
+            name: `${planName || 'Protection Plan'} Autopay`,
             amount: Number(amount) * 100,
             currency: "INR",
-            description: `Recurring auto-debit plan for ${planName}`
+            description: `Recurring AutoPay plan for ${planName || 'Parxéé City'}`
           }
         });
         planId = newPlan.id;
@@ -592,15 +596,17 @@ app.post('/api/payment/create-subscription', async (req, res) => {
         quantity: 1
       };
 
-      // Add 30-day trial (start_at UNIX timestamp) if explicitly requested (free/trial in planName)
-      const normalizedPlanName = planName.toLowerCase();
-      if (normalizedPlanName.includes('free') || normalizedPlanName.includes('trial')) {
-        // Set first debit 30 days from now (starts at in seconds)
-        subscriptionOptions.start_at = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
+      // Set start_at for trial period (in seconds Unix timestamp)
+      if (isTrial) {
+        subscriptionOptions.start_at = Math.floor(Date.now() / 1000) + (numTrialDays * 24 * 60 * 60);
       }
 
       const subscription = await rzp.subscriptions.create(subscriptionOptions);
-      res.json(subscription);
+      res.json({
+        ...subscription,
+        isTrial,
+        trialDays: numTrialDays
+      });
     } catch (apiError) {
       console.error("Razorpay subscription API error. Error:", apiError);
       return res.status(400).json({ message: 'Razorpay subscription API error: ' + getRazorpayErrorMessage(apiError) });
@@ -613,46 +619,21 @@ app.post('/api/payment/create-subscription', async (req, res) => {
 
 app.post('/api/payment/verify-subscription-signature', async (req, res) => {
   try {
-    const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature, entityId, planName } = req.body;
+    const { razorpay_subscription_id, razorpay_payment_id, razorpay_signature, entityId, planName, isTrial = true, trialDays = 7, amount } = req.body;
     
     const isMock = razorpay_subscription_id && razorpay_subscription_id.startsWith('sub_mock_');
+    const numTrialDays = Number(trialDays) || 7;
 
-    if (isMock) {
-      const user = await User.findById(entityId);
-      if (user) {
-        let tier = 'silver';
-        if (planName) {
-          const nameLower = planName.toLowerCase();
-          if (nameLower.includes('silver')) tier = 'silver';
-          else if (nameLower.includes('gold')) tier = 'gold';
-          else if (nameLower.includes('diamond')) tier = 'diamond';
-        }
-        user.subscriptionTier = tier;
-        user.isPremium = true;
-
-        let durationDays = 30;
-        if (tier === 'gold') durationDays = 180;
-        else if (tier === 'diamond') durationDays = 365;
-
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + durationDays);
-
-        user.razorpaySubscriptionId = razorpay_subscription_id;
-        user.subscriptionStatus = 'active';
-        user.subscriptionExpiresAt = expiresAt;
-        await user.save();
+    if (!isMock) {
+      const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+      if (!keySecret || keySecret === 'dummy_secret') {
+        return res.status(400).json({ message: 'Razorpay keys not configured' });
       }
-      return res.json({ success: true, message: 'Mock subscription verified' });
-    }
-
-    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
-    if (!keySecret || keySecret === 'dummy_secret') {
-      return res.status(400).json({ message: 'Razorpay keys not configured' });
-    }
-    const body = razorpay_payment_id + "|" + razorpay_subscription_id;
-    const expectedSignature = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: 'Invalid subscription signature' });
+      const body = razorpay_payment_id + "|" + razorpay_subscription_id;
+      const expectedSignature = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
+      if (expectedSignature !== razorpay_signature) {
+        return res.status(400).json({ message: 'Invalid subscription signature' });
+      }
     }
 
     const user = await User.findById(entityId);
@@ -668,24 +649,96 @@ app.post('/api/payment/verify-subscription-signature', async (req, res) => {
       else if (nameLower.includes('diamond')) tier = 'diamond';
     }
 
-    let durationDays = 30;
-    if (tier === 'gold') durationDays = 180;
-    else if (tier === 'diamond') durationDays = 365;
-
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + durationDays);
-
     user.subscriptionTier = tier;
     user.isPremium = true;
     user.razorpaySubscriptionId = razorpay_subscription_id;
-    user.subscriptionStatus = 'active';
-    user.subscriptionExpiresAt = expiresAt;
+    user.autopayStatus = 'active';
+    user.billingAmount = Number(amount) || (tier === 'silver' ? 199 : tier === 'gold' ? 399 : 599);
+    user.billingInterval = tier === 'gold' ? '6 months' : tier === 'diamond' ? 'year' : 'month';
+
+    if (isTrial) {
+      user.isTrialActive = true;
+      user.subscriptionStatus = 'trialing';
+      user.trialDays = numTrialDays;
+      
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + numTrialDays);
+      user.trialEndsAt = trialEndDate;
+      user.nextBillingDate = trialEndDate;
+      user.subscriptionExpiresAt = trialEndDate;
+    } else {
+      user.isTrialActive = false;
+      user.subscriptionStatus = 'active';
+      let durationDays = 30;
+      if (tier === 'gold') durationDays = 180;
+      else if (tier === 'diamond') durationDays = 365;
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + durationDays);
+      user.subscriptionExpiresAt = expiresAt;
+      user.nextBillingDate = expiresAt;
+    }
+
     await user.save();
 
-    res.json({ success: true, message: 'Subscription successfully verified and activated', tier, expiresAt });
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ 
+      success: true, 
+      message: isTrial ? `🎉 ${numTrialDays}-Day Free Trial activated with AutoPay! Unlocked ${tier.toUpperCase()} features.` : `Subscription successfully verified and activated!`,
+      user: userResponse,
+      tier,
+      isTrial,
+      trialEndsAt: user.trialEndsAt,
+      subscriptionExpiresAt: user.subscriptionExpiresAt
+    });
   } catch (error) {
     console.error("Subscription Verification Error:", error);
     res.status(500).json({ message: 'Error verifying subscription: ' + error.message });
+  }
+});
+
+// @route   POST /api/payment/cancel-subscription
+// @desc    Cancel user recurring AutoPay / Free Trial subscription
+app.post('/api/payment/cancel-subscription', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Cancel in Razorpay if live subscription exists
+    if (user.razorpaySubscriptionId && !user.razorpaySubscriptionId.startsWith('sub_mock_')) {
+      const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+      const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+      if (keyId && keySecret && keyId !== 'dummy_id' && keySecret !== 'dummy_secret') {
+        try {
+          const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
+          await rzp.subscriptions.cancel(user.razorpaySubscriptionId, false); // false = cancel immediately
+        } catch (rzpErr) {
+          console.warn('Razorpay subscription cancellation notice:', getRazorpayErrorMessage(rzpErr));
+        }
+      }
+    }
+
+    user.subscriptionStatus = 'cancelled';
+    user.autopayStatus = 'cancelled';
+    user.isTrialActive = false;
+    user.subscriptionTier = 'free';
+    user.isPremium = false;
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ 
+      success: true, 
+      user: userResponse, 
+      message: 'Subscription and AutoPay mandate cancelled successfully. You will not be charged.' 
+    });
+  } catch (error) {
+    console.error("Cancel Subscription Error:", error);
+    res.status(500).json({ message: 'Error cancelling subscription: ' + error.message });
   }
 });
 
