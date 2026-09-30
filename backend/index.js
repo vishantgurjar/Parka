@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sendEmail } = require('./utils/emailHelper');
+const { sendEmail, buildCleanEmailHtml } = require('./utils/emailHelper');
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require('cors');
@@ -841,25 +841,26 @@ app.post('/api/alerts/scan', async (req, res) => {
 
             // Send actual email via centralized email helper
             if (owner.email) {
-                const mailHtml = `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #f43f5e;">
-                            <h2 style="color: #f43f5e; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 0;">⚠️ Security Notice: QR Scan</h2>
-                            <p>Hello ${owner.name || 'Driver'},</p>
-                            <p>Someone scanned the Smart QR Code of your vehicle (<strong>${owner.plateNumber || 'Your Registered Vehicle'}</strong>).</p>
-                            <p>If you did not perform this scan, someone might be looking to contact you or inspecting your vehicle.</p>
-                            <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #f43f5e; margin: 20px 0;">
-                                <p style="margin: 0; font-size: 13px;"><strong>Details:</strong></p>
-                                <p style="margin: 5px 0 0 0; color: #d1d5db;">Time: ${new Date().toLocaleString()}</p>
-                                <p style="margin: 5px 0 0 0; color: #d1d5db;">${hasPremium ? `GPS Location: ${locationMsg}` : `GPS Location: 🔒 Upgrade to Silver/Gold/Diamond plan to unlock live tracking location links.`}</p>
-                            </div>
-                            <p style="color: #9ca3af; font-size: 13px;">Stay safe and secure with Parxéé City Protection.</p>
-                        </div>
-                    `;
+                const mailHtml = buildCleanEmailHtml({
+                    title: 'Vehicle Alert: QR Code Scanned',
+                    preheader: `Smart Tag scan detected on ${owner.plateNumber || 'your vehicle'}.`,
+                    greeting: `Hello ${owner.name || 'Driver'},`,
+                    bodyText: `Your Parxéé Smart QR Code for vehicle <strong>${owner.plateNumber || 'Your Registered Vehicle'}</strong> was just scanned. If you did not scan this yourself, someone may be trying to contact you or inspect parking near your vehicle.`,
+                    highlightBox: `
+                      <div style="text-align: left; font-size: 13px; color: #334155;">
+                        <p style="margin: 0 0 6px 0;"><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                        <p style="margin: 0;"><strong>Location:</strong> ${hasPremium ? locationMsg : '🔒 Upgrade your plan to unlock live GPS coordinates.'}</p>
+                      </div>
+                    `,
+                    alertText: 'Please check your vehicle if you are parked in a restricted or shared spot.',
+                    footerNote: 'This security notification was generated automatically by the Parxéé City Smart Decal network.'
+                });
+
                 await sendEmail({
                     to: owner.email,
-                    subject: `⚠️ QR Code Scanned - Parxéé City`,
+                    subject: `Vehicle Alert: QR Code Scanned (${owner.plateNumber || 'Parxéé Tag'})`,
                     html: mailHtml,
-                    fromName: 'Parxéé City Alerts'
+                    fromName: 'Parxéé City Vehicle Alerts'
                 });
                 console.log(`[QR Scan Email Alert] Sent successfully to ${owner.email}`);
             }
@@ -889,29 +890,24 @@ app.post('/api/alerts/contact-request', async (req, res) => {
             
             // 1. Send Email alert
             if (owner.email) {
-                const mailHtml = `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #eab308;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="color: #eab308; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">PARXÉÉ CITY</h1>
-                            <p style="color: #9ca3af; font-size: 13px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Neighborhood Protection Network</p>
-                        </div>
-                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p>Hello ${owner.name || 'Driver'},</p>
-                        <p>Someone scanned the Smart QR Code of your vehicle (<strong>${owner.plateNumber || 'Your Registered Vehicle'}</strong>) and is trying to contact you urgently regarding parking/blocking issues.</p>
-                        <p>They tried calling you through the platform but got no response. Please check your vehicle immediately!</p>
-                        <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #eab308; margin: 20px 0;">
-                            <p style="margin: 0; font-size: 13px;"><strong>Details:</strong></p>
-                            <p style="margin: 5px 0 0 0; color: #d1d5db;">Time: ${new Date().toLocaleString()}</p>
-                            <p style="margin: 5px 0 0 0; color: #d1d5db;">Reason: Unanswered voice call fallback alert.</p>
-                        </div>
-                        <p style="color: #9ca3af; font-size: 13px;">Stay safe and secure with Parxéé City Protection.</p>
-                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-                    </div>
-                `;
+                const mailHtml = buildCleanEmailHtml({
+                    title: 'Urgent Vehicle Contact Request',
+                    preheader: `Someone is trying to reach you regarding ${owner.plateNumber || 'your vehicle'}.`,
+                    greeting: `Hello ${owner.name || 'Driver'},`,
+                    bodyText: `Someone scanned the Parxéé Smart QR Code on your vehicle (<strong>${owner.plateNumber || 'Your Registered Vehicle'}</strong>) and is attempting to contact you regarding a parking issue or vehicle obstruction.`,
+                    highlightBox: `
+                      <div style="text-align: left; font-size: 13px; color: #334155;">
+                        <p style="margin: 0 0 6px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+                        <p style="margin: 0;"><strong>Status:</strong> Immediate attention requested.</p>
+                      </div>
+                    `,
+                    alertText: 'Please check your vehicle as soon as possible to ensure it is not blocking access or parked in a restricted zone.',
+                    footerNote: 'Parxéé City Smart Decal Relay Gateway'
+                });
+
                 await sendEmail({
                     to: owner.email,
-                    subject: `⚠️ URGENT: Vehicle Contact Request - Parxéé City`,
+                    subject: `Urgent: Parking Contact Request for ${owner.plateNumber || 'Your Vehicle'}`,
                     html: mailHtml,
                     fromName: 'Parxéé City Urgent Alerts'
                 });

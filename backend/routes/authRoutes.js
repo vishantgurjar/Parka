@@ -10,7 +10,7 @@ const Otp = require('../models/Otp');
 const { protect } = require('../middleware/authMiddleware');
 const { assignSequentialStickerToUser } = require('../utils/stickerHelper');
 const { sendSmsOtp } = require('../utils/smsHelper');
-const { sendEmail } = require('../utils/emailHelper');
+const { sendEmail, buildCleanEmailHtml } = require('../utils/emailHelper');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -338,34 +338,25 @@ router.post('/forgot-password', async (req, res) => {
         await user.save();
 
         let emailSent = false;
-        const mailHtml = `
-                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
-                            <div style="text-align: center; margin-bottom: 20px;">
-                                <h1 style="color: #14b8a6; margin: 0;">PARXÉÉ CITY</h1>
-                                <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Secure. Intelligent. Connected.</p>
-                            </div>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                            <h2 style="font-size: 20px; font-weight: 600;">Password Recovery Request</h2>
-                            <p style="color: #d1d5db; line-height: 1.6;">Hello ${user.name || 'User'},</p>
-                            <p style="color: #d1d5db; line-height: 1.6;">We received a request to reset the password for your Parxéé City account. Please use the following 6-digit verification code to complete your password reset:</p>
-                            
-                            <div style="text-align: center; margin: 30px 0;">
-                                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #14b8a6; background: rgba(20, 184, 166, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(20, 184, 166, 0.2); display: inline-block;">
-                                    ${otp}
-                                </span>
-                            </div>
-                            
-                            <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>10 minutes</strong>. If you did not make this request, you can safely ignore this email.</p>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                            <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-                        </div>
-                    `;
+        const mailHtml = buildCleanEmailHtml({
+            title: 'Password Reset Verification Code',
+            preheader: `Your verification code is ${otp}. Valid for 10 minutes.`,
+            greeting: `Hello ${user.name || 'Valued User'},`,
+            bodyText: 'We received a request to reset the password for your Parxéé City account. Please use the 6-digit verification code below to proceed with resetting your password:',
+            highlightBox: `
+              <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Your Verification Code</div>
+              <div style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #0d9488; font-family: monospace;">${otp}</div>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Expires in 10 minutes</div>
+            `,
+            alertText: 'If you did not request this password reset, please ignore this email or contact support immediately. Your account remains secure.',
+            footerNote: 'For security reasons, never share this OTP code with anyone, including Parxéé City personnel.'
+        });
 
         const mailResult = await sendEmail({
             to: user.email,
-            subject: 'Parxéé City - Password Recovery OTP',
+            subject: `${otp} is your Parxéé City password reset code`,
             html: mailHtml,
-            fromName: 'Parxéé City Support'
+            fromName: 'Parxéé City Security'
         });
         emailSent = mailResult.success;
 
@@ -451,32 +442,24 @@ router.post('/send-email-otp', async (req, res) => {
             type: 'email'
         });
 
-        // Send Email via centralized email helper
-        const mailHtml = `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; background-color: #0f172a; color: #ffffff; border-radius: 16px; border: 1px solid #14b8a6;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="color: #14b8a6; margin: 0; font-size: 26px;">PARXÉÉ CITY</h1>
-                            <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">Secure Vehicle Network & Smart Card Security</p>
-                        </div>
-                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <h2 style="font-size: 20px; font-weight: 700; color: #f8fafc;">Verify Your Email Address</h2>
-                        <p style="color: #cbd5e1; line-height: 1.6;">Thank you for registering with Parxéé City. Please enter the 6-digit verification code below to verify your email address and continue setup:</p>
-                        
-                        <div style="text-align: center; margin: 28px 0;">
-                            <span style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #14b8a6; background: rgba(20, 184, 166, 0.12); padding: 14px 32px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.3); display: inline-block;">
-                                ${otp}
-                            </span>
-                        </div>
-                        
-                        <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not initiate this request, please ignore this email.</p>
-                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p style="color: #64748b; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-                    </div>
-                `;
+        // Send Email via centralized email helper with clean anti-spam template
+        const mailHtml = buildCleanEmailHtml({
+            title: 'Verify Your Email Address',
+            preheader: `Your verification code is ${otp}. Valid for 5 minutes.`,
+            greeting: 'Welcome to Parxéé City!',
+            bodyText: 'Thank you for registering with Parxéé City. Please enter the 6-digit verification code below to confirm your email address and activate your account:',
+            highlightBox: `
+              <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Email Verification Code</div>
+              <div style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #0d9488; font-family: monospace;">${otp}</div>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Expires in 5 minutes</div>
+            `,
+            alertText: 'If you did not initiate this registration request, you can safely disregard this message.',
+            footerNote: 'Parxéé City will never ask for your password or verification code in any email or phone call.'
+        });
 
         const mailResult = await sendEmail({
             to: normalizedEmail,
-            subject: 'Parxéé City - Email Verification OTP',
+            subject: `${otp} is your Parxéé City verification code`,
             html: mailHtml,
             fromName: 'Parxéé City Verification'
         });
@@ -577,23 +560,22 @@ router.post('/send-phone-otp', async (req, res) => {
         // Email backup for Phone OTP using centralized helper
         let emailSent = false;
         if (email) {
-            const mailHtml = `
-                        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
-                            <h2 style="color: #14b8a6; text-align: center;">PARXÉÉ CITY</h2>
-                            <p style="text-align: center; color: #94a3b8;">Phone Verification Security Code</p>
-                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;">
-                            <p>Your 6-digit OTP code for phone number <strong>${normalizedPhone}</strong> is:</p>
-                            <div style="text-align: center; margin: 20px 0;">
-                                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #14b8a6; background: rgba(20, 184, 166, 0.1); padding: 10px 25px; border-radius: 8px; display: inline-block;">
-                                    ${otp}
-                                </span>
-                            </div>
-                            <p style="color: #94a3b8; font-size: 12px; text-align: center;">Valid for 5 minutes. Do not share this code with anyone.</p>
-                        </div>
-                    `;
+            const mailHtml = buildCleanEmailHtml({
+                title: 'Phone Verification Code',
+                preheader: `Your verification code is ${otp}. Valid for 5 minutes.`,
+                greeting: 'Hello,',
+                bodyText: `Please use the 6-digit verification code below to verify your mobile number (<strong>${normalizedPhone}</strong>) for your Parxéé City account:`,
+                highlightBox: `
+                  <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Mobile Verification Code</div>
+                  <div style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #0d9488; font-family: monospace;">${otp}</div>
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Expires in 5 minutes</div>
+                `,
+                alertText: 'Do not share this code with anyone. Parxéé City representatives will never ask for your verification code.',
+                footerNote: 'This verification request was initiated from the Parxéé City portal.'
+            });
             const mailResult = await sendEmail({
                 to: email.toLowerCase().trim(),
-                subject: 'Parxéé City - Phone Verification OTP Code',
+                subject: `${otp} is your Parxéé City phone verification code`,
                 html: mailHtml,
                 fromName: 'Parxéé City Security'
             });

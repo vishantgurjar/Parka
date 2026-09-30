@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { sendEmail } = require('../utils/emailHelper');
+const { sendEmail, buildCleanEmailHtml } = require('../utils/emailHelper');
 
 // @route   POST /api/user/upgrade
 // @desc    Upgrade user to PRO (Mock payment flow validation)
@@ -184,53 +184,52 @@ router.post('/contact', async (req, res) => {
     console.log(`Category: ${category}`);
     console.log(`Message: ${message}\n\n`);
 
-    const adminMailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
-            <h2 style="color: #14b8a6; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 0;">New Contact Submission</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
-            <p><strong>Category:</strong> ${category}</p>
-            <p><strong>Message:</strong></p>
-            <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #14b8a6; white-space: pre-wrap; line-height: 1.6;">${message}</div>
-          </div>
-        `;
+    const adminMailHtml = buildCleanEmailHtml({
+      title: `New Support Inquiry: ${category}`,
+      preheader: `Message from ${name} (${email})`,
+      greeting: 'Support Team Notification,',
+      bodyText: `A new inquiry has been submitted via the Parxéé City contact form:`,
+      highlightBox: `
+        <div style="text-align: left; font-size: 14px; line-height: 1.6; color: #1e293b;">
+          <p style="margin: 0 0 6px 0;"><strong>Customer Name:</strong> ${name}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Customer Email:</strong> ${email}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Phone:</strong> ${phone || 'N/A'}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Category:</strong> ${category}</p>
+          <hr style="border: 0; border-top: 1px solid #cbd5e1; margin: 10px 0;">
+          <p style="margin: 0; font-style: italic; color: #334155;">"${message}"</p>
+        </div>
+      `,
+      footerNote: 'Please review and reply to the customer within 2 business hours.'
+    });
 
-    const userMailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #030712; color: #ffffff; border-radius: 12px; border: 1px solid #14b8a6;">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="color: #14b8a6; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">PARXÉÉ CITY</h1>
-              <p style="color: #9ca3af; font-size: 13px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Secure. Intelligent. Connected.</p>
-            </div>
-            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-            <p>Hello ${name},</p>
-            <p>Thank you for reaching out to Parxéé City. We have received your inquiry regarding <strong>${category}</strong>.</p>
-            <p>Our support coordinator will review your request and follow up with you via email ${phone ? 'or phone' : ''} within 2 hours.</p>
-            
-            <div style="background-color: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
-              <p style="margin: 0; font-size: 12px; color: #9ca3af;"><strong>Your Message Details:</strong></p>
-              <p style="margin: 5px 0 0 0; font-style: italic; color: #d1d5db;">"${message}"</p>
-            </div>
-
-            <p style="color: #9ca3af; font-size: 13px;">If you have a critical highway emergency, please dial our 24/7 Hotline directly at <strong>+91 91122 00000</strong>.</p>
-            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-            <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-          </div>
-        `;
+    const userMailHtml = buildCleanEmailHtml({
+      title: 'We have received your message',
+      preheader: `Thank you for contacting Parxéé City. We're on it.`,
+      greeting: `Hello ${name},`,
+      bodyText: `Thank you for reaching out to Parxéé City. We have received your inquiry regarding <strong>${category}</strong>. Our dedicated support coordinator will review your request and follow up with you via email ${phone ? 'or phone' : ''} within 2 hours.`,
+      highlightBox: `
+        <div style="text-align: left; font-size: 13px; line-height: 1.5; color: #475569;">
+          <strong>Your submitted message:</strong>
+          <p style="margin: 6px 0 0 0; font-style: italic; color: #1e293b;">"${message}"</p>
+        </div>
+      `,
+      alertText: 'For urgent highway emergencies, please call our 24/7 Support Desk directly at <strong>+91 91122 00000</strong>.',
+      footerNote: 'You received this confirmation because you submitted a contact inquiry on parxeecity.com.'
+    });
 
     // 1. Send notification to the Admin (Founder/Support inbox)
     const adminEmailDest = process.env.EMAIL_USER || 'panwarvishant9@gmail.com';
     await sendEmail({
       to: adminEmailDest,
-      subject: `New Support Inquiry - [${category}] - Parxéé City`,
+      subject: `[Support Inquiry] ${category} from ${name}`,
       html: adminMailHtml,
-      fromName: 'Parxéé City Support'
+      fromName: 'Parxéé City Support System'
     });
 
     // 2. Send automated confirmation copy to the User
     await sendEmail({
       to: email,
-      subject: `We've received your request - Parxéé City`,
+      subject: `We've received your inquiry - Parxéé City Support`,
       html: userMailHtml,
       fromName: 'Parxéé City Support'
     });
