@@ -38,8 +38,11 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City Su
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
-        auth: { user: customUser, pass: customPass },
-        tls: { rejectUnauthorized: false }
+        auth: { user: customUser, pass: customPass.replace(/\s+/g, '') },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 7000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000
       });
       const info = await transporter.sendMail(mailOptions);
       console.log(`[Email Helper] Custom SSL SMTP success! MessageId: ${info.messageId}`);
@@ -49,7 +52,8 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City Su
       try {
         transporter = nodemailer.createTransport({
           service: customService,
-          auth: { user: customUser, pass: customPass }
+          auth: { user: customUser, pass: customPass.replace(/\s+/g, '') },
+          connectionTimeout: 7000
         });
         const info = await transporter.sendMail(mailOptions);
         console.log(`[Email Helper] Custom Service Gmail fallback success! MessageId: ${info.messageId}`);
@@ -63,14 +67,14 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City Su
   // 2. Fallback to default hardcoded credentials
   try {
     console.log(`[Email Helper] Falling back to default SMTP credentials (${fallbackUser})...`);
-    // Adjust from header to use the actual authenticated sender
     mailOptions.from = `"${fromName}" <${fallbackUser}>`;
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
       secure: true,
       auth: { user: fallbackUser, pass: fallbackPass },
-      tls: { rejectUnauthorized: false }
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 7000
     });
     const info = await transporter.sendMail(mailOptions);
     console.log(`[Email Helper] Fallback SMTP Success! MessageId: ${info.messageId}`);
@@ -81,7 +85,8 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City Su
     try {
       transporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: { user: fallbackUser, pass: fallbackPass }
+        auth: { user: fallbackUser, pass: fallbackPass },
+        connectionTimeout: 7000
       });
       const info = await transporter.sendMail(mailOptions);
       console.log(`[Email Helper] Fallback Service Gmail Success! MessageId: ${info.messageId}`);
