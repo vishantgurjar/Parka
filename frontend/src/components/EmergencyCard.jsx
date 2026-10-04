@@ -41,8 +41,10 @@ const EmergencyCard = React.forwardRef(({ user, qrUrl, theme = 'standard' }, ref
              </div>
              
              <div className="hybrid-info-group">
-                <span className="hybrid-label">EMERGENCY HELPLINE</span>
-                <span className="hybrid-helpline">+91 91122 00000</span>
+                <span className="hybrid-label">CALLING / STICKER ID</span>
+                <span className="hybrid-helpline" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>
+                  {user.smartTagId || user.plateNumber || 'PC000001'}
+                </span>
              </div>
 
               <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>

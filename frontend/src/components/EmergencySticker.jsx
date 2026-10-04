@@ -122,43 +122,44 @@ const EmergencySticker = React.forwardRef(({ user, qrUrl }, ref) => {
           </div>
 
           {/* Details Section (Bottom) */}
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
-            {/* Helpline info */}
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '8px' }}>
+            {/* Unique Smart Tag / Calling ID */}
             <div style={{ textAlign: 'center' }}>
               <span 
                 style={{ 
-                  fontSize: '0.7rem', 
+                  fontSize: '0.65rem', 
                   fontWeight: '800', 
-                  color: '#94a3b8', 
+                  color: '#38bdf8', 
                   letterSpacing: '1.5px', 
                   textTransform: 'uppercase',
                   display: 'block',
-                  marginBottom: '4px'
+                  marginBottom: '2px'
                 }}
               >
-                EMERGENCY HELPLINE
+                SMART STICKER / CALLING ID
               </span>
               <span 
                 style={{ 
-                  fontSize: '1.8rem', 
+                  fontSize: '1.75rem', 
                   fontWeight: '900', 
-                  color: '#818cf8', 
-                  letterSpacing: '1px',
+                  color: '#fff', 
+                  letterSpacing: '2px',
                   display: 'block',
-                  textShadow: '0 0 10px rgba(129, 140, 248, 0.3)'
+                  fontFamily: 'monospace',
+                  textShadow: '0 0 12px rgba(56, 189, 248, 0.4)'
                 }}
               >
-                +91 91122 00000
+                {user.smartTagId || user.plateNumber || 'PC000001'}
               </span>
             </div>
 
             {/* Grid for Plate & Access */}
-            <div style={{ display: 'flex', justifyContent: showPlate ? 'space-between' : 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: showPlate ? 'space-between' : 'center', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px', width: '100%' }}>
               {showPlate && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, textAlign: 'left' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, textAlign: 'left' }}>
                   <span 
                     style={{ 
-                      fontSize: '0.65rem', 
+                      fontSize: '0.62rem', 
                       fontWeight: '800', 
                       color: '#94a3b8', 
                       letterSpacing: '1px', 
@@ -169,7 +170,7 @@ const EmergencySticker = React.forwardRef(({ user, qrUrl }, ref) => {
                   </span>
                   <span 
                     style={{ 
-                      fontSize: '1.1rem', 
+                      fontSize: '1rem', 
                       fontWeight: '900', 
                       color: '#fff', 
                       textTransform: 'uppercase' 
@@ -180,27 +181,27 @@ const EmergencySticker = React.forwardRef(({ user, qrUrl }, ref) => {
                 </div>
               )}
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: showPlate ? 1 : 'none', textAlign: showPlate ? 'right' : 'center', alignItems: showPlate ? 'flex-end' : 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: showPlate ? 1 : 'none', textAlign: showPlate ? 'right' : 'center', alignItems: showPlate ? 'flex-end' : 'center' }}>
                 <span 
                   style={{ 
-                    fontSize: '0.65rem', 
+                    fontSize: '0.62rem', 
                     fontWeight: '800', 
                     color: '#94a3b8', 
                     letterSpacing: '1px', 
                     textTransform: 'uppercase' 
                   }}
                 >
-                  ACCESS
+                  PRIVACY PROTECTION
                 </span>
                 <span 
                   style={{ 
-                    fontSize: '1.1rem', 
+                    fontSize: '0.95rem', 
                     fontWeight: '900', 
-                    color: '#fff', 
+                    color: '#10b981', 
                     textTransform: 'uppercase' 
                   }}
                 >
-                  24/7 GLOBAL
+                  24/7 ENCRYPTED
                 </span>
               </div>
             </div>

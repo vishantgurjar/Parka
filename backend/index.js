@@ -78,17 +78,53 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} joined room ${roomId}`);
   });
 
-  socket.on("call-user", (data) => {
+  socket.on("call-user", async (data) => {
     // data: { userToCall, signalData, from, fromName }
-    const targetSocketId = userSocketMap.get(data.userToCall);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit("incoming-call", { 
-        signal: data.signalData, 
-        from: data.from,
-        fromName: data.fromName || "Scanner"
-      });
-    } else {
-      socket.emit("call-error", { message: "Owner is currently offline." });
+    try {
+      if (!data || !data.userToCall) {
+        return socket.emit("call-error", { message: "Invalid recipient ID." });
+      }
+
+      let owner = null;
+      const rawId = String(data.userToCall).toUpperCase().trim();
+
+      if (mongoose.Types.ObjectId.isValid(data.userToCall)) {
+        owner = await User.findById(data.userToCall);
+      }
+      if (!owner) {
+        owner = await User.findOne({ smartTagId: rawId });
+      }
+
+      if (!owner) {
+        return socket.emit("call-error", { message: "Vehicle owner profile not found." });
+      }
+
+      // Check if owner is premium
+      const isPremium = owner.role === 'admin' ||
+        owner.email === process.env.ADMIN_EMAIL ||
+        ['silver', 'gold', 'diamond'].includes(owner.subscriptionTier?.toLowerCase()) ||
+        owner.subscriptionStatus === 'active' ||
+        owner.isTrialActive;
+
+      if (!isPremium) {
+        return socket.emit("call-error", { 
+          message: "Masked Browser VoIP Calling is a PRO feature. This vehicle is on a Free Plan. Please send a WhatsApp or SMS alert." 
+        });
+      }
+
+      const targetSocketId = userSocketMap.get(String(owner._id));
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("incoming-call", { 
+          signal: data.signalData, 
+          from: data.from,
+          fromName: data.fromName || "Guest Scanner"
+        });
+      } else {
+        socket.emit("call-error", { message: "Owner is currently offline." });
+      }
+    } catch (err) {
+      console.error("Call error:", err);
+      socket.emit("call-error", { message: "Unable to establish voice line." });
     }
   });
 

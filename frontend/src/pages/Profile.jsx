@@ -870,8 +870,8 @@ export default function Profile() {
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '0.68rem', fontWeight: '800', color: 'var(--muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>SMART STICKER ID</span>
-                    <span style={{ display: 'block', fontSize: '1.1rem', fontWeight: 'bold', fontFamily: 'monospace', color: '#38bdf8' }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: '800', color: '#38bdf8', letterSpacing: '1px', textTransform: 'uppercase' }}>SMART STICKER & CALLING ID</span>
+                    <span style={{ display: 'block', fontSize: '1.2rem', fontWeight: '900', fontFamily: 'monospace', color: '#38bdf8' }}>
                       {user.smartTagId || 'NOT LINKED'}
                     </span>
                   </div>

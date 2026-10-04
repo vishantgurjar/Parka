@@ -102,7 +102,18 @@ export default function VehicleLandingPage() {
     }
   }, [vehicle, id]);
 
+  const isOwnerPremium = vehicle && (
+    ['silver', 'gold', 'diamond'].includes(vehicle.subscriptionTier?.toLowerCase()) || 
+    vehicle.isTrialActive || 
+    vehicle.role === 'admin'
+  );
+
   const handleCallClick = () => {
+    if (!isOwnerPremium) {
+      toast.error("VoIP Privacy Calling is a PRO feature. This vehicle is on a Free Plan. Please use WhatsApp or SMS alert.");
+      return;
+    }
+
     const attempts = getCallAttempts(id);
     if (attempts.count >= CALL_LIMIT) {
       setIsRateLimited(true);
@@ -496,7 +507,7 @@ export default function VehicleLandingPage() {
                 {isSendingSms ? 'Sending Alert...' : isSmsSent ? '✔ Urgent Notification Sent' : '⚡ SEND URGENT SMS ALERT'}
               </button>
             </div>
-          ) : (
+          ) : isOwnerPremium ? (
             <button onClick={handleCallClick} className="btn-gradient" style={{ 
               border: 'none',
               cursor: 'pointer',
@@ -519,11 +530,50 @@ export default function VehicleLandingPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: '1.2rem' }}>Secure Privacy Call</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>IDENTITY HIDDEN • ENCRYPTED</div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: '500' }}>IDENTITY HIDDEN • ENCRYPTED VOIP</div>
                 </div>
               </div>
               <ChevronRight size={24} />
             </button>
+          ) : (
+            <div 
+              onClick={() => {
+                toast("🔒 Browser-to-Browser VoIP Calling is available for PRO / Premium registered vehicles. Please use Instant WhatsApp Alert or SMS notification below.", {
+                  icon: '👑',
+                  duration: 4000,
+                  style: {
+                    background: '#0f172a',
+                    color: '#fff',
+                    border: '1px solid rgba(234, 179, 8, 0.3)'
+                  }
+                });
+              }}
+              style={{
+                padding: '16px 20px',
+                borderRadius: '20px',
+                background: 'rgba(234, 179, 8, 0.08)',
+                border: '1px solid rgba(234, 179, 8, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: 'rgba(234, 179, 8, 0.15)', padding: '10px', borderRadius: '14px', color: '#eab308' }}>
+                  <Lock size={22} />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#fff' }}>Secure VoIP Call (PRO Only)</div>
+                  <div style={{ fontSize: '0.72rem', color: '#eab308', fontWeight: '600' }}>Owner is on Free Tier • Use WhatsApp / SMS Alert</div>
+                </div>
+              </div>
+              <span style={{ fontSize: '0.75rem', background: 'rgba(234, 179, 8, 0.2)', color: '#eab308', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
+                PRO
+              </span>
+            </div>
           )}
 
           {/* 2. WhatsApp Instant Alert (NEW) */}
