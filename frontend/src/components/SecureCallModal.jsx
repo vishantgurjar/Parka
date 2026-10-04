@@ -30,18 +30,27 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         streamRef.current = stream;
 
-        // 3. Initialize Peer
+        // 3. Initialize Peer with STUN servers
         const peer = new Peer({
           initiator: !isOwner,
           trickle: false,
-          stream: stream
+          stream: stream,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+              { urls: 'stun:stun3.l.google.com:19302' },
+              { urls: 'stun:stun4.l.google.com:19302' }
+            ]
+          }
         });
 
         peer.on('signal', (data) => {
           if (!isOwner) {
             // Caller: Send offer to Owner
             socket.emit('call-user', {
-              userToCall: vehicleId,
+              userToCall: String(vehicleId),
               signalData: data,
               from: socket.id,
               fromName: 'Guest Scanner'
@@ -57,9 +66,17 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
         });
 
         peer.on('stream', (remoteStream) => {
-          audioRemoteRef.current.srcObject = remoteStream;
-          audioRemoteRef.current.play();
+          if (audioRemoteRef.current) {
+            audioRemoteRef.current.srcObject = remoteStream;
+            audioRemoteRef.current.play().catch(e => console.warn('Autoplay error:', e));
+          }
           setCallStatus('connected');
+        });
+
+        peer.on('error', (err) => {
+          console.error('Peer connection error:', err);
+          setErrorMessage('Line connection interrupted.');
+          setCallStatus('failed');
         });
 
         socket.on('call-answered', (signal) => {
@@ -70,7 +87,7 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
         });
 
         socket.on('call-error', (err) => {
-          setErrorMessage(err.message);
+          setErrorMessage(err.message || 'Connection failed.');
           setCallStatus('failed');
         });
 
@@ -177,6 +194,9 @@ export default function SecureCallModal({ vehicleId, onClose, incomingSignal, ca
             <AlertCircle size={14} /> Try refreshing the page.
           </p>
         )}
+
+        {/* Hidden Audio element for remote audio stream */}
+        <audio ref={audioRemoteRef} autoPlay playsInline style={{ display: 'none' }} />
       </div>
     </div>
   );
