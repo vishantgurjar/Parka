@@ -27,7 +27,20 @@ export default function LoginPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [devOtp, setDevOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(30);
 
+  // 30-Second Countdown Timer for Forgot Password OTP Resend
+  useEffect(() => {
+    let interval = null;
+    if (mode === 'forgot' && forgotStep === 2 && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [mode, forgotStep, resendTimer]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -56,7 +69,7 @@ export default function LoginPage() {
   };
 
   const handleRequestOtp = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!forgotEmail) return toast.error('Please enter your email.');
     setLoading(true);
     setDevOtp('');
@@ -73,6 +86,7 @@ export default function LoginPage() {
         if (data.devOtp) {
           setDevOtp(data.devOtp);
         }
+        setResendTimer(30);
         setForgotStep(2);
       } else {
         toast.error(data.message || 'Failed to generate verification OTP.');
@@ -83,6 +97,11 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResendOtp = () => {
+    if (resendTimer > 0) return;
+    handleRequestOtp();
   };
 
   const handleResetPassword = async (e) => {
@@ -315,6 +334,25 @@ export default function LoginPage() {
                        onFocus={(e) => { e.target.style.borderColor = 'var(--primary)'; e.target.style.background = 'rgba(20, 184, 166, 0.05)'; e.target.style.boxShadow = '0 0 0 4px rgba(20, 184, 166, 0.1)'; }}
                        onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.03)'; e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.1)'; }}
                      />
+                   </div>
+
+                   {/* Resend OTP Timer & Button */}
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '-0.5rem', marginBottom: '0.25rem', padding: '0 4px', fontSize: '0.85rem' }}>
+                     <span style={{ color: 'var(--muted)' }}>Didn't receive code?</span>
+                     {resendTimer > 0 ? (
+                       <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>
+                         Resend in 00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer} ⏱️
+                       </span>
+                     ) : (
+                       <button
+                         type="button"
+                         onClick={handleResendOtp}
+                         disabled={loading}
+                         style={{ background: 'none', border: 'none', color: '#2dd4bf', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                       >
+                         Resend OTP 🔄
+                       </button>
+                     )}
                    </div>
 
                    {/* New Password Input */}

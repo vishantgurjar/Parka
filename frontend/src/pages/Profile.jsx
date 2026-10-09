@@ -9,6 +9,12 @@ import { toPng } from 'html-to-image';
 import { getBackendUrl } from '../utils/api';
 import { INDIAN_CAR_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../utils/vehicleData';
 
+const isIOSDevice = () => {
+  if (typeof navigator === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+         (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+};
+
 export default function Profile() {
   const { user, login } = useContext(AuthContext);
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
@@ -251,13 +257,6 @@ export default function Profile() {
 
   const currentCount = 1 + (user.secondaryVehicles ? user.secondaryVehicles.length : 0);
   const canAddMore = currentCount < totalLimit;
-
-  const isIOSDevice = () => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-           (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-  };
-
-
 
   // Form State for Documents
   const [docData, setDocData] = useState({

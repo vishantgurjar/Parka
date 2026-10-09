@@ -173,9 +173,13 @@ export default function PaymentModal({ plan, onClose, entityId, entityType = 'us
         };
       }
 
+      if (!window.Razorpay) {
+        throw new Error('Payment gateway failed to load. Please disable ad-blockers or reload the page.');
+      }
+
       const rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (response) {
-        setError(response.error.description);
+        setError(response.error?.description || 'Payment failed. Please try again.');
       });
       rzp1.open();
 

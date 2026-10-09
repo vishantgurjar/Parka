@@ -30,7 +30,7 @@ async function sendSmsOtp(phone, otpCode) {
   if (twoFactorKey && typeof fetchFn === 'function') {
     try {
       const url = `https://2factor.in/API/V1/${encodeURIComponent(twoFactorKey)}/SMS/${target10Digit}/${otpCode}/AUTOGEN`;
-      const res = await fetchFn(url);
+      const res = await fetchFn(url, { signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined });
       const data = await res.json();
       if (data && (data.Status === 'Success' || data.status === 'Success')) {
         console.log(`[SMS Helper] 2Factor.in OTP sent successfully to ${target10Digit}`);
@@ -56,7 +56,8 @@ async function sendSmsOtp(phone, otpCode) {
           route: 'otp',
           variables_values: otpCode,
           numbers: target10Digit
-        })
+        }),
+        signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined
       });
       const smsData = await response.json();
       if (smsData && (smsData.return || smsData.status_code === 200)) {
@@ -71,7 +72,7 @@ async function sendSmsOtp(phone, otpCode) {
     // Fast2SMS GET route fallback
     try {
       const getUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(fast2smsKey)}&route=otp&variables_values=${otpCode}&numbers=${target10Digit}`;
-      const response = await fetchFn(getUrl);
+      const response = await fetchFn(getUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(2500) : undefined });
       const smsData = await response.json();
       if (smsData && (smsData.return || smsData.status_code === 200)) {
         console.log(`[SMS Helper] Fast2SMS GET OTP sent successfully to ${target10Digit}`);
@@ -97,7 +98,8 @@ async function sendSmsOtp(phone, otpCode) {
           'Authorization': `Basic ${auth}`,
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: params
+        body: params,
+        signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined
       });
       const twilioData = await twilioRes.json();
       if (twilioRes.ok && twilioData.sid) {

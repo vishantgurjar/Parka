@@ -390,11 +390,15 @@ function App() {
                   <Route path="/activate/:stickerId" element={<ActivateSticker />} />
                   <Route path="/activate" element={<ActivateSticker />} />
                   <Route path="/cam" element={<Sentinel />} />
+                  <Route path="/sentinel" element={<Navigate to="/cam" replace />} />
+                  <Route path="/mechanic-login" element={<MechanicLogin />} />
+                  <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/sentinel-ops" element={user && (user.email === import.meta.env.VITE_ADMIN_EMAIL || user.role === 'admin') ? <AdminDashboard user={user} /> : <Navigate to="/" />} />
                   <Route path="/host" element={<HostSpace />} />
                   <Route path="/host-space" element={<HostSpace />} />
                   <Route path="/park" element={<FindParking />} />
+                  <Route path="/find-parking" element={<FindParking />} />
                   <Route path="/ev-hub" element={<EVHub />} />
                   {/* Guest-only routes are handled by redirection logic in components or above */}
                   <Route path="*" element={<Navigate to="/" />} />

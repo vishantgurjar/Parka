@@ -136,7 +136,7 @@ export default function CommunityHelp() {
 
   const handlePostRequest = async (e) => {
     e.preventDefault();
-    if (!user) return alert("Please login to post a help request.");
+    if (!user) return toast.error("Please login to post a help request.");
     
     setIsSubmittingRequest(true);
     try {
@@ -156,42 +156,42 @@ export default function CommunityHelp() {
         })
       });
       if (res.ok) {
-        alert("Help request broadcasted to the community!");
+        toast.success("Help request broadcasted to the community! 🚨");
         setIsRequesting(false);
         setNewHelp({ type: 'Flat Tire', description: '' });
         fetchNearbyHelp();
       } else {
         const errorData = await res.json();
-        alert(`Failed: ${errorData.message || 'Check your internet connection'}`);
+        toast.error(`Failed: ${errorData.message || 'Check your internet connection'}`);
       }
     } catch (err) {
-      alert("Failed to post request. Please check if the server is running.");
+      toast.error("Failed to post request. Please check if the server is running.");
     } finally {
       setIsSubmittingRequest(false);
     }
   };
 
   const handleAcceptHelp = async (requestId) => {
-    if (!user) return alert("Please login to help others.");
-    if (confirm("Do you want to accept this help request? You will earn 100 Parxéé Credits!")) {
-      try {
-        const res = await fetch(`${API_BASE}/api/community-help/${requestId}/accept`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ helperId: user._id, helperName: user.name })
-        });
-        if (res.ok) {
-          alert("Help request accepted! Please contact the user to coordinate.");
-          fetchNearbyHelp();
-        }
-      } catch (err) {
-        alert("Error accepting request.");
+    if (!user) return toast.error("Please login to help others.");
+    try {
+      const res = await fetch(`${API_BASE}/api/community-help/${requestId}/accept`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ helperId: user._id, helperName: user.name })
+      });
+      if (res.ok) {
+        toast.success("🎉 Help request accepted! You earned 100 Parxéé Credits. Please contact the user.");
+        fetchNearbyHelp();
+      } else {
+        toast.error("Could not accept request.");
       }
+    } catch (err) {
+      toast.error("Error accepting request.");
     }
   };
 
   return (
-    <div className="community-help-page" style={{ paddingTop: '100px', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div className="community-help-page" style={{ paddingTop: '100px', paddingBottom: '60px', minHeight: '100vh', background: 'var(--bg)' }}>
       <div className="container">
         <div className="section-header" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '3rem' }}>
           <div className="emergency-badge" style={{ marginBottom: '1rem' }}>
@@ -201,10 +201,10 @@ export default function CommunityHelp() {
           <p className="section-desc">Direct requests from the neighborhood. Help someone today.</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
           {/* MAP */}
-          <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden', height: '600px', border: '1px solid var(--border)' }}>
-            <MapContainer center={userLocation} zoom={13} style={{ height: '100%', width: '100%' }}>
+          <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden', minHeight: '480px', height: '100%', border: '1px solid var(--border)' }}>
+            <MapContainer center={userLocation} zoom={13} style={{ height: '520px', width: '100%' }}>
               <TileLayer 
                 className="dark-tiles"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
@@ -224,7 +224,7 @@ export default function CommunityHelp() {
                       {user && req.userId !== user._id && req.status === 'pending' && (
                         <button 
                           onClick={() => handleAcceptHelp(req._id)}
-                          style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', marginTop: '10px', width: '100%', fontWeight: 'bold' }}
+                          style={{ background: 'var(--primary)', color: '#000', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', marginTop: '10px', width: '100%', fontWeight: 'bold' }}
                         >
                           I can help!
                         </button>
@@ -248,7 +248,7 @@ export default function CommunityHelp() {
               <button 
                 onClick={() => setIsRequesting(true)}
                 className="btn-gradient full-width" 
-                style={{ padding: '12px', borderRadius: '12px' }}
+                style={{ padding: '12px', borderRadius: '12px', color: '#000', fontWeight: 'bold' }}
               >
                 Post Help Request
               </button>
@@ -271,8 +271,8 @@ export default function CommunityHelp() {
                        </div>
                        <p style={{ fontSize: '0.85rem', marginBottom: '0.8rem' }}>{req.description || "In need of assistance nearby."}</p>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{req.userName[0]}</div>
-                          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>{req.userName}</span>
+                          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{(req.userName || 'U')[0]}</div>
+                          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>{req.userName || 'Community User'}</span>
                        </div>
                     </div>
                   ))

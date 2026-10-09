@@ -28,8 +28,23 @@ export default function ActivateSticker() {
   const [emergencyContact, setEmergencyContact] = useState('');
   const [email, setEmail] = useState('');
   const [inputStickerId, setInputStickerId] = useState('');
+  const [devOtp, setDevOtp] = useState('');
+  const [resendTimer, setResendTimer] = useState(30);
 
   const API_BASE = getBackendUrl();
+
+  // 30-Second Countdown Timer for OTP Resend
+  useEffect(() => {
+    let interval = null;
+    if (step === 'otp_verify' && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [step, resendTimer]);
 
   // Validate sticker status on mount
   useEffect(() => {
@@ -77,7 +92,7 @@ export default function ActivateSticker() {
 
   // Request OTP (collects name, email and phone first)
   const handleSendOtp = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!ownerName || ownerName.trim().length === 0) {
       return toast.error('Please enter your full name.');
     }
@@ -99,7 +114,11 @@ export default function ActivateSticker() {
 
       if (res.ok) {
         setOtp('');
-        toast.success(data.message || `SMS OTP sent to ${phone}! Please check your mobile. 📱`);
+        if (data.devOtp) {
+          setDevOtp(data.devOtp);
+        }
+        setResendTimer(30); // Reset 30s timer
+        toast.success(data.message || `OTP sent to ${phone} and ${email}! Check inbox/SMS.`);
         setStep('otp_verify');
       } else {
         toast.error(data.message || 'Failed to send OTP.');
@@ -110,6 +129,11 @@ export default function ActivateSticker() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResendOtp = () => {
+    if (resendTimer > 0) return;
+    handleSendOtp();
   };
 
   // Verify OTP
@@ -355,43 +379,167 @@ export default function ActivateSticker() {
             {step === 'otp_verify' && (
               <form onSubmit={handleVerifyOtp}>
                 <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                  <div style={{ background: 'rgba(20, 184, 166, 0.1)', color: 'var(--primary)', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                    <KeyRound size={28} />
+                  <div style={{ background: 'rgba(20, 184, 166, 0.12)', color: 'var(--primary)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', border: '1px solid rgba(20, 184, 166, 0.3)', boxShadow: '0 0 20px rgba(20, 184, 166, 0.2)' }}>
+                    <KeyRound size={30} />
                   </div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>Verify Mobile</h3>
-                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>We sent a 6-digit OTP code to <strong>+91 {phone}</strong>.</p>
+                  <h3 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#fff', marginBottom: '6px' }}>Enter Verification Code</h3>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                    We've sent a 6-digit OTP to <br />
+                    <strong style={{ color: '#fff' }}>+91 {phone}</strong> & <strong style={{ color: 'var(--primary)' }}>{email}</strong>
+                  </p>
                 </div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Enter 6-Digit OTP</label>
-                  <input 
-                    type="text" 
-                    placeholder="------"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').substring(0, 6))}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', color: '#fff', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '6px', fontWeight: 'bold', outline: 'none', transition: 'all 0.3s' }}
-                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                    required
-                  />
+                {/* Segmented 6-Box Display */}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+                    {[0, 1, 2, 3, 4, 5].map((index) => {
+                      const char = otp[index] || '';
+                      const isCurrent = otp.length === index;
+                      return (
+                        <div
+                          key={index}
+                          style={{
+                            width: '46px',
+                            height: '54px',
+                            borderRadius: '12px',
+                            background: isCurrent ? 'rgba(20, 184, 166, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                            border: isCurrent 
+                              ? '2px solid var(--primary)' 
+                              : (char ? '1px solid rgba(20, 184, 166, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)'),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.4rem',
+                            fontWeight: '800',
+                            color: '#fff',
+                            boxShadow: isCurrent ? '0 0 15px rgba(20, 184, 166, 0.3)' : 'none',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
+                        >
+                          {char || (isCurrent ? <span className="animate-pulse" style={{ width: '2px', height: '20px', background: 'var(--primary)' }}></span> : '')}
+                        </div>
+                      );
+                    })}
+
+                    {/* Hidden Real Input on top for perfect typing & mobile paste */}
+                    <input 
+                      type="tel" 
+                      maxLength={6}
+                      autoFocus
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').substring(0, 6))}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        cursor: 'pointer'
+                      }}
+                      required
+                    />
+                  </div>
+                  <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>
+                    Type the 6-digit code or paste it directly
+                  </p>
                 </div>
+
+                {/* 30-Sec Live Timer & Resend Option Banner */}
+                <div style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '14px',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '1.5rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Didn't receive code?</span>
+                  </div>
+
+                  {resendTimer > 0 ? (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'rgba(20, 184, 166, 0.1)',
+                      border: '1px solid rgba(20, 184, 166, 0.25)',
+                      padding: '4px 12px',
+                      borderRadius: '50px',
+                      fontSize: '0.8rem',
+                      fontWeight: '800',
+                      color: 'var(--primary)'
+                    }}>
+                      <span>⏱️ 00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      disabled={loading}
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(6, 182, 212, 0.2))',
+                        border: '1px solid var(--primary)',
+                        color: 'var(--primary)',
+                        padding: '6px 14px',
+                        borderRadius: '50px',
+                        fontSize: '0.8rem',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 0 15px rgba(20, 184, 166, 0.25)'
+                      }}
+                    >
+                      <span>🔄 Resend OTP</span>
+                    </button>
+                  )}
+                </div>
+
+                {devOtp && (
+                  <div style={{ marginBottom: '1.25rem', padding: '10px 14px', background: 'rgba(45, 212, 191, 0.08)', border: '1px dashed rgba(45, 212, 191, 0.4)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#2dd4bf' }}>Development Test Code: <strong style={{ letterSpacing: '2px', color: '#fff' }}>{devOtp}</strong></span>
+                    <button 
+                      type="button" 
+                      onClick={() => setOtp(devOtp)} 
+                      style={{ background: '#2dd4bf', color: '#030712', fontSize: '0.75rem', fontWeight: '800', padding: '4px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                    >
+                      1-Click Auto Fill
+                    </button>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button 
                     type="button" 
                     onClick={() => setStep('initial_form')} 
                     className="btn-secondary" 
-                    style={{ flex: 1, padding: '12px', borderRadius: '12px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}
+                    style={{ flex: 1, padding: '14px', borderRadius: '14px', fontWeight: 'bold', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}
                   >
-                    Back
+                    Change Number
                   </button>
                   <button 
                     type="submit" 
-                    disabled={loading}
+                    disabled={loading || otp.length < 6}
                     className="btn-gradient" 
-                    style={{ flex: 2, padding: '14px', borderRadius: '12px', fontWeight: 'bold', border: 'none', color: '#000', background: 'var(--gradient-primary)', cursor: loading ? 'not-allowed' : 'pointer' }}
+                    style={{
+                      flex: 2,
+                      padding: '14px',
+                      borderRadius: '14px',
+                      fontWeight: '800',
+                      border: 'none',
+                      color: '#000',
+                      background: otp.length === 6 ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.1)',
+                      cursor: (loading || otp.length < 6) ? 'not-allowed' : 'pointer',
+                      opacity: (loading || otp.length < 6) ? 0.6 : 1,
+                      boxShadow: otp.length === 6 ? '0 4px 20px rgba(20, 184, 166, 0.35)' : 'none',
+                      transition: 'all 0.3s ease'
+                    }}
                   >
-                    {loading ? 'Verifying...' : 'Verify & Continue'}
+                    {loading ? 'Verifying...' : 'Verify Code & Next'}
                   </button>
                 </div>
               </form>

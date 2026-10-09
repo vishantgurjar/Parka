@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Mic, Activity, AlertCircle, CheckCircle, RefreshCcw, Volume2, Send, Banknote, Wrench } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
+import { toast } from 'react-hot-toast';
 
 export default function AIAssistant() {
   const [activeTab, setActiveTab] = useState('ice');
@@ -26,7 +27,7 @@ export default function AIAssistant() {
   const toggleSpeechRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser. Please try Google Chrome, Microsoft Edge, or Safari.");
+      toast.error("Speech recognition is not supported in this browser. Please try Chrome, Edge, or Safari.");
       return;
     }
 
@@ -232,7 +233,7 @@ export default function AIAssistant() {
 
     } catch (err) {
       console.error("Microphone access denied:", err);
-      alert("Microphone access is required for AI Sound Analysis. Please enable it in your browser settings.");
+      toast.error("Microphone access is required for AI Sound Analysis. Please enable it in your browser settings.");
     }
   };
 

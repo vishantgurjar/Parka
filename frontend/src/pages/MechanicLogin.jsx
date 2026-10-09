@@ -19,6 +19,20 @@ export default function MechanicLogin() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [devOtp, setDevOtp] = useState('');
+  const [resendTimer, setResendTimer] = useState(30);
+
+  // 30-Second Countdown Timer for Forgot Password OTP Resend
+  useEffect(() => {
+    let interval = null;
+    if (mode === 'forgot' && forgotStep === 2 && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [mode, forgotStep, resendTimer]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +63,7 @@ export default function MechanicLogin() {
   };
 
   const handleRequestOtp = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!forgotEmail) return toast.error('Please enter your email.');
     setLoading(true);
     setDevOtp('');
@@ -67,6 +81,7 @@ export default function MechanicLogin() {
         if (data.devOtp) {
           setDevOtp(data.devOtp);
         }
+        setResendTimer(30);
         setForgotStep(2);
       } else {
         setError(data.message || 'Failed to send OTP.');
@@ -76,6 +91,11 @@ export default function MechanicLogin() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResendOtp = () => {
+    if (resendTimer > 0) return;
+    handleRequestOtp();
   };
 
   const handleResetPassword = async (e) => {
@@ -241,7 +261,25 @@ export default function MechanicLogin() {
                   )}
 
                   <div className="form-group" style={{ marginBottom: '0' }}>
-                    <label className="form-label" style={{ fontWeight: '600' }}>6-Digit OTP Code</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label className="form-label" style={{ margin: 0, fontWeight: '600' }}>6-Digit OTP Code</label>
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={loading || resendTimer > 0}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: resendTimer > 0 ? '#64748b' : 'var(--primary)',
+                          fontSize: '0.85rem',
+                          cursor: resendTimer > 0 ? 'not-allowed' : 'pointer',
+                          fontWeight: '600',
+                          padding: 0
+                        }}
+                      >
+                        {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP 🔄'}
+                      </button>
+                    </div>
                     <input 
                       type="text" 
                       placeholder="Enter verification code" 

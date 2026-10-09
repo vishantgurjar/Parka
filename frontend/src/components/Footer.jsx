@@ -24,7 +24,7 @@ export default function Footer() {
       padding: window.innerWidth < 768 ? '40px 0 20px' : '80px 0 40px'
     }}>
       <div className="container">
-        <div className="footer-top" style={{ marginBottom: '60px', borderBottom: '1px solid rgba(255,255,255,0.05)', pb: '60px' }}>
+        <div className="footer-top" style={{ marginBottom: '60px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '60px' }}>
           <div className="footer-brand" style={{ maxWidth: '400px' }}>
             <Link to="/" className="logo" onClick={(e) => handleScroll(e, 'home')} style={{ marginBottom: '24px' }}>
               <div className="logo-icon light-sweep" style={{
@@ -50,7 +50,7 @@ export default function Footer() {
               <Link to="/mechanics" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Find Mechanics</Link>
               <Link to="/mechanic-register" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Become a Partner Mechanic</Link>
               <Link to="/m-login" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600' }}>Mechanic Portal Login</Link>
-              <Link to="/sentinel" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Cam Mode</Link>
+              <Link to="/cam" style={{ fontSize: '0.9rem', opacity: 0.7, fontWeight: '600', color: 'var(--primary)' }}>Cam Mode</Link>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

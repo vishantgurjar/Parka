@@ -94,48 +94,56 @@ router.post('/send-otp', async (req, res) => {
         console.log(`STICKER ID: ${stickerId} | EXPIRES IN 5 MINUTES`);
         console.log(`======================================================\n`);
 
-        // Dispatch SMS via SMS helper (Fast2SMS / Twilio)
-        const smsResult = await sendSmsOtp(phone, otpCode);
+        // Dispatch SMS & Email concurrently for lightning-fast OTP delivery (instant < 1 sec response)
+        const mailHtml = email ? `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #06b6d4;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: #06b6d4; margin: 0;">PARXÉÉ CITY</h1>
+                    <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Smart QR Sticker Activation</p>
+                </div>
+                <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                <h2 style="font-size: 20px; font-weight: 600; color: #06b6d4;">Security Verification OTP</h2>
+                <p style="color: #d1d5db; line-height: 1.6;">Hello,</p>
+                <p style="color: #d1d5db; line-height: 1.6;">Please use the following 6-digit verification code to activate your Parxéé City Smart QR Sticker (Sticker ID: <strong>${stickerId}</strong>):</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #06b6d4; background: rgba(6, 182, 212, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2); display: inline-block;">
+                        ${otpCode}
+                    </span>
+                </div>
+                
+                <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>
+                <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; ${new Date().getFullYear()} Parxéé City. All rights reserved.</p>
+            </div>
+        ` : '';
 
-        // Send OTP via Email if provided using centralized email helper
+        const dispatchTasks = [
+            sendSmsOtp(phone, otpCode)
+        ];
         if (email) {
-            const mailHtml = `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px; border: 1px solid #06b6d4;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="color: #06b6d4; margin: 0;">PARXÉÉ CITY</h1>
-                            <p style="color: #9ca3af; font-size: 14px; margin-top: 5px;">Smart QR Sticker Activation</p>
-                        </div>
-                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <h2 style="font-size: 20px; font-weight: 600; color: #06b6d4;">Security Verification OTP</h2>
-                        <p style="color: #d1d5db; line-height: 1.6;">Hello,</p>
-                        <p style="color: #d1d5db; line-height: 1.6;">Please use the following 6-digit verification code to activate your Parxéé City Smart QR Sticker (Sticker ID: <strong>${stickerId}</strong>):</p>
-                        
-                        <div style="text-align: center; margin: 30px 0;">
-                            <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #06b6d4; background: rgba(6, 182, 212, 0.1); padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2); display: inline-block;">
-                                ${otpCode}
-                            </span>
-                        </div>
-                        
-                        <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">This verification code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>
-                        <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p style="color: #6b7280; font-size: 11px; text-align: center; margin: 0;">&copy; 2026 Parxéé City. All rights reserved.</p>
-                    </div>
-                `;
-            await sendEmail({
-                to: email.toLowerCase().trim(),
-                subject: 'Parxéé City - Smart Sticker Activation OTP',
-                html: mailHtml,
-                fromName: 'Parxéé City Support'
-            });
+            dispatchTasks.push(
+                sendEmail({
+                    to: email.toLowerCase().trim(),
+                    subject: `Parxéé City - Smart Sticker Activation OTP [${otpCode}]`,
+                    html: mailHtml,
+                    fromName: 'Parxéé City Support'
+                })
+            );
         }
+
+        const [smsSettled, emailSettled] = await Promise.allSettled(dispatchTasks);
+        const smsResult = smsSettled?.status === 'fulfilled' ? smsSettled.value : { success: false };
+        const emailResult = emailSettled?.status === 'fulfilled' ? emailSettled.value : { success: false };
 
         res.json({
             success: true,
             devOtp: otpCode,
             smsSent: smsResult.success,
-            message: smsResult.success
-                ? 'Security OTP has been sent successfully to your mobile and email.'
-                : `Security OTP generated (${otpCode}).`
+            emailSent: emailResult?.success || false,
+            message: (smsResult.success || emailResult?.success)
+                ? `Verification OTP sent successfully to your ${smsResult.success ? 'mobile number' : ''}${smsResult.success && emailResult?.success ? ' & ' : ''}${emailResult?.success ? 'email address' : ''}.`
+                : `Verification code generated: ${otpCode}`
         });
     } catch (error) {
         console.error('Send OTP Error:', error);

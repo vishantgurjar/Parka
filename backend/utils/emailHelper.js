@@ -124,16 +124,53 @@ function buildCleanEmailHtml({ title, preheader = '', greeting = 'Hello,', bodyT
  * @param {string} [options.fromName] - Friendly sender name
  * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
  */
-async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }) {
+// Cached Transporter Singleton with Connection Pooling for Instant Dispatch
+let cachedTransporter = null;
+
+function getPooledTransporter() {
+  if (cachedTransporter) return cachedTransporter;
+
   const customUser = (process.env.EMAIL_USER || '').trim();
   const customPass = (process.env.EMAIL_PASS || '').trim();
-  const customService = (process.env.EMAIL_SERVICE || 'gmail').trim();
-
   const fallbackUser = 'panwarvishant9@gmail.com';
   const fallbackPass = 'gsev jfbn ttdl ginj'.replace(/\s+/g, '');
 
-  let transporter;
-  let fromEmail = customUser || fallbackUser;
+  const user = customUser || fallbackUser;
+  const pass = (customPass && customPass !== 'your_gmail_app_password_here') ? customPass.replace(/\s+/g, '') : fallbackPass;
+
+  cachedTransporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 5000,
+    greetingTimeout: 4000,
+    socketTimeout: 8000
+  });
+
+  return cachedTransporter;
+}
+
+/**
+ * Send email using configured environment variables or fallback credentials
+ * Includes anti-spam headers, clean MIME structure, and plain-text fallback.
+ * 
+ * @param {object} options - Mail options
+ * @param {string} options.to - Recipient email address
+ * @param {string} options.subject - Email subject
+ * @param {string} [options.text] - Plain text body (auto-generated if omitted)
+ * @param {string} [options.html] - HTML body
+ * @param {string} [options.fromName] - Friendly sender name
+ * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
+ */
+async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }) {
+  const customUser = (process.env.EMAIL_USER || '').trim();
+  const fallbackUser = 'panwarvishant9@gmail.com';
+  const fromEmail = customUser || fallbackUser;
 
   // Auto-generate plain-text version if text is missing to prevent spam filters from penalizing
   const plainText = text || stripHtmlToText(html) || subject;
@@ -157,71 +194,30 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }
     mailOptions.html = html;
   }
 
-  // 1. Try custom credentials if configured
-  if (customUser && customPass && customPass !== 'your_gmail_app_password_here') {
-    try {
-      console.log(`[Email Helper] Sending email to ${to} via custom SMTP (${customUser})...`);
-      transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: { user: customUser, pass: customPass.replace(/\s+/g, '') },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 8000,
-        greetingTimeout: 5000,
-        socketTimeout: 12000
-      });
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[Email Helper] Custom SSL SMTP success! MessageId: ${info.messageId}`);
-      return { success: true, messageId: info.messageId };
-    } catch (err) {
-      console.error(`[Email Helper] Custom SSL SMTP error: ${err.message}. Trying service Gmail fallback...`);
-      try {
-        transporter = nodemailer.createTransport({
-          service: customService,
-          auth: { user: customUser, pass: customPass.replace(/\s+/g, '') },
-          connectionTimeout: 8000
-        });
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`[Email Helper] Custom Service Gmail fallback success! MessageId: ${info.messageId}`);
-        return { success: true, messageId: info.messageId };
-      } catch (err2) {
-        console.error(`[Email Helper] Custom Service Gmail fallback failed: ${err2.message}`);
-      }
-    }
-  }
-
-  // 2. Fallback to default hardcoded credentials
   try {
-    console.log(`[Email Helper] Falling back to default SMTP credentials (${fallbackUser})...`);
-    mailOptions.from = `"${fromName}" <${fallbackUser}>`;
-    mailOptions.replyTo = fallbackUser;
-    transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user: fallbackUser, pass: fallbackPass },
-      tls: { rejectUnauthorized: false },
-      connectionTimeout: 8000
-    });
+    const transporter = getPooledTransporter();
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[Email Helper] Fallback SMTP Success! MessageId: ${info.messageId}`);
+    console.log(`[Email Helper] Instant SMTP Email sent to ${to}! MessageId: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
-  } catch (errFallback) {
-    console.error(`[Email Helper] Fallback SMTP failed: ${errFallback.message}. Trying Fallback Service Gmail...`);
-    
+  } catch (err) {
+    console.error(`[Email Helper] Pooled SMTP error: ${err.message}. Retrying direct send...`);
     try {
-      transporter = nodemailer.createTransport({
+      // Re-create standalone transport fallback
+      cachedTransporter = null;
+      const directTransporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: { user: fallbackUser, pass: fallbackPass },
-        connectionTimeout: 8000
+        auth: { 
+          user: fromEmail, 
+          pass: (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').replace(/\s+/g, '') 
+        },
+        connectionTimeout: 5000
       });
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[Email Helper] Fallback Service Gmail Success! MessageId: ${info.messageId}`);
+      const info = await directTransporter.sendMail(mailOptions);
+      console.log(`[Email Helper] Direct fallback success! MessageId: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
-    } catch (errFallback2) {
-      console.error(`[Email Helper] Fallback Service Gmail failed: ${errFallback2.message}`);
-      return { success: false, error: errFallback2.message };
+    } catch (err2) {
+      console.error(`[Email Helper] Direct fallback failed: ${err2.message}`);
+      return { success: false, error: err2.message };
     }
   }
 }
