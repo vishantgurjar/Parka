@@ -69,6 +69,32 @@ async function sendSmsOtp(phone, otpCode) {
       console.error('[SMS Helper] Fast2SMS POST Error:', err.message);
     }
 
+    // Fast2SMS Quick Route Fallback (route: 'q')
+    try {
+      const qResponse = await fetchFn('https://www.fast2sms.com/dev/bulkV2', {
+        method: 'POST',
+        headers: {
+          'authorization': fast2smsKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          route: 'q',
+          message: `Your Parxee City verification code is ${otpCode}. Valid for 5 minutes. Do not share it.`,
+          flash: 0,
+          numbers: target10Digit
+        }),
+        signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined
+      });
+      const qData = await qResponse.json();
+      if (qData && (qData.return || qData.status_code === 200)) {
+        console.log(`[SMS Helper] Fast2SMS Quick OTP sent successfully to ${target10Digit}`);
+        return { success: true, provider: 'Fast2SMS' };
+      }
+      console.warn('[SMS Helper] Fast2SMS Quick returned non-success:', qData);
+    } catch (qErr) {
+      console.error('[SMS Helper] Fast2SMS Quick Error:', qErr.message);
+    }
+
     // Fast2SMS GET route fallback
     try {
       const getUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(fast2smsKey)}&route=otp&variables_values=${otpCode}&numbers=${target10Digit}`;
