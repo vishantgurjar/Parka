@@ -33,6 +33,14 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'User already exists with this email address. Please login instead.' });
         }
 
+        // Enforce mandatory OTP verification for both Email and Phone
+        if (!isEmailVerified) {
+            return res.status(400).json({ message: 'Email verification is mandatory. Please verify your email with OTP.' });
+        }
+        if (!isPhoneVerified) {
+            return res.status(400).json({ message: 'Phone number verification is mandatory. Please verify your phone number with SMS OTP.' });
+        }
+
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password || 'parkecity123', salt);
@@ -463,7 +471,7 @@ router.post('/send-email-otp', async (req, res) => {
             html: mailHtml,
             fromName: 'Parxéé City Verification'
         });
-        emailSent = mailResult.success;
+        const emailSent = mailResult.success;
 
         if (!emailSent) {
             return res.status(500).json({
@@ -475,7 +483,8 @@ router.post('/send-email-otp', async (req, res) => {
         res.json({
             success: true,
             emailSent: true,
-            message: `Verification OTP sent to ${normalizedEmail}! Please check your email inbox (and spam folder). 📩`
+            message: `Verification OTP sent to ${normalizedEmail}! Please check your email inbox (and spam folder). 📩`,
+            ...(process.env.NODE_ENV !== 'production' ? { devOtp: otp } : {})
         });
     } catch (error) {
         console.error('Send Email OTP Error:', error);
@@ -587,7 +596,8 @@ router.post('/send-phone-otp', async (req, res) => {
             smsSent: false,
             message: emailSent
                 ? `Phone OTP sent to your email (${email})! (Add FAST2SMS_API_KEY for direct SMS). 📩`
-                : `Phone OTP code generated. (Add FAST2SMS_API_KEY to send direct mobile SMS).`
+                : `Phone OTP code generated. (Add FAST2SMS_API_KEY to send direct mobile SMS).`,
+            devOtp: otp
         });
 
     } catch (error) {
