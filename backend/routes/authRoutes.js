@@ -476,7 +476,8 @@ router.post('/send-email-otp', async (req, res) => {
         if (!emailSent) {
             return res.status(500).json({
                 success: false,
-                message: 'Failed to send OTP to your email inbox. Please verify your email address.'
+                message: 'Failed to send OTP to your email inbox: ' + (mailResult.error || 'Please check email address.'),
+                error: mailResult.error
             });
         }
 
