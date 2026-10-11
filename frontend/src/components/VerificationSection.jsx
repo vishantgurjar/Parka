@@ -109,6 +109,9 @@ export default function VerificationSection({
     if (rawDigits.length < 10) {
       return toast.error('Please enter a valid 10-digit mobile phone number.');
     }
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      return toast.error('Please enter your valid email address in the Email box first.');
+    }
     setPhoneLoading(true);
     const baseUrl = getBackendUrl();
     try {
@@ -117,12 +120,12 @@ export default function VerificationSection({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: rawDigits,
-          email: (email || '').trim().toLowerCase()
+          email: email.trim().toLowerCase()
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        toast.success(data.message || 'Verification code dispatched! 📱');
+        toast.success(data.message || 'Verification code dispatched!', { duration: 6000 });
         setPhoneOtpSent(true);
         setPhoneTimer(30);
       } else {
