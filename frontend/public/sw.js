@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Parxee-cache-v2';
+const CACHE_NAME = 'Parxee-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -34,11 +34,23 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
   }
+
+  // Handle SPA page navigations (e.g., /login, /register)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const cachedIndex = await caches.match('/index.html');
+        return cachedIndex || caches.match('/');
+      })
+    );
+    return;
+  }
   
-  // Simple network-first strategy to avoid stale content
+  // Asset requests: network-first, fallback to cache if matched
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
+    fetch(event.request).catch(async () => {
+      const cached = await caches.match(event.request);
+      return cached || new Response('', { status: 408, statusText: 'Request Timeout' });
     })
   );
 });
@@ -53,7 +65,7 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/logo.png',
     badge: '/logo.png',
     data: {
-      url: 'https://Parxee-city.vercel.app/' // Assuming production url
+      url: 'https://Parxee-city.vercel.app/'
     }
   };
 
@@ -64,11 +76,9 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Focus existing window if open
       if (windowClients.length > 0) {
         return windowClients[0].focus();
       }
-      // Otherwise open new
       if (clients.openWindow) {
         return clients.openWindow('/');
       }
