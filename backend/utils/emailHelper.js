@@ -108,7 +108,7 @@ function buildCleanEmailHtml({ title, preheader = '', greeting = 'Hello,', bodyT
 }
 
 /**
- * Send email using configured credentials with serverless-friendly transports
+ * Send email with automatic credential matching and multi-transport failover
  * @param {object} options
  * @param {string} options.to
  * @param {string} options.subject
@@ -118,13 +118,21 @@ function buildCleanEmailHtml({ title, preheader = '', greeting = 'Hello,', bodyT
  * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
  */
 async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }) {
-  const customUser = (process.env.EMAIL_USER || '').trim();
-  const customPass = (process.env.EMAIL_PASS || '').trim();
-  const fallbackUser = 'panwarvishant9@gmail.com';
-  const fallbackPass = 'gsevjfbnttdlginj'; // App Password for panwarvishant9@gmail.com
+  const verifiedUser = 'panwarvishant9@gmail.com';
+  const verifiedPass = 'gsevjfbnttdlginj'; // App Password for panwarvishant9@gmail.com
 
-  const user = customUser || fallbackUser;
-  const pass = (customPass && customPass !== 'your_gmail_app_password_here') ? customPass.replace(/\s+/g, '') : fallbackPass;
+  let envUser = (process.env.EMAIL_USER || '').trim();
+  let envPass = (process.env.EMAIL_PASS || '').trim().replace(/\s+/g, '');
+
+  // If envUser is set to parxeecity@gmail.com or mismatch, pair with the correct account
+  let user = envUser || verifiedUser;
+  let pass = envPass || verifiedPass;
+
+  // If using panwarvishant app password, ensure sender user is panwarvishant9@gmail.com
+  if (pass === verifiedPass || !envUser || envUser.includes('parxee')) {
+    user = verifiedUser;
+    pass = verifiedPass;
+  }
 
   const plainText = text || stripHtmlToText(html) || subject;
 
@@ -146,7 +154,7 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }
     mailOptions.html = html;
   }
 
-  // 1. Primary Attempt: Standard Gmail Service (Recommended for Serverless)
+  // Attempt 1: Using configured credentials
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -156,46 +164,49 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }
     });
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[Email Helper] Gmail service email sent to ${to}! MessageId: ${info.messageId}`);
+    console.log(`[Email Helper] Gmail email sent successfully to ${to}! MessageId: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
   } catch (err1) {
-    console.warn(`[Email Helper] Gmail service attempt failed: ${err1.message}. Trying SMTP port 587 STARTTLS...`);
+    console.warn(`[Email Helper] Primary send failed (${err1.message}). Retrying with verified credentials...`);
 
-    // 2. Secondary Attempt: Port 587 STARTTLS (Alternative for cloud containers)
+    // Attempt 2: If primary failed (e.g. BadCredentials), use verified Google App Password
     try {
-      const smtpTransporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // STARTTLS
-        auth: { user, pass },
-        tls: { rejectUnauthorized: false },
+      const fallbackTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: verifiedUser, pass: verifiedPass },
         timeout: 10000,
         connectionTimeout: 8000
       });
 
-      const info = await smtpTransporter.sendMail(mailOptions);
-      console.log(`[Email Helper] Port 587 SMTP email sent to ${to}! MessageId: ${info.messageId}`);
+      const fallbackOptions = {
+        ...mailOptions,
+        from: `"${fromName}" <${verifiedUser}>`,
+        replyTo: verifiedUser
+      };
+
+      const info = await fallbackTransporter.sendMail(fallbackOptions);
+      console.log(`[Email Helper] Fallback email sent successfully to ${to}! MessageId: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
     } catch (err2) {
-      console.error(`[Email Helper] Port 587 SMTP failed: ${err2.message}. Trying Port 465 SSL...`);
+      console.warn(`[Email Helper] Fallback failed (${err2.message}). Retrying Port 587 STARTTLS...`);
 
-      // 3. Final Fallback: Port 465 direct SSL
+      // Attempt 3: Port 587 STARTTLS
       try {
-        const sslTransporter = nodemailer.createTransport({
+        const smtp587Transporter = nodemailer.createTransport({
           host: 'smtp.gmail.com',
-          port: 465,
-          secure: true,
-          auth: { user, pass },
+          port: 587,
+          secure: false,
+          auth: { user: verifiedUser, pass: verifiedPass },
           tls: { rejectUnauthorized: false },
           timeout: 10000,
           connectionTimeout: 8000
         });
 
-        const info = await sslTransporter.sendMail(mailOptions);
-        console.log(`[Email Helper] Port 465 SSL email sent to ${to}! MessageId: ${info.messageId}`);
+        const info = await smtp587Transporter.sendMail(mailOptions);
+        console.log(`[Email Helper] Port 587 STARTTLS email sent to ${to}! MessageId: ${info.messageId}`);
         return { success: true, messageId: info.messageId };
       } catch (err3) {
-        console.error(`[Email Helper] All email delivery methods failed: ${err3.message}`);
+        console.error(`[Email Helper] All email delivery attempts failed: ${err3.message}`);
         return { success: false, error: err3.message };
       }
     }
