@@ -483,8 +483,7 @@ router.post('/send-email-otp', async (req, res) => {
         res.json({
             success: true,
             emailSent: true,
-            message: `Verification OTP sent to ${normalizedEmail}! Please check your email inbox (and spam folder). 📩`,
-            ...(process.env.NODE_ENV !== 'production' ? { devOtp: otp } : {})
+            message: `Verification OTP sent to ${normalizedEmail}! Please check your email inbox (and spam folder). 📩`
         });
     } catch (error) {
         console.error('Send Email OTP Error:', error);
@@ -591,13 +590,27 @@ router.post('/send-phone-otp', async (req, res) => {
             emailSent = mailResult.success;
         }
 
-        res.json({
-            success: true,
+        if (smsResult.success) {
+            return res.json({
+                success: true,
+                smsSent: true,
+                message: `SMS OTP has been sent to your mobile number (${normalizedPhone})! 📱`
+            });
+        }
+
+        // Fast2SMS / SMS Gateway fallback: dispatch to email if provided
+        if (emailSent) {
+            return res.json({
+                success: true,
+                smsSent: false,
+                message: `Mobile SMS pending gateway recharge. Verification OTP delivered to your email (${email}) as backup! 📩`
+            });
+        }
+
+        return res.status(400).json({
+            success: false,
             smsSent: false,
-            message: emailSent
-                ? `Phone OTP sent to your email (${email})! (Add FAST2SMS_API_KEY for direct SMS). 📩`
-                : `Phone OTP code generated. (Add FAST2SMS_API_KEY to send direct mobile SMS).`,
-            devOtp: otp
+            message: smsResult.error || 'SMS Gateway verification required. Please enter a valid email for backup delivery.'
         });
 
     } catch (error) {

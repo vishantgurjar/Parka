@@ -35,13 +35,8 @@ function buildCleanEmailHtml({ title, preheader = '', greeting = 'Hello,', bodyT
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <!--[if mso]>
-  <style type="text/css">
-    body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
-  </style>
-  <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1e293b;">
+<body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
   ${preheader ? `<div style="display: none; max-height: 0px; overflow: hidden; opacity: 0;">${preheader}</div>` : ''}
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f6f8; padding: 30px 10px;">
     <tr>
@@ -113,80 +108,37 @@ function buildCleanEmailHtml({ title, preheader = '', greeting = 'Hello,', bodyT
 }
 
 /**
- * Send email using configured environment variables or fallback credentials
- * Includes anti-spam headers, clean MIME structure, and plain-text fallback.
- * 
- * @param {object} options - Mail options
- * @param {string} options.to - Recipient email address
- * @param {string} options.subject - Email subject
- * @param {string} [options.text] - Plain text body (auto-generated if omitted)
- * @param {string} [options.html] - HTML body
- * @param {string} [options.fromName] - Friendly sender name
- * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
- */
-// Cached Transporter Singleton with Connection Pooling for Instant Dispatch
-let cachedTransporter = null;
-
-function getPooledTransporter() {
-  if (cachedTransporter) return cachedTransporter;
-
-  const customUser = (process.env.EMAIL_USER || '').trim();
-  const customPass = (process.env.EMAIL_PASS || '').trim();
-  const fallbackUser = 'panwarvishant9@gmail.com';
-  const fallbackPass = 'gsev jfbn ttdl ginj'.replace(/\s+/g, '');
-
-  const user = customUser || fallbackUser;
-  const pass = (customPass && customPass !== 'your_gmail_app_password_here') ? customPass.replace(/\s+/g, '') : fallbackPass;
-
-  cachedTransporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    pool: true,
-    maxConnections: 5,
-    maxMessages: 100,
-    auth: { user, pass },
-    tls: { rejectUnauthorized: false },
-    connectionTimeout: 5000,
-    greetingTimeout: 4000,
-    socketTimeout: 8000
-  });
-
-  return cachedTransporter;
-}
-
-/**
- * Send email using configured environment variables or fallback credentials
- * Includes anti-spam headers, clean MIME structure, and plain-text fallback.
- * 
- * @param {object} options - Mail options
- * @param {string} options.to - Recipient email address
- * @param {string} options.subject - Email subject
- * @param {string} [options.text] - Plain text body (auto-generated if omitted)
- * @param {string} [options.html] - HTML body
- * @param {string} [options.fromName] - Friendly sender name
+ * Send email using configured credentials with serverless-friendly transports
+ * @param {object} options
+ * @param {string} options.to
+ * @param {string} options.subject
+ * @param {string} [options.text]
+ * @param {string} [options.html]
+ * @param {string} [options.fromName]
  * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
  */
 async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }) {
   const customUser = (process.env.EMAIL_USER || '').trim();
+  const customPass = (process.env.EMAIL_PASS || '').trim();
   const fallbackUser = 'panwarvishant9@gmail.com';
-  const fromEmail = customUser || fallbackUser;
+  const fallbackPass = 'gsevjfbnttdlginj'; // App Password for panwarvishant9@gmail.com
 
-  // Auto-generate plain-text version if text is missing to prevent spam filters from penalizing
+  const user = customUser || fallbackUser;
+  const pass = (customPass && customPass !== 'your_gmail_app_password_here') ? customPass.replace(/\s+/g, '') : fallbackPass;
+
   const plainText = text || stripHtmlToText(html) || subject;
 
   const mailOptions = {
-    from: `"${fromName}" <${fromEmail}>`,
+    from: `"${fromName}" <${user}>`,
     to: to,
-    replyTo: fromEmail,
+    replyTo: user,
     subject: subject,
     text: plainText,
     headers: {
       'X-Priority': '1 (Highest)',
       'X-MSMail-Priority': 'High',
       'Importance': 'High',
-      'X-Mailer': 'ParxeeCity Smart Dispatcher 2.0',
-      'X-Auto-Response-Suppress': 'OOF, AutoReply'
+      'X-Mailer': 'ParxeeCity Email Dispatcher'
     }
   };
 
@@ -194,30 +146,58 @@ async function sendEmail({ to, subject, text, html, fromName = 'Parxéé City' }
     mailOptions.html = html;
   }
 
+  // 1. Primary Attempt: Standard Gmail Service (Recommended for Serverless)
   try {
-    const transporter = getPooledTransporter();
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+      timeout: 10000,
+      connectionTimeout: 8000
+    });
+
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[Email Helper] Instant SMTP Email sent to ${to}! MessageId: ${info.messageId}`);
+    console.log(`[Email Helper] Gmail service email sent to ${to}! MessageId: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
-  } catch (err) {
-    console.error(`[Email Helper] Pooled SMTP error: ${err.message}. Retrying direct send...`);
+  } catch (err1) {
+    console.warn(`[Email Helper] Gmail service attempt failed: ${err1.message}. Trying SMTP port 587 STARTTLS...`);
+
+    // 2. Secondary Attempt: Port 587 STARTTLS (Alternative for cloud containers)
     try {
-      // Re-create standalone transport fallback
-      cachedTransporter = null;
-      const directTransporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { 
-          user: fromEmail, 
-          pass: (process.env.EMAIL_PASS || 'gsev jfbn ttdl ginj').replace(/\s+/g, '') 
-        },
-        connectionTimeout: 5000
+      const smtpTransporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // STARTTLS
+        auth: { user, pass },
+        tls: { rejectUnauthorized: false },
+        timeout: 10000,
+        connectionTimeout: 8000
       });
-      const info = await directTransporter.sendMail(mailOptions);
-      console.log(`[Email Helper] Direct fallback success! MessageId: ${info.messageId}`);
+
+      const info = await smtpTransporter.sendMail(mailOptions);
+      console.log(`[Email Helper] Port 587 SMTP email sent to ${to}! MessageId: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
     } catch (err2) {
-      console.error(`[Email Helper] Direct fallback failed: ${err2.message}`);
-      return { success: false, error: err2.message };
+      console.error(`[Email Helper] Port 587 SMTP failed: ${err2.message}. Trying Port 465 SSL...`);
+
+      // 3. Final Fallback: Port 465 direct SSL
+      try {
+        const sslTransporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: { user, pass },
+          tls: { rejectUnauthorized: false },
+          timeout: 10000,
+          connectionTimeout: 8000
+        });
+
+        const info = await sslTransporter.sendMail(mailOptions);
+        console.log(`[Email Helper] Port 465 SSL email sent to ${to}! MessageId: ${info.messageId}`);
+        return { success: true, messageId: info.messageId };
+      } catch (err3) {
+        console.error(`[Email Helper] All email delivery methods failed: ${err3.message}`);
+        return { success: false, error: err3.message };
+      }
     }
   }
 }

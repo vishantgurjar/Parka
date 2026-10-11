@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Phone, CheckCircle2, ShieldCheck, KeyRound, Loader2, ArrowRight } from 'lucide-react';
+import { Mail, Phone, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getBackendUrl } from '../utils/api';
 
@@ -18,14 +18,12 @@ export default function VerificationSection({
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailTimer, setEmailTimer] = useState(30);
-  const [emailDevOtp, setEmailDevOtp] = useState('');
 
   // Phone OTP States
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [phoneTimer, setPhoneTimer] = useState(30);
-  const [phoneDevOtp, setPhoneDevOtp] = useState('');
 
   // Email Timer Countdown
   useEffect(() => {
@@ -51,7 +49,6 @@ export default function VerificationSection({
       return toast.error('Please enter a valid email address.');
     }
     setEmailLoading(true);
-    setEmailDevOtp('');
     const baseUrl = getBackendUrl();
     try {
       const res = await fetch(`${baseUrl}/api/auth/send-email-otp`, {
@@ -64,7 +61,6 @@ export default function VerificationSection({
         toast.success(data.message || 'Verification code sent to your email! 📩');
         setEmailOtpSent(true);
         setEmailTimer(30);
-        if (data.devOtp) setEmailDevOtp(data.devOtp);
       } else {
         toast.error(data.message || 'Failed to send OTP to email.');
       }
@@ -96,7 +92,6 @@ export default function VerificationSection({
       if (res.ok && data.success) {
         toast.success('Email verified successfully! ✓');
         setIsEmailVerified(true);
-        setEmailDevOtp('');
       } else {
         toast.error(data.message || 'Invalid or expired OTP code.');
       }
@@ -115,7 +110,6 @@ export default function VerificationSection({
       return toast.error('Please enter a valid 10-digit mobile phone number.');
     }
     setPhoneLoading(true);
-    setPhoneDevOtp('');
     const baseUrl = getBackendUrl();
     try {
       const res = await fetch(`${baseUrl}/api/auth/send-phone-otp`, {
@@ -123,15 +117,14 @@ export default function VerificationSection({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: rawDigits,
-          email: email.trim().toLowerCase()
+          email: (email || '').trim().toLowerCase()
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        toast.success(data.message || 'Verification code sent to your mobile phone! 📱');
+        toast.success(data.message || 'Verification code dispatched! 📱');
         setPhoneOtpSent(true);
         setPhoneTimer(30);
-        if (data.devOtp) setPhoneDevOtp(data.devOtp);
       } else {
         toast.error(data.message || 'Failed to send SMS OTP.');
       }
@@ -163,7 +156,6 @@ export default function VerificationSection({
       if (res.ok && data.success) {
         toast.success('Mobile phone verified successfully! ✓');
         setIsPhoneVerified(true);
-        setPhoneDevOtp('');
       } else {
         toast.error(data.message || 'Invalid or expired phone OTP code.');
       }
@@ -217,7 +209,7 @@ export default function VerificationSection({
               </span>
             ) : (
               <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
-                OTP will be sent to your email
+                OTP will be sent to your email inbox
               </span>
             )}
           </div>
@@ -304,11 +296,9 @@ export default function VerificationSection({
           {/* Email OTP Input row */}
           {!isEmailVerified && emailOtpSent && (
             <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              {emailDevOtp && (
-                <div style={{ background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.25)', padding: '8px 12px', borderRadius: '10px', marginBottom: '8px', fontSize: '0.85rem', color: '#5eead4' }}>
-                  Code Helper: <strong>{emailDevOtp}</strong>
-                </div>
-              )}
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px' }}>
+                Please check your email inbox (and spam folder) for the 6-digit code:
+              </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: '180px' }}>
                   <input
@@ -374,7 +364,7 @@ export default function VerificationSection({
               </span>
             ) : (
               <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
-                SMS OTP will be sent to your number
+                SMS OTP will be sent to your mobile phone
               </span>
             )}
           </div>
@@ -461,11 +451,9 @@ export default function VerificationSection({
           {/* Phone OTP Input row */}
           {!isPhoneVerified && phoneOtpSent && (
             <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              {phoneDevOtp && (
-                <div style={{ background: 'rgba(20, 184, 166, 0.1)', border: '1px solid rgba(20, 184, 166, 0.25)', padding: '8px 12px', borderRadius: '10px', marginBottom: '8px', fontSize: '0.85rem', color: '#5eead4' }}>
-                  Code Helper: <strong>{phoneDevOtp}</strong>
-                </div>
-              )}
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px' }}>
+                Please enter the 6-digit code received via SMS:
+              </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: '180px' }}>
                   <input
