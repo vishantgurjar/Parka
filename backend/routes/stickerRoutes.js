@@ -184,10 +184,52 @@ router.post('/verify-otp', async (req, res) => {
             { expiresIn: '15m' }
         );
 
+        // Check if an existing user exists for this phone number to pre-populate details & vehicles
+        const digits = phone.replace(/\D/g, '').slice(-10);
+        let phoneRegex = null;
+        if (digits.length >= 10) {
+            const regexString = digits.split('').join('[\\s-]*');
+            phoneRegex = new RegExp(regexString);
+        }
+
+        const existingUser = await User.findOne(phoneRegex ? { phone: phoneRegex } : { phone });
+        let vehicles = [];
+        if (existingUser) {
+            if (existingUser.plateNumber) {
+                vehicles.push({
+                    plateNumber: existingUser.plateNumber,
+                    make: existingUser.make || '',
+                    model: existingUser.model || '',
+                    color: existingUser.color || '',
+                    year: existingUser.year || ''
+                });
+            }
+            if (Array.isArray(existingUser.secondaryVehicles)) {
+                existingUser.secondaryVehicles.forEach(v => {
+                    if (v && v.plateNumber && !vehicles.some(item => item.plateNumber === v.plateNumber)) {
+                        vehicles.push({
+                            plateNumber: v.plateNumber,
+                            make: v.make || '',
+                            model: v.model || '',
+                            color: v.color || '',
+                            year: v.year || ''
+                        });
+                    }
+                });
+            }
+        }
+
         res.json({
             success: true,
             message: 'OTP verified successfully.',
-            token: activationToken
+            token: activationToken,
+            existingUser: existingUser ? {
+                name: existingUser.name,
+                email: existingUser.email,
+                phone: existingUser.phone,
+                emergencyContact: existingUser.emergencyContact,
+                vehicles
+            } : null
         });
     } catch (error) {
         console.error('Verify OTP Error:', error);
@@ -208,6 +250,7 @@ router.post('/activate', async (req, res) => {
             vehicleBrand, 
             vehicleModel, 
             vehicleColor, 
+            vehicleYear,
             emergencyContact, 
             email 
         } = req.body;
@@ -277,6 +320,7 @@ router.post('/activate', async (req, res) => {
             user.model = vehicleModel;
             user.color = vehicleColor;
             user.plateNumber = vehicleNumber;
+            if (vehicleYear) user.year = vehicleYear;
             user.emergencyContact = emergencyContact;
             user.smartTagId = cleanStickerId;
             user.markModified('smartTagId');
@@ -297,6 +341,7 @@ router.post('/activate', async (req, res) => {
                 make: vehicleBrand,
                 model: vehicleModel,
                 color: vehicleColor,
+                year: vehicleYear || '',
                 plateNumber: vehicleNumber,
                 emergencyContact: emergencyContact,
                 smartTagId: cleanStickerId,

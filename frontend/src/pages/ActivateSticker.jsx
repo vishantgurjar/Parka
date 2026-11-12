@@ -1,15 +1,16 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Shield, Phone, KeyRound, User, Car, CheckCircle, AlertTriangle, ArrowRight, Loader2, Mail, Users } from 'lucide-react';
+import { Shield, Phone, KeyRound, User, Car, CheckCircle, AlertTriangle, ArrowRight, Loader2, Mail, Users, Calendar, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 import { getBackendUrl } from '../utils/api';
 import { AuthContext } from '../App';
+import { INDIAN_CAR_BRANDS, VEHICLE_COLORS, VEHICLE_YEARS } from '../utils/vehicleData';
 
 export default function ActivateSticker() {
   const { stickerId } = useParams();
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { user, login } = useContext(AuthContext);
 
   // Flow steps: 'loading' | 'invalid' | 'initial_form' | 'otp_verify' | 'vehicle_form' | 'success'
   const [step, setStep] = useState('loading');
@@ -25,6 +26,12 @@ export default function ActivateSticker() {
   const [vehicleBrand, setVehicleBrand] = useState('');
   const [vehicleModel, setVehicleModel] = useState('');
   const [vehicleColor, setVehicleColor] = useState('');
+  const [vehicleYear, setVehicleYear] = useState('');
+  const [customBrand, setCustomBrand] = useState('');
+  const [customModel, setCustomModel] = useState('');
+  const [customColor, setCustomColor] = useState('');
+  const [savedVehicles, setSavedVehicles] = useState([]);
+  const [selectedSavedVehicleIndex, setSelectedSavedVehicleIndex] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
   const [email, setEmail] = useState('');
   const [inputStickerId, setInputStickerId] = useState('');
@@ -32,6 +39,103 @@ export default function ActivateSticker() {
   const [resendTimer, setResendTimer] = useState(30);
 
   const API_BASE = getBackendUrl();
+
+  // Prepopulate if logged in
+  useEffect(() => {
+    if (user) {
+      if (user.name && !ownerName) setOwnerName(user.name);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) {
+        const cleaned = user.phone.replace(/\D/g, '').slice(-10);
+        setPhone(cleaned);
+      }
+      if (user.emergencyContact && !emergencyContact) {
+        setEmergencyContact(user.emergencyContact);
+      }
+
+      const list = [];
+      if (user.plateNumber) {
+        list.push({
+          plateNumber: user.plateNumber,
+          make: user.make || '',
+          model: user.model || '',
+          color: user.color || '',
+          year: user.year || ''
+        });
+      }
+      if (Array.isArray(user.secondaryVehicles)) {
+        user.secondaryVehicles.forEach(v => {
+          if (v && v.plateNumber && !list.some(item => item.plateNumber === v.plateNumber)) {
+            list.push({
+              plateNumber: v.plateNumber,
+              make: v.make || '',
+              model: v.model || '',
+              color: v.color || '',
+              year: v.year || ''
+            });
+          }
+        });
+      }
+      if (list.length > 0) {
+        setSavedVehicles(list);
+      }
+    }
+  }, [user]);
+
+  const handleSelectSavedVehicle = (indexVal) => {
+    setSelectedSavedVehicleIndex(indexVal);
+    if (!indexVal || indexVal === 'new') {
+      setVehicleNumber('');
+      setVehicleBrand('');
+      setVehicleModel('');
+      setVehicleColor('');
+      setVehicleYear('');
+      setCustomBrand('');
+      setCustomModel('');
+      setCustomColor('');
+      return;
+    }
+
+    const idx = parseInt(indexVal, 10);
+    const v = savedVehicles[idx];
+    if (v) {
+      setVehicleNumber(v.plateNumber || '');
+
+      const brandList = Object.keys(INDIAN_CAR_BRANDS);
+      if (v.make && brandList.includes(v.make)) {
+        setVehicleBrand(v.make);
+        setCustomBrand('');
+        const models = INDIAN_CAR_BRANDS[v.make] || [];
+        if (v.model && models.includes(v.model)) {
+          setVehicleModel(v.model);
+          setCustomModel('');
+        } else if (v.model) {
+          setVehicleModel('Other');
+          setCustomModel(v.model);
+        } else {
+          setVehicleModel('');
+          setCustomModel('');
+        }
+      } else if (v.make) {
+        setVehicleBrand('Other Brand');
+        setCustomBrand(v.make);
+        setVehicleModel('Other');
+        setCustomModel(v.model || '');
+      }
+
+      if (v.color && VEHICLE_COLORS.includes(v.color)) {
+        setVehicleColor(v.color);
+        setCustomColor('');
+      } else if (v.color) {
+        setVehicleColor('Other Color');
+        setCustomColor(v.color);
+      }
+
+      if (v.year) {
+        setVehicleYear(v.year);
+      }
+    }
+  };
 
   // 30-Second Countdown Timer for OTP Resend
   useEffect(() => {
@@ -155,6 +259,14 @@ export default function ActivateSticker() {
       if (res.ok) {
         toast.success(data.message);
         setOtpToken(data.token);
+        if (data.existingUser) {
+          if (data.existingUser.name && !ownerName) setOwnerName(data.existingUser.name);
+          if (data.existingUser.email && !email) setEmail(data.existingUser.email);
+          if (data.existingUser.emergencyContact && !emergencyContact) setEmergencyContact(data.existingUser.emergencyContact);
+          if (Array.isArray(data.existingUser.vehicles) && data.existingUser.vehicles.length > 0) {
+            setSavedVehicles(data.existingUser.vehicles);
+          }
+        }
         setStep('vehicle_form');
       } else {
         toast.error(data.message || 'Incorrect OTP.');
@@ -170,8 +282,12 @@ export default function ActivateSticker() {
   // Complete Activation
   const handleActivate = async (e) => {
     e.preventDefault();
-    if (!ownerName || !vehicleNumber || !vehicleBrand || !vehicleModel || !vehicleColor || !emergencyContact) {
-      return toast.error('Please fill in all required fields.');
+    const finalBrand = vehicleBrand === 'Other Brand' ? customBrand.trim() : vehicleBrand;
+    const finalModel = (vehicleModel === 'Other' || vehicleModel === 'Other Model') ? customModel.trim() : vehicleModel;
+    const finalColor = vehicleColor === 'Other Color' ? customColor.trim() : vehicleColor;
+
+    if (!ownerName || !vehicleNumber || !finalBrand || !finalModel || !finalColor || !emergencyContact) {
+      return toast.error('Please fill in all required vehicle details.');
     }
     setLoading(true);
 
@@ -185,9 +301,10 @@ export default function ActivateSticker() {
           activationToken: otpToken,
           ownerName,
           vehicleNumber,
-          vehicleBrand,
-          vehicleModel,
-          vehicleColor,
+          vehicleBrand: finalBrand,
+          vehicleModel: finalModel,
+          vehicleColor: finalColor,
+          vehicleYear,
           emergencyContact,
           email
         })
@@ -553,65 +670,222 @@ export default function ActivateSticker() {
                   <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Link your vehicle details to Sticker ID <strong>{stickerId}</strong>.</p>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '6px', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '420px', overflowY: 'auto', paddingRight: '6px', marginBottom: '1.5rem' }}>
                   
+                  {/* Quick Select Saved Vehicles */}
+                  {savedVehicles.length > 0 && (
+                    <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '12px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        <Sparkles size={12} color="var(--primary)" /> Quick Select Registered Vehicle
+                      </label>
+                      <select
+                        value={selectedSavedVehicleIndex}
+                        onChange={(e) => handleSelectSavedVehicle(e.target.value)}
+                        style={{
+                          width: '100%',
+                          background: '#0d1527',
+                          border: '1px solid rgba(20, 184, 166, 0.4)',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          color: '#fff',
+                          outline: 'none',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="" style={{ background: '#111827', color: '#9ca3af' }}>-- Choose from your vehicles or enter new --</option>
+                        {savedVehicles.map((veh, idx) => (
+                          <option key={idx} value={idx.toString()} style={{ background: '#111827', color: '#fff' }}>
+                            {veh.plateNumber} — {veh.make} {veh.model} {veh.color ? `(${veh.color})` : ''}
+                          </option>
+                        ))}
+                        <option value="new" style={{ background: '#111827', color: '#2dd4bf' }}>➕ Enter a different vehicle</option>
+                      </select>
+                    </div>
+                  )}
+
                   {/* Vehicle Plate Number */}
                   <div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      <Car size={12} color="var(--primary)" /> Vehicle Plate Number / RC *
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <Car size={13} color="var(--primary)" /> Vehicle Plate Number / RC *
                     </label>
                     <input 
                       type="text" 
                       placeholder="e.g. DL 3C AB 1234"
                       value={vehicleNumber}
                       onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
+                      style={{ width: '100%', background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none', fontWeight: '700', letterSpacing: '1px' }}
                       required
                     />
                   </div>
 
-                  {/* Brand & Model (Flex Row) */}
+                  {/* Brand & Model (Flex Row / Grid) */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>Brand (Make) *</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Hyundai"
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '6px' }}>Brand (Make) *</label>
+                      <select
                         value={vehicleBrand}
-                        onChange={(e) => setVehicleBrand(e.target.value)}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setVehicleBrand(val);
+                          if (val === 'Other Brand') {
+                            setVehicleModel('Other');
+                          } else {
+                            setVehicleModel('');
+                          }
+                          setCustomBrand('');
+                          setCustomModel('');
+                        }}
+                        style={{
+                          width: '100%',
+                          background: '#0d1527',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '10px',
+                          padding: '12px 10px',
+                          color: vehicleBrand ? '#fff' : 'rgba(255,255,255,0.45)',
+                          outline: 'none',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
                         required
-                      />
+                      >
+                        <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>-- Select Brand --</option>
+                        {Object.keys(INDIAN_CAR_BRANDS).map(brand => (
+                          <option key={brand} value={brand} style={{ background: '#111827', color: '#fff' }}>
+                            {brand}
+                          </option>
+                        ))}
+                      </select>
+                      {vehicleBrand === 'Other Brand' && (
+                        <input 
+                          type="text"
+                          placeholder="Type Brand Name..."
+                          value={customBrand}
+                          onChange={(e) => setCustomBrand(e.target.value)}
+                          style={{ width: '100%', background: '#0d1527', border: '1px solid var(--primary)', borderRadius: '8px', padding: '10px', color: '#fff', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                          required
+                        />
+                      )}
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>Model Name *</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. i20"
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '6px' }}>Model Name *</label>
+                      <select
                         value={vehicleModel}
-                        onChange={(e) => setVehicleModel(e.target.value)}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
+                        onChange={(e) => {
+                          setVehicleModel(e.target.value);
+                          setCustomModel('');
+                        }}
+                        disabled={!vehicleBrand}
+                        style={{
+                          width: '100%',
+                          background: '#0d1527',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '10px',
+                          padding: '12px 10px',
+                          color: vehicleModel ? '#fff' : 'rgba(255,255,255,0.45)',
+                          outline: 'none',
+                          fontSize: '0.85rem',
+                          cursor: vehicleBrand ? 'pointer' : 'not-allowed',
+                          opacity: vehicleBrand ? 1 : 0.6
+                        }}
                         required
-                      />
+                      >
+                        <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>
+                          {vehicleBrand ? `-- Select Model --` : '-- Select Brand First --'}
+                        </option>
+                        {vehicleBrand && (INDIAN_CAR_BRANDS[vehicleBrand] || ['Other']).map(model => (
+                          <option key={model} value={model} style={{ background: '#111827', color: '#fff' }}>
+                            {model}
+                          </option>
+                        ))}
+                      </select>
+                      {(vehicleModel === 'Other' || vehicleModel === 'Other Model') && (
+                        <input 
+                          type="text"
+                          placeholder="Type Model Name..."
+                          value={customModel}
+                          onChange={(e) => setCustomModel(e.target.value)}
+                          style={{ width: '100%', background: '#0d1527', border: '1px solid var(--primary)', borderRadius: '8px', padding: '10px', color: '#fff', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                          required
+                        />
+                      )}
                     </div>
                   </div>
 
-                  {/* Vehicle Color */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>Vehicle Color *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. White"
-                      value={vehicleColor}
-                      onChange={(e) => setVehicleColor(e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
-                      required
-                    />
+                  {/* Vehicle Color & Year Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '6px' }}>Color *</label>
+                      <select
+                        value={vehicleColor}
+                        onChange={(e) => {
+                          setVehicleColor(e.target.value);
+                          setCustomColor('');
+                        }}
+                        style={{
+                          width: '100%',
+                          background: '#0d1527',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '10px',
+                          padding: '12px 10px',
+                          color: vehicleColor ? '#fff' : 'rgba(255,255,255,0.45)',
+                          outline: 'none',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                        required
+                      >
+                        <option value="" disabled style={{ background: '#111827', color: '#9ca3af' }}>-- Select Color --</option>
+                        {VEHICLE_COLORS.map(c => (
+                          <option key={c} value={c} style={{ background: '#111827', color: '#fff' }}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                      {vehicleColor === 'Other Color' && (
+                        <input 
+                          type="text"
+                          placeholder="Type Color Name..."
+                          value={customColor}
+                          onChange={(e) => setCustomColor(e.target.value)}
+                          style={{ width: '100%', background: '#0d1527', border: '1px solid var(--primary)', borderRadius: '8px', padding: '10px', color: '#fff', marginTop: '8px', outline: 'none', fontSize: '0.85rem' }}
+                          required
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        <Calendar size={12} color="var(--primary)" /> Year (Optional)
+                      </label>
+                      <select
+                        value={vehicleYear}
+                        onChange={(e) => setVehicleYear(e.target.value)}
+                        style={{
+                          width: '100%',
+                          background: '#0d1527',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '10px',
+                          padding: '12px 10px',
+                          color: vehicleYear ? '#fff' : 'rgba(255,255,255,0.45)',
+                          outline: 'none',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="" style={{ background: '#111827', color: '#9ca3af' }}>-- Select Year --</option>
+                        {VEHICLE_YEARS.map(y => (
+                          <option key={y} value={y} style={{ background: '#111827', color: '#fff' }}>
+                            {y}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Emergency Contact Number */}
                   <div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '6px' }}>
                       <Users size={12} color="var(--primary)" /> Emergency Contact No *
                     </label>
                     <input 
@@ -619,7 +893,7 @@ export default function ActivateSticker() {
                       placeholder="Parents / Spouse Phone Number"
                       value={emergencyContact}
                       onChange={(e) => setEmergencyContact(e.target.value.replace(/[^0-9]/g, ''))}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
+                      style={{ width: '100%', background: '#0d1527', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '12px', color: '#fff', outline: 'none' }}
                       required
                     />
                   </div>
